@@ -12,14 +12,13 @@ import {
   getDestTokenAmount,
   getAskParams,
 } from "./lib";
-import { Orders } from "./orders";
+import { getUserOrdersForDEX } from "./orders";
 import { Config, getAskParamsProps, TimeDuration } from "./types";
 import { getTimeDurationMillis } from "./utils";
 import BN from "bignumber.js";
 
 interface Props {
   config: Config;
-  minChunkSizeUsd?: number;
 }
 
 const analytics = new Analytics();
@@ -43,12 +42,10 @@ export class TwapSDK {
   public config: Config;
   public analytics = analyticsCallback;
   public estimatedDelayBetweenChunksMillis: number;
-  public orders: Orders;
   constructor(props: Props) {
     this.config = props.config;
     analytics.onConfigChange(props.config);
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
-    this.orders = new Orders(props.config);
   }
   //create order values
   getAskParams(props: getAskParamsProps) {
@@ -116,10 +113,16 @@ export class TwapSDK {
   }
 
   async getOrders(account: string, signal?: AbortSignal) {
-    return this.orders.getOrders(account, signal);
+    return getUserOrdersForDEX({ dexConfig: this.config, account, signal });
   }
 }
 
+let sdk: TwapSDK;
+
 export const constructSDK = (props: Props) => {
-  return new TwapSDK(props);
+  if (props.config.chainId === sdk?.config.chainId && props.config.name === sdk.config.name) {
+    return sdk;
+  }
+  sdk = new TwapSDK(props);
+  return sdk;
 };

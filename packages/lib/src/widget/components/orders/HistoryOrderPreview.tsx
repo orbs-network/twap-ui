@@ -1,7 +1,7 @@
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate } from "@orbs-network/twap-sdk";
+import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate, getOrderFillDelayMillis } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
 import { Token, TwapOrder } from "../../../types";
@@ -15,7 +15,7 @@ import { OrderDetails } from "../../../components/order-details";
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
-  const { useToken, components, translations: t } = useTwapContext();
+  const { useToken, components, translations: t, config } = useTwapContext();
 
   const { selectedOrderId, closePreview } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
@@ -54,7 +54,7 @@ export const HistoryOrderPreview = () => {
       />
 
       <div className="twap-orders__selected-order-bottom">
-        <OrderDetails.FillDelaySummary chunks={order.chunks} fillDelayMillis={order.fillDelayMillis} />
+        <OrderDetails.FillDelaySummary chunks={order.chunks} fillDelayMillis={getOrderFillDelayMillis(order, config)} />
 
         <div className="twap-orders__selected-order-accordions">
           <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
@@ -93,13 +93,13 @@ const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: 
 };
 
 const OrderInfo = ({ order }: { order: TwapOrder }) => {
-  const { useToken } = useTwapContext();
+  const { useToken, config } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
   const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcAmountPerChunk);
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmountPerChunk);
-  const fillDelayMillis = order.fillDelayMillis;
+  const fillDelayMillis = getOrderFillDelayMillis(order, config);
 
   return (
     <OrderDetails>
@@ -120,7 +120,7 @@ const OrderInfo = ({ order }: { order: TwapOrder }) => {
   );
 };
 
-const ExcecutionSummary = ({ order }: { order: Order }) => {
+const ExcecutionSummary = ({ order }: { order: TwapOrder }) => {
   return (
     <OrderDetails>
       <OrderStatusComponent order={order} />

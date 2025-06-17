@@ -1,8 +1,7 @@
 import { Config, OrderStatus, OrderType } from "./types";
 import BN from "bignumber.js";
-import { amountUi, getTheGraphUrl } from "./utils";
+import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
-import { LEGACY_EXCHANGES_MAP } from "./consts";
 
 type GraphOrder = {
   Contract_id: string | number;
@@ -103,165 +102,6 @@ const parseFills = (fills: GraphFill[]): ParsedFills => {
   };
 };
 
-export class Orders {
-  private exchanges: string;
-  private endpoint: string;
-  constructor(private readonly config: Config) {
-    this.exchanges = [this.config.exchangeAddress, ...(LEGACY_EXCHANGES_MAP[this.config.name] || [])].map((a) => `"${a.toLowerCase()}"`).join(", ");
-    this.endpoint = getTheGraphUrl(this.config.chainId)!;
-  }
-
-  private async getCreatedOrders(account: string, signal?: AbortSignal): Promise<GraphOrder[]> {
-    const limit = 1_000;
-    const exchange = `exchange_in: [${this.exchanges}]`;
-    const maker = `maker: "${account}"`;
-
-    const where = `where:{${exchange}, ${maker}}`;
-
-    const orders: GraphOrder[] = [];
-    let page = 0;
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const query = `
-        {
-          orderCreateds(
-            first: ${limit},
-            orderBy: timestamp,
-            orderDirection: desc,
-            skip: ${page * limit},
-            ${where}
-          ) {
-            id
-            twapAddress
-            Contract_id
-            ask_bidDelay
-            ask_data
-            ask_deadline
-            ask_dstMinAmount
-            ask_dstToken
-            ask_fillDelay
-            ask_exchange
-            ask_srcToken
-            ask_srcBidAmount
-            ask_srcAmount
-            blockNumber
-            blockTimestamp
-            dex
-            dollarValueIn
-            dstTokenSymbol
-            exchange
-            maker
-            srcTokenSymbol
-            timestamp
-            transactionHash
-          }
-        }
-      `;
-
-      const payload = await fetch(this.endpoint, {
-        method: "POST",
-        body: JSON.stringify({ query }),
-        signal,
-      });
-
-      const response = await payload.json();
-      const orderCreateds = response.data.orderCreateds;
-
-      orders.push(...orderCreateds);
-
-      if (orderCreateds.length < limit) {
-        break; // No more orders to fetch
-      }
-
-      page++;
-    }
-
-    return orders;
-  }
-
-  private async getFills(ids: string[], signal?: AbortSignal) {
-    const LIMIT = 1_000;
-    let page = 0;
-    const where = `where: { TWAP_id_in: [${ids.join(", ")}], exchange_in: [${this.exchanges}] }`;
-
-    const fills = [];
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const query = `
-      {
-        orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, ${where}) {
-          id
-          dstAmountOut
-          dstFee
-          srcFilledAmount
-          twapAddress
-          exchange
-          TWAP_id
-          srcAmountIn
-          timestamp
-          transactionHash
-          dollarValueIn
-          dollarValueOut,
-        }
-      }
-    `;
-
-      const payload = await fetch(this.endpoint, {
-        method: "POST",
-        body: JSON.stringify({ query }),
-        signal,
-      });
-      const response = await payload.json();
-
-      const groupedFills = groupFillsByTWAP(response.data.orderFilleds);
-
-      fills.push(...groupedFills);
-      if (groupedFills.length < LIMIT) break;
-      page++;
-    }
-
-    return fills;
-  }
-
-  public async getOrders(account: string, signal?: AbortSignal) {
-    const endpoint = getTheGraphUrl(this.config.chainId);
-    if (!endpoint) {
-      throw new Error("no endpoint found");
-    }
-    const createdOrders = await this.getCreatedOrders(account.toLowerCase(), signal);
-
-    const ids = createdOrders.map((rawOrder) => rawOrder.Contract_id.toString());
-    const allFills = await this.getFills(ids, signal);
-
-    const parsedOrders = createdOrders.map((o) => {
-      const fills = allFills?.find((it) => it.id === Number(o.Contract_id) && it.exchange === o.exchange && it.twapAddress === o.twapAddress);
-
-      return buildOrder({
-        fills: fills?.fills,
-        srcAmount: o.ask_srcAmount,
-        srcTokenAddress: o.ask_srcToken,
-        dstTokenAddress: o.ask_dstToken,
-        srcAmountPerChunk: o.ask_srcBidAmount,
-        deadline: o.ask_deadline * 1000,
-        dstMinAmountPerChunk: o.ask_dstMinAmount,
-        tradeDollarValueIn: o.dollarValueIn,
-        blockNumber: o.blockNumber,
-        id: Number(o.Contract_id),
-        fillDelay: o.ask_fillDelay,
-        createdAt: new Date(o.timestamp).getTime(),
-        txHash: o.transactionHash,
-        maker: o.maker,
-        exchange: o.exchange,
-        twapAddress: o.twapAddress,
-        srcTokenSymbol: o.srcTokenSymbol,
-        dstTokenSymbol: o.dstTokenSymbol,
-        config: this.config,
-      });
-    });
-    return parsedOrders;
-  }
-}
 export type Order = ReturnType<typeof buildOrder>;
 
 const getOrderType = (dstMinAmount: string, chunks: number) => {
@@ -299,7 +139,6 @@ export const getOrderLimitPriceRate = (order: Order, srcTokenDecimals: number, d
 };
 
 export const buildOrder = ({
-  config,
   fills,
   srcAmount,
   srcTokenAddress,
@@ -319,7 +158,6 @@ export const buildOrder = ({
   srcTokenSymbol,
   dstTokenSymbol,
 }: {
-  config: Config;
   fills?: GraphFill[];
   srcAmount: string;
   srcTokenAddress: string;
@@ -374,8 +212,189 @@ export const buildOrder = ({
     isMarketOrder: type === OrderType.TWAP_MARKET,
     srcTokenSymbol,
     dstTokenSymbol,
-    fillDelayMillis: getOrderFillDelay(fillDelay, config),
   };
+};
+
+export async function getCreatedOrders({
+  chainId,
+  account,
+  signal,
+  exchanges,
+}: {
+  chainId: number;
+  account?: string;
+  signal?: AbortSignal;
+  exchanges?: string[];
+}): Promise<GraphOrder[]> {
+  const limit = 1_000;
+  const exchange = exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "";
+  const maker = account ? `maker: "${account}"` : "";
+
+  const where = `where:{${exchange}, ${maker}}`;
+
+  const orders: GraphOrder[] = [];
+  let page = 0;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const query = `
+      {
+        orderCreateds(
+          first: ${limit},
+          orderBy: timestamp,
+          orderDirection: desc,
+          skip: ${page * limit},
+          ${where}
+        ) {
+          id
+          twapAddress
+          Contract_id
+          ask_bidDelay
+          ask_data
+          ask_deadline
+          ask_dstMinAmount
+          ask_dstToken
+          ask_fillDelay
+          ask_exchange
+          ask_srcToken
+          ask_srcBidAmount
+          ask_srcAmount
+          blockNumber
+          blockTimestamp
+          dex
+          dollarValueIn
+          dstTokenSymbol
+          exchange
+          maker
+          srcTokenSymbol
+          timestamp
+          transactionHash
+        }
+      }
+    `;
+
+    const endpoint = getTheGraphUrl(chainId);
+    if (!endpoint) {
+      throw new Error("no endpoint found");
+    }
+
+    const payload = await fetch(endpoint, {
+      method: "POST",
+      body: JSON.stringify({ query }),
+      signal,
+    });
+
+    const response = await payload.json();
+    const orderCreateds = response.data.orderCreateds;
+
+    orders.push(...orderCreateds);
+
+    if (orderCreateds.length < limit) {
+      break; // No more orders to fetch
+    }
+
+    page++;
+  }
+
+  return orders;
+}
+
+export const getUserOrdersForDEX = async ({ dexConfig, account: _account, signal }: { dexConfig: Config; account: string; signal?: AbortSignal }) => {
+  return getOrders({ chainId: dexConfig.chainId, account: _account, signal, exchanges: getExchanges(dexConfig) });
+};
+
+export const getUserOrdersForChain = async ({ chainId, account: _account, signal }: { chainId: number; account: string; signal?: AbortSignal }) => {
+  return getOrders({ chainId, account: _account, signal });
+};
+
+export const getAllOrdersForChain = async ({ chainId, signal }: { chainId: number; signal?: AbortSignal }) => {
+  return getOrders({ chainId, signal });
+};
+
+export const getAllOrdersForDEX = async ({ dexConfig, signal }: { dexConfig: Config; signal?: AbortSignal }) => {
+  return getOrders({ chainId: dexConfig.chainId, signal, exchanges: getExchanges(dexConfig) });
+};
+
+const getFills = async ({ chainId, orders, signal, exchanges }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal; exchanges?: string[] }) => {
+  const LIMIT = 1_000;
+  let page = 0;
+  const endpoint = getTheGraphUrl(chainId);
+  if (!endpoint) {
+    throw new Error("no endpoint found");
+  }
+  const ids = orders.map((rawOrder) => rawOrder.Contract_id.toString()).join(", ");
+  const exchange = exchanges ? `exchange_in: [${exchanges}]` : "";
+  const where = `where: { TWAP_id_in: [${ids}], ${exchange} }`;
+
+  const fills = [];
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const query = `
+    {
+      orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, ${where}) {
+        id
+        dstAmountOut
+        dstFee
+        srcFilledAmount
+        twapAddress
+        exchange
+        TWAP_id
+        srcAmountIn
+        timestamp
+        transactionHash
+        dollarValueIn
+        dollarValueOut,
+      }
+    }
+  `;
+
+    const payload = await fetch(endpoint, {
+      method: "POST",
+      body: JSON.stringify({ query }),
+      signal,
+    });
+    const response = await payload.json();
+
+    const groupedFills = groupFillsByTWAP(response.data.orderFilleds);
+
+    fills.push(...groupedFills);
+    if (groupedFills.length < LIMIT) break;
+    page++;
+  }
+
+  return fills;
+};
+
+const getOrders = async ({ chainId, account: _account, signal, exchanges }: { chainId: number; account?: string; signal?: AbortSignal; exchanges?: string[] }) => {
+  const account = _account?.toLowerCase();
+  const orders = await getCreatedOrders({ chainId, account, signal, exchanges });
+  const fills = await getFills({ chainId, orders, signal, exchanges });
+
+  const parsedOrders = orders.map((o) => {
+    const orderFills = fills?.find((it) => it.id === Number(o.Contract_id) && eqIgnoreCase(it.exchange, o.exchange) && eqIgnoreCase(it.twapAddress, o.twapAddress));
+
+    return buildOrder({
+      fills: orderFills?.fills,
+      srcAmount: o.ask_srcAmount,
+      srcTokenAddress: o.ask_srcToken,
+      dstTokenAddress: o.ask_dstToken,
+      srcAmountPerChunk: o.ask_srcBidAmount,
+      deadline: o.ask_deadline * 1000,
+      dstMinAmountPerChunk: o.ask_dstMinAmount,
+      tradeDollarValueIn: o.dollarValueIn,
+      blockNumber: o.blockNumber,
+      id: Number(o.Contract_id),
+      fillDelay: o.ask_fillDelay,
+      createdAt: new Date(o.timestamp).getTime(),
+      txHash: o.transactionHash,
+      maker: o.maker,
+      exchange: o.exchange,
+      twapAddress: o.twapAddress,
+      srcTokenSymbol: o.srcTokenSymbol,
+      dstTokenSymbol: o.dstTokenSymbol,
+    });
+  });
+  return parsedOrders;
 };
 
 const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
@@ -402,6 +421,6 @@ export const parseOrderStatus = (progress: number, status?: number) => {
   }
 };
 
-const getOrderFillDelay = (fillDelay: number, config: Config) => {
-  return (fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
+export const getOrderFillDelayMillis = (order: Order, config: Config) => {
+  return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
 };

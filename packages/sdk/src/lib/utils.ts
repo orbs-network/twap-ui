@@ -1,6 +1,6 @@
-import { maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
+import { LEGACY_EXCHANGES_MAP, maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
-import { TimeDuration, TimeUnit } from "./types";
+import { Config, TimeDuration, TimeUnit } from "./types";
 import { networks } from "./networks";
 
 export const getTheGraphUrl = (chainId?: number) => {
@@ -112,4 +112,8 @@ export const safeInteger = (value?: string) => {
 
 export const getNetwork = (chainId?: number) => {
   return Object.values(networks).find((it) => it.id === chainId);
+};
+
+export const getExchanges = (config: Config) => {
+  return [config.exchangeAddress, ...(LEGACY_EXCHANGES_MAP[config.name] || [])].map((a) => `"${a.toLowerCase()}"`);
 };

@@ -12,5 +12,14 @@ export * from "./lib/lib";
 export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase } from "./lib/utils";
 export { networks } from "./lib/networks";
 
-export { getOrderExcecutionRate, getOrderLimitPriceRate, type Order, parseOrderStatus, buildOrder } from "./lib/orders";
+export {
+  getOrderExcecutionRate,
+  getOrderLimitPriceRate,
+  type Order,
+  parseOrderStatus,
+  buildOrder,
+  getOrderFillDelayMillis,
+  getUserOrdersForChain,
+  getUserOrdersForDEX,
+} from "./lib/orders";
 export { Configs, TwapAbi, iwethabi, erc20abi, LensAbi };

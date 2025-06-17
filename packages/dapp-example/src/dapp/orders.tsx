@@ -1,4 +1,4 @@
-import { getNetwork, getOrderLimitPriceRate } from "@orbs-network/twap-sdk";
+import { getNetwork, getOrderFillDelayMillis, getOrderLimitPriceRate } from "@orbs-network/twap-sdk";
 import { TwapOrder, formatDecimals, fillDelayText, OrderStatus, OrdersProps } from "@orbs-network/twap-ui";
 import { TableProps, Typography, Button, Table } from "antd";
 import moment from "moment";
@@ -119,7 +119,7 @@ const useOrderColumns = () => {
         dataIndex: "order",
         key: "order",
         render: (order: TwapOrder) => {
-          return <Typography>{fillDelayText(order.fillDelayMillis)}</Typography>;
+          return <Typography>{fillDelayText(getOrderFillDelayMillis(order, config))}</Typography>;
         },
       },
       {
