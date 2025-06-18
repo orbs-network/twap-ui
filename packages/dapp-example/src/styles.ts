@@ -45,10 +45,15 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
         background: "rgba(255,255,255, 0.1)",
       },
     },
-    ".config-select-list": {
+    ".config-select-content": {
       display: "flex",
       flexDirection: "column",
       gap: 10,
+    },
+    ".config-select-list": {
+      flex: 1,
+      overflowY: "auto",
+      maxHeight: "40vh",
       "&-item": {
         paddingLeft: 12,
         justifyContent: "flex-start",

@@ -9,6 +9,7 @@ import { useSwitchChain } from "wagmi";
 import { NumericFormat } from "react-number-format";
 import BN from "bignumber.js";
 import { maxUint256 } from "viem";
+import { useAppParams } from "./dapp/hooks";
 
 export const NumberInput = (props: {
   onChange: (value: string) => void;
@@ -129,15 +130,17 @@ export const ConfigSelector = () => {
   const onClose = useCallback(() => setIsOpen(false), []);
   const onOpen = useCallback(() => setIsOpen(true), []);
   const { switchChain } = useSwitchChain();
+  const { partnerSelect } = useAppParams();
 
   const network = useMemo(() => getNetwork(config.chainId), [config.chainId]);
   const onSelect = useCallback(
     (config: Config) => {
       setConfig(config);
       switchChain({ chainId: config.chainId });
+      partnerSelect(config);
       onClose();
     },
-    [onClose, setConfig, switchChain],
+    [onClose, setConfig, switchChain, partnerSelect],
   );
 
   const list = useMemo(() => {
@@ -166,18 +169,20 @@ export const ConfigSelector = () => {
         </svg>
       </button>
       <Popup title="Partner select" isOpen={isOpen} onClose={onClose} className="config-select-popup">
-        <div className="config-select-list">
+        <div className="config-select-content">
           <input value={filter} onChange={(e) => setFilter(e.target.value)} className="token-select-input" placeholder="Search..." />
-          {list.map((config, index) => {
-            const chain = getNetwork(config.chainId);
-            return (
-              <div className="config-select-list-item list-item" onClick={() => onSelect(config as Config)} key={index}>
-                <p>
-                  {config.name} <small>{`(${chain?.shortname})`}</small>
-                </p>
-              </div>
-            );
-          })}
+          <div className="config-select-list">
+            {list.map((config, index) => {
+              const chain = getNetwork(config.chainId);
+              return (
+                <div className="config-select-list-item list-item" onClick={() => onSelect(config as Config)} key={index}>
+                  <p>
+                    {config.name} <small>{`(${chain?.shortname})`}</small>
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </Popup>
     </>

@@ -48,3 +48,18 @@ export interface getAskParamsProps {
 }
 
 export type PrepareOrderArgsResult = [string, string, string, string, string, string, string, string, string, string[]];
+
+export type TwapFill = {
+  TWAP_id: number;
+  dollarValueIn: string;
+  dollarValueOut: string;
+  dstAmountOut: string;
+  dstFee: string;
+  id: string;
+  srcAmountIn: string;
+  srcFilledAmount: string;
+  timestamp: number;
+  twapAddress: string;
+  exchange: string;
+  transactionHash: string;
+};

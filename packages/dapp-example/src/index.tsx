@@ -3,6 +3,10 @@ import App from "./App";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { structuralSharing } from "@wagmi/core/query";
+import { BrowserRouter } from "react-router-dom";
+import { QueryParamProvider } from "use-query-params";
+import { ReactRouter6Adapter } from "use-query-params/adapters/react-router-6";
+
 import { darkTheme, lightTheme, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import { wagmiConfig } from "./config";
@@ -30,9 +34,13 @@ const Root = () => {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <WagmiProvider config={wagmiConfig}>
     <QueryClientProvider client={queryClient}>
-      <DappProvider>
-        <Root />
-      </DappProvider>
+      <BrowserRouter>
+        <QueryParamProvider adapter={ReactRouter6Adapter}>
+          <DappProvider>
+            <Root />
+          </DappProvider>
+        </QueryParamProvider>
+      </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
   </WagmiProvider>,

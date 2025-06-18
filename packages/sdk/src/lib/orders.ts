@@ -1,4 +1,4 @@
-import { Config, OrderStatus, OrderType } from "./types";
+import { Config, OrderStatus, OrderType, TwapFill } from "./types";
 import BN from "bignumber.js";
 import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
@@ -32,29 +32,14 @@ type ParsedFills = {
   dexFee: string;
 };
 
-type GraphFill = {
-  TWAP_id: number;
-  dollarValueIn: string;
-  dollarValueOut: string;
-  dstAmountOut: string;
-  dstFee: string;
-  id: string;
-  srcAmountIn: string;
-  srcFilledAmount: string;
-  timestamp: string;
-  twapAddress: string;
-  exchange: string;
-  transactionHash: string;
-};
-
 type OrderFills = {
   id: number;
-  fills: GraphFill[];
+  fills: TwapFill[];
   twapAddress: string;
   exchange: string;
 };
-function groupFillsByTWAP(fills: GraphFill[]): OrderFills[] {
-  const groupedMap = new Map<number, GraphFill[]>();
+function groupFillsByTWAP(fills: TwapFill[]): OrderFills[] {
+  const groupedMap = new Map<number, TwapFill[]>();
 
   for (const fill of fills) {
     const id = fill.TWAP_id;
@@ -73,7 +58,7 @@ function groupFillsByTWAP(fills: GraphFill[]): OrderFills[] {
   }));
 }
 
-const parseFills = (fills: GraphFill[]): ParsedFills => {
+const parseFills = (fills: TwapFill[]): ParsedFills => {
   const initial = {
     dstAmountOut: BN(0),
     srcAmountIn: BN(0),
@@ -157,8 +142,9 @@ export const buildOrder = ({
   twapAddress,
   srcTokenSymbol,
   dstTokenSymbol,
+  chainId,
 }: {
-  fills?: GraphFill[];
+  fills?: TwapFill[];
   srcAmount: string;
   srcTokenAddress: string;
   dstTokenAddress: string;
@@ -176,13 +162,18 @@ export const buildOrder = ({
   twapAddress: string;
   srcTokenSymbol: string;
   dstTokenSymbol: string;
+  chainId: number;
 }) => {
-  const { filledDstAmount, filledSrcAmount, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as GraphFill[]));
+  const { filledDstAmount, filledSrcAmount, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
   const chunks = new BN(srcAmount || 0)
     .div(srcAmountPerChunk) // Avoid division by zero
     .integerValue(BN.ROUND_FLOOR)
     .toNumber();
   const type = getOrderType(dstMinAmountPerChunk, chunks);
+  const isFilled = fills?.length === chunks;
+
+  const filledDate = isFilled ? fills?.[fills?.length - 1]?.timestamp : undefined;
+
   return {
     id,
     type,
@@ -212,6 +203,8 @@ export const buildOrder = ({
     isMarketOrder: type === OrderType.TWAP_MARKET,
     srcTokenSymbol,
     dstTokenSymbol,
+    chainId,
+    filledDate,
   };
 };
 
@@ -354,8 +347,13 @@ const getFills = async ({ chainId, orders, signal, exchanges }: { chainId: numbe
       signal,
     });
     const response = await payload.json();
-
-    const groupedFills = groupFillsByTWAP(response.data.orderFilleds);
+    const res = response.data.orderFilleds.map((it: TwapFill) => {
+      return {
+        ...it,
+        timestamp: new Date(it.timestamp).getTime(),
+      };
+    });
+    const groupedFills = groupFillsByTWAP(res);
 
     fills.push(...groupedFills);
     if (groupedFills.length < LIMIT) break;
@@ -370,30 +368,33 @@ const getOrders = async ({ chainId, account: _account, signal, exchanges }: { ch
   const orders = await getCreatedOrders({ chainId, account, signal, exchanges });
   const fills = await getFills({ chainId, orders, signal, exchanges });
 
-  const parsedOrders = orders.map((o) => {
-    const orderFills = fills?.find((it) => it.id === Number(o.Contract_id) && eqIgnoreCase(it.exchange, o.exchange) && eqIgnoreCase(it.twapAddress, o.twapAddress));
+  const parsedOrders = orders
+    .map((o) => {
+      const orderFills = fills?.find((it) => it.id === Number(o.Contract_id) && eqIgnoreCase(it.exchange, o.exchange) && eqIgnoreCase(it.twapAddress, o.twapAddress));
 
-    return buildOrder({
-      fills: orderFills?.fills,
-      srcAmount: o.ask_srcAmount,
-      srcTokenAddress: o.ask_srcToken,
-      dstTokenAddress: o.ask_dstToken,
-      srcAmountPerChunk: o.ask_srcBidAmount,
-      deadline: o.ask_deadline * 1000,
-      dstMinAmountPerChunk: o.ask_dstMinAmount,
-      tradeDollarValueIn: o.dollarValueIn,
-      blockNumber: o.blockNumber,
-      id: Number(o.Contract_id),
-      fillDelay: o.ask_fillDelay,
-      createdAt: new Date(o.timestamp).getTime(),
-      txHash: o.transactionHash,
-      maker: o.maker,
-      exchange: o.exchange,
-      twapAddress: o.twapAddress,
-      srcTokenSymbol: o.srcTokenSymbol,
-      dstTokenSymbol: o.dstTokenSymbol,
-    });
-  });
+      return buildOrder({
+        fills: orderFills?.fills,
+        srcAmount: o.ask_srcAmount,
+        srcTokenAddress: o.ask_srcToken,
+        dstTokenAddress: o.ask_dstToken,
+        srcAmountPerChunk: o.ask_srcBidAmount,
+        deadline: o.ask_deadline * 1000,
+        dstMinAmountPerChunk: o.ask_dstMinAmount,
+        tradeDollarValueIn: o.dollarValueIn,
+        blockNumber: o.blockNumber,
+        id: Number(o.Contract_id),
+        fillDelay: o.ask_fillDelay,
+        createdAt: new Date(o.timestamp).getTime(),
+        txHash: o.transactionHash,
+        maker: o.maker,
+        exchange: o.exchange,
+        twapAddress: o.twapAddress,
+        srcTokenSymbol: o.srcTokenSymbol,
+        dstTokenSymbol: o.dstTokenSymbol,
+        chainId,
+      });
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
   return parsedOrders;
 };
 

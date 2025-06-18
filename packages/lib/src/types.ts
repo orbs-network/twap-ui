@@ -4,7 +4,7 @@ import { Config, Order, OrderStatus, TimeDuration, TimeUnit, TwapSDK } from "@or
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
-export { OrderStatus } from "@orbs-network/twap-sdk";
+export { OrderStatus, type TwapFill } from "@orbs-network/twap-sdk";
 
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {

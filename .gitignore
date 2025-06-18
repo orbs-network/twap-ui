@@ -337,3 +337,4 @@ GitHub.sublime-settings
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/node,react,intellij+all,macos,visualstudiocode,sublimetext
+.vercel

@@ -1,6 +1,7 @@
 import { Config, Configs } from "@orbs-network/twap-sdk";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
+import { useAppParams } from "./dapp/hooks";
 
 export enum Panels {
   TWAP = "TWAP",
@@ -24,6 +25,7 @@ const getConfigKey = (config: Config) => {
 
 const useConfig = () => {
   const { chainId } = useAccount();
+  const { partner } = useAppParams();
 
   const initialConfig = useMemo(() => {
     const configKey = localStorage.getItem("config-name");
@@ -31,7 +33,18 @@ const useConfig = () => {
     return config || Object.values(Configs).find((it) => it.chainId === chainId) || Configs.Lynex;
   }, [chainId]);
 
-  const [config, setConfig] = useState(initialConfig as any as Config);
+  const initialPartner = useMemo(() => {
+    if (partner) {
+      const name = partner.split("-")[0];
+      const chainName = partner.split("-")[1];
+      console.log({ name, chainName });
+
+      return Object.values(Configs).find((it) => it.name.toLowerCase() === name && it.chainName.toLowerCase() === chainName);
+    }
+    return initialConfig;
+  }, [partner]);
+
+  const [config, setConfig] = useState(initialPartner as any as Config);
 
   const onConfigChange = useCallback(
     (config: Config) => {

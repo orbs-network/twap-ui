@@ -92,6 +92,7 @@ export const usePersistedOrdersStore = (config: Config) => {
         twapAddress: config.twapAddress,
         srcTokenSymbol: srcToken.symbol,
         dstTokenSymbol: dstToken.symbol,
+        chainId: config.chainId,
       });
 
       const order: TwapOrder = {
