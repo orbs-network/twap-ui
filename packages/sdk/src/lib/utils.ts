@@ -115,5 +115,7 @@ export const getNetwork = (chainId?: number) => {
 };
 
 export const getExchanges = (config: Config) => {
-  return [config.exchangeAddress, ...(LEGACY_EXCHANGES_MAP[config.name] || [])].map((a) => `"${a.toLowerCase()}"`);
+  const key = `${config.name}-${config.chainId}`;
+
+  return [config.exchangeAddress, ...(LEGACY_EXCHANGES_MAP[key] || [])].map((a) => `"${a.toLowerCase()}"`);
 };

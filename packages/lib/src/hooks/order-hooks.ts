@@ -1,55 +1,15 @@
-import { buildOrder, Config, getOrderFillDelayMillis, Order, OrderStatus, parseOrderStatus, TwapAbi } from "@orbs-network/twap-sdk";
+import { buildOrder, Config, getOrderFillDelayMillis, Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
-import { TwapOrder, Token, PublicClient } from "../types";
-import { getPublicFallbackClient } from "../lib";
+import { TwapOrder, Token } from "../types";
 import { useCancelOrder } from "./send-transactions-hooks";
 
 const useKey = (config: Config) => {
   const { account } = useTwapContext();
   return useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
-};
-
-export const getOrderStatusesWithFallback = async (chainId: number, publicClient: PublicClient, orders: Order[]) => {
-  const exec = async (publicClient: PublicClient) => {
-    const multicallResponse = await publicClient?.multicall({
-      contracts: orders.map((order) => {
-        return {
-          abi: TwapAbi as any,
-          address: order.twapAddress as `0x${string}`,
-          functionName: "status",
-          args: [order.id],
-        };
-      }),
-    });
-
-    return multicallResponse
-      .map((it) => {
-        return it.result as number;
-      })
-      .filter((it) => it !== undefined);
-  };
-
-  try {
-    const result = await exec(publicClient);
-
-    if (!result.length && orders.length > 0) {
-      throw new Error("No result from main rpc");
-    }
-    return result;
-  } catch (error) {
-    try {
-      const fallbackClient = getPublicFallbackClient(chainId);
-      if (!fallbackClient) return [];
-
-      return await exec(fallbackClient);
-    } catch (error) {
-      return [];
-    }
-  }
 };
 
 export const usePersistedOrdersStore = (config: Config) => {
@@ -97,7 +57,6 @@ export const usePersistedOrdersStore = (config: Config) => {
 
       const order: TwapOrder = {
         ..._order,
-        status: OrderStatus.Open,
         fillDelayMillis: getOrderFillDelayMillis(_order, config),
       };
 
@@ -177,12 +136,10 @@ const useOrdersQuery = (config: Config) => {
         }
       });
 
-      const statuses = await getOrderStatusesWithFallback(config.chainId, publicClient, orders);
-
       const canceledOrders = new Set(getCancelledOrderIds());
 
-      return orders.map((order, index): TwapOrder => {
-        let status = parseOrderStatus(order.progress, statuses?.[index]);
+      return orders.map((order): TwapOrder => {
+        let status = order.status;
         if (canceledOrders.has(order.id)) {
           if (status !== OrderStatus.Canceled) {
             console.log(`Cancelled added: ${order.id}`);
@@ -192,7 +149,7 @@ const useOrdersQuery = (config: Config) => {
             deleteCancelledOrderId(order.id);
           }
         }
-        return { ...order, status, progress: status === OrderStatus.Completed ? 100 : order.progress, fillDelayMillis: getOrderFillDelayMillis(order, config) };
+        return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config) };
       });
     },
     {

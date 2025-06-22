@@ -1,6 +1,6 @@
 import { CSSProperties, FC, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
-import { Config, Order, OrderStatus, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
+import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -519,6 +519,5 @@ export interface State {
 export { SwapStatus };
 
 export interface TwapOrder extends Order {
-  status?: OrderStatus;
   fillDelayMillis: number;
 }

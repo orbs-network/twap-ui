@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-constant-condition */
 import { Config, OrderStatus, OrderType, TwapFill } from "./types";
 import BN from "bignumber.js";
 import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl } from "./utils";
@@ -57,6 +59,80 @@ function groupFillsByTWAP(fills: TwapFill[]): OrderFills[] {
     exchange: fills[0].exchange,
   }));
 }
+
+type GraphQLPageFetcher<T> = (page: number, limit: number) => string;
+
+const fetchWithRetryPaginated = async <T>({
+  chainId,
+  buildQuery,
+  extractResults,
+  signal,
+  retries = 1,
+  limit = 1000,
+}: {
+  chainId: number;
+  buildQuery: GraphQLPageFetcher<T>;
+  extractResults: (response: any) => T[];
+  signal?: AbortSignal;
+  retries?: number;
+  limit?: number;
+}): Promise<T[]> => {
+  const endpoint = getTheGraphUrl(chainId);
+  if (!endpoint) throw new Error("no endpoint found");
+
+  let page = 0;
+  const results: T[] = [];
+
+  while (true) {
+    const query = buildQuery(page, limit);
+
+    const fetchPage = async (): Promise<T[]> => {
+      let attempts = 0;
+      while (attempts <= retries) {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            body: JSON.stringify({ query }),
+            signal,
+            headers: { "Content-Type": "application/json" },
+          });
+          if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+          const json = await res.json();
+          if (json.errors) {
+            throw new Error(json.errors[0].message);
+          }
+
+          return extractResults(json);
+        } catch (err) {
+          if (attempts === retries) throw err;
+          await new Promise((r) => setTimeout(r, 500 * 2 ** attempts));
+          attempts++;
+        }
+      }
+      return []; // should never reach here
+    };
+
+    let pageResults: T[];
+    try {
+      pageResults = await fetchPage();
+    } catch (err) {
+      console.warn(`Page ${page} failed, retrying one final time...`);
+      try {
+        pageResults = await fetchPage(); // Final page-level retry
+      } catch (finalErr) {
+        return results;
+      }
+    }
+
+    results.push(...pageResults);
+    if (pageResults.length < limit) break;
+
+    page++;
+  }
+
+  return results;
+};
 
 const parseFills = (fills: TwapFill[]): ParsedFills => {
   const initial = {
@@ -123,6 +199,8 @@ export const getOrderLimitPriceRate = (order: Order, srcTokenDecimals: number, d
   return BN(dstMinAmountUi).div(srcBidAmountUi).toFixed();
 };
 
+type RawStatus = "CANCELED" | "COMPLETED" | null;
+
 export const buildOrder = ({
   fills,
   srcAmount,
@@ -143,6 +221,7 @@ export const buildOrder = ({
   srcTokenSymbol,
   dstTokenSymbol,
   chainId,
+  status: _status,
 }: {
   fills?: TwapFill[];
   srcAmount: string;
@@ -163,6 +242,7 @@ export const buildOrder = ({
   srcTokenSymbol: string;
   dstTokenSymbol: string;
   chainId: number;
+  status?: RawStatus;
 }) => {
   const { filledDstAmount, filledSrcAmount, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
   const chunks = new BN(srcAmount || 0)
@@ -171,16 +251,16 @@ export const buildOrder = ({
     .toNumber();
   const type = getOrderType(dstMinAmountPerChunk, chunks);
   const isFilled = fills?.length === chunks;
-
   const filledDate = isFilled ? fills?.[fills?.length - 1]?.timestamp : undefined;
-
+  const progress = getOrderProgress(srcAmount, filledSrcAmount);
+  const status = parseOrderStatusNew(progress, deadline, _status);
   return {
     id,
     type,
     exchange,
     twapAddress,
     maker,
-    progress: getOrderProgress(srcAmount, filledSrcAmount),
+    progress,
     filledDstAmount,
     filledSrcAmount,
     filledDollarValueIn,
@@ -205,9 +285,9 @@ export const buildOrder = ({
     dstTokenSymbol,
     chainId,
     filledDate,
+    status,
   };
 };
-
 export async function getCreatedOrders({
   chainId,
   account,
@@ -219,24 +299,24 @@ export async function getCreatedOrders({
   signal?: AbortSignal;
   exchanges?: string[];
 }): Promise<GraphOrder[]> {
-  const limit = 1_000;
+  const limit = 1000;
+
   const exchange = exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "";
   const maker = account ? `maker: "${account}"` : "";
 
   const where = `where:{${exchange}, ${maker}}`;
 
-  const orders: GraphOrder[] = [];
-  let page = 0;
-
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const query = `
+  const orders = await fetchWithRetryPaginated<GraphOrder>({
+    chainId,
+    signal,
+    limit,
+    buildQuery: (page, limit) => `
       {
         orderCreateds(
           first: ${limit},
+          skip: ${page * limit},
           orderBy: timestamp,
           orderDirection: desc,
-          skip: ${page * limit},
           ${where}
         ) {
           id
@@ -264,30 +344,9 @@ export async function getCreatedOrders({
           transactionHash
         }
       }
-    `;
-
-    const endpoint = getTheGraphUrl(chainId);
-    if (!endpoint) {
-      throw new Error("no endpoint found");
-    }
-
-    const payload = await fetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify({ query }),
-      signal,
-    });
-
-    const response = await payload.json();
-    const orderCreateds = response.data.orderCreateds;
-
-    orders.push(...orderCreateds);
-
-    if (orderCreateds.length < limit) {
-      break; // No more orders to fetch
-    }
-
-    page++;
-  }
+    `,
+    extractResults: (json) => json.data?.orderCreateds || [],
+  });
 
   return orders;
 }
@@ -308,65 +367,82 @@ export const getAllOrdersForDEX = async ({ dexConfig, signal }: { dexConfig: Con
   return getOrders({ chainId: dexConfig.chainId, signal, exchanges: getExchanges(dexConfig) });
 };
 
+type GraphStatus = {
+  twapId: string;
+  twapAddress: string;
+  status: RawStatus;
+};
+
+export const getStatuses = async ({ chainId, orders, signal }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal }): Promise<GraphStatus[]> => {
+  const ids = orders.map((o) => `"${o.Contract_id}"`).join(", ");
+  const addresses = orders.map((o) => `"${o.twapAddress}"`).join(", ");
+
+  const where = `where: { twapId_in: [${ids}], twapAddress_in: [${addresses}] }`;
+
+  const statuses = await fetchWithRetryPaginated<GraphStatus>({
+    chainId,
+    signal,
+    limit: 1000,
+    buildQuery: (page, limit) => `
+      {
+        statusNews(
+          first: ${limit},
+          skip: ${page * limit},
+          ${where}
+        ) {
+          twapId
+          twapAddress
+          status
+        }
+      }
+    `,
+    extractResults: (json) => json.data?.statusNews || [],
+  });
+
+  return statuses;
+};
 const getFills = async ({ chainId, orders, signal, exchanges }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal; exchanges?: string[] }) => {
-  const LIMIT = 1_000;
-  let page = 0;
-  const endpoint = getTheGraphUrl(chainId);
-  if (!endpoint) {
-    throw new Error("no endpoint found");
-  }
   const ids = orders.map((rawOrder) => rawOrder.Contract_id.toString()).join(", ");
   const exchange = exchanges ? `exchange_in: [${exchanges}]` : "";
   const where = `where: { TWAP_id_in: [${ids}], ${exchange} }`;
 
-  const fills = [];
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const query = `
-    {
-      orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, ${where}) {
-        id
-        dstAmountOut
-        dstFee
-        srcFilledAmount
-        twapAddress
-        exchange
-        TWAP_id
-        srcAmountIn
-        timestamp
-        transactionHash
-        dollarValueIn
-        dollarValueOut,
+  const fills = await fetchWithRetryPaginated<TwapFill>({
+    chainId,
+    signal,
+    limit: 1000,
+    buildQuery: (page, limit) => `
+      {
+        orderFilleds(first: ${limit}, orderBy: timestamp, skip: ${page * limit}, ${where}) {
+          id
+          dstAmountOut
+          dstFee
+          srcFilledAmount
+          twapAddress
+          exchange
+          TWAP_id
+          srcAmountIn
+          timestamp
+          transactionHash
+          dollarValueIn
+          dollarValueOut
+        }
       }
-    }
-  `;
-
-    const payload = await fetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify({ query }),
-      signal,
-    });
-    const response = await payload.json();
-    const res = response.data.orderFilleds.map((it: TwapFill) => {
-      return {
+    `,
+    extractResults: (json) =>
+      (json.data?.orderFilleds || []).map((it: TwapFill) => ({
         ...it,
         timestamp: new Date(it.timestamp).getTime(),
-      };
-    });
-    const groupedFills = groupFillsByTWAP(res);
+      })),
+  });
 
-    fills.push(...groupedFills);
-    if (groupedFills.length < LIMIT) break;
-    page++;
-  }
-
-  return fills;
+  return groupFillsByTWAP(fills);
 };
 
 const getOrders = async ({ chainId, account: _account, signal, exchanges }: { chainId: number; account?: string; signal?: AbortSignal; exchanges?: string[] }) => {
   const account = _account?.toLowerCase();
   const orders = await getCreatedOrders({ chainId, account, signal, exchanges });
   const fills = await getFills({ chainId, orders, signal, exchanges });
+  const statuses = await getStatuses({ chainId, orders, signal });
 
   const parsedOrders = orders
     .map((o) => {
@@ -392,6 +468,7 @@ const getOrders = async ({ chainId, account: _account, signal, exchanges }: { ch
         srcTokenSymbol: o.srcTokenSymbol,
         dstTokenSymbol: o.dstTokenSymbol,
         chainId,
+        status: statuses.find((it) => it.twapId === o.Contract_id.toString() && eqIgnoreCase(it.twapAddress, o.twapAddress))?.status as RawStatus,
       });
     })
     .sort((a, b) => b.createdAt - a.createdAt);
@@ -408,7 +485,17 @@ const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
   return progress * 100;
 };
 
-export const parseOrderStatus = (progress: number, status?: number) => {
+const parseOrderStatusNew = (progress: number, deadline: number, status?: RawStatus): OrderStatus => {
+  if (progress === 100) return OrderStatus.Completed;
+  if (status === "CANCELED") return OrderStatus.Canceled;
+  if (status === "COMPLETED") return OrderStatus.Completed;
+
+  if (deadline > Date.now()) return OrderStatus.Open;
+
+  return OrderStatus.Expired;
+};
+
+export const parseOrderStatus = (progress: number, status?: number): OrderStatus => {
   if (progress === 100) return OrderStatus.Completed;
   if (status && status > Date.now() / 1000) return OrderStatus.Open;
 

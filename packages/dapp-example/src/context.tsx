@@ -37,7 +37,6 @@ const useConfig = () => {
     if (partner) {
       const name = partner.split("-")[0];
       const chainName = partner.split("-")[1];
-      console.log({ name, chainName });
 
       return Object.values(Configs).find((it) => it.name.toLowerCase() === name && it.chainName.toLowerCase() === chainName);
     }
