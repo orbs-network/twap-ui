@@ -1,5 +1,5 @@
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { OrderType } from "@orbs-network/twap-sdk";
+import { Order, OrderType } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import { Loader } from "../../../components/base/Loader";
@@ -9,7 +9,6 @@ import { OrderHistoryMenu } from "./OrderHistorySelect";
 import { useOrderName } from "../../../hooks/logic-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
-import { TwapOrder } from "../../../types";
 
 const ListLoader = () => {
   return (
@@ -40,7 +39,7 @@ export const OrderHistoryList = () => {
   );
 };
 
-const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?: number) => void }) => {
+const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
   const { components } = useTwapContext();
 
   const component = (
@@ -83,7 +82,7 @@ const EmptyList = () => {
   );
 };
 
-const ListItemHeader = ({ order }: { order: TwapOrder }) => {
+const ListItemHeader = ({ order }: { order: Order }) => {
   const status = order && order.status;
   const { dateFormat } = useTwapContext();
   const name = useOrderName(order.type === OrderType.TWAP_MARKET, order.chunks);

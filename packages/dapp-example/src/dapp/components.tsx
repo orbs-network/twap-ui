@@ -1,8 +1,7 @@
 import { Token, useFormatNumber } from "@orbs-network/twap-ui";
 import { Avatar, Button, Flex, Typography } from "antd";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import { NumberInput, Popup, TokensList } from "../Components";
-import { numericFormatter } from "react-number-format";
 import { ArrowDown } from "react-feather";
 import { useDappStore } from "./store";
 

@@ -119,3 +119,7 @@ export const getExchanges = (config: Config) => {
 
   return [config.exchangeAddress, ...(LEGACY_EXCHANGES_MAP[key] || [])].map((a) => `"${a.toLowerCase()}"`);
 };
+
+export const isSupportedByTheGraph = (chainId?: number) => {
+  return getTheGraphUrl(chainId) !== undefined;
+};

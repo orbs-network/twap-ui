@@ -251,16 +251,16 @@ export type OrdersButtonProps = {
 
 export type OrdersProps = {
   orders: {
-    all: TwapOrder[];
-    OPEN: TwapOrder[];
-    COMPLETED: TwapOrder[];
-    EXPIRED: TwapOrder[];
-    CANCELED: TwapOrder[];
+    all: Order[];
+    OPEN: Order[];
+    COMPLETED: Order[];
+    EXPIRED: Order[];
+    CANCELED: Order[];
   };
   isLoading: boolean;
-  onCancelOrder: (order: TwapOrder) => Promise<string>;
+  onCancelOrder: (order: Order) => Promise<string>;
   isRefetching: boolean;
-  refetch: () => Promise<TwapOrder[] | undefined>;
+  refetch: () => Promise<Order[] | undefined>;
 };
 
 export type CancelOrderProps = {
@@ -517,7 +517,3 @@ export interface State {
 }
 
 export { SwapStatus };
-
-export interface TwapOrder extends Order {
-  fillDelayMillis: number;
-}

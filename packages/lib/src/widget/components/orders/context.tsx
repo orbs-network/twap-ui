@@ -1,8 +1,8 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { OrderStatus, TwapOrder } from "../../../types";
 import { useOrders } from "../../../hooks/order-hooks";
+import { OrderStatus, Order } from "@orbs-network/twap-sdk";
 
 export type OrdersMenuTab = {
   name: string;
@@ -12,7 +12,7 @@ export type OrdersMenuTab = {
 
 interface OrderHistoryContextType {
   selectOrder: (id: number | undefined) => void;
-  selectedOrders: TwapOrder[];
+  selectedOrders: Order[];
   closePreview: () => void;
   isLoading: boolean;
   selectedOrderId?: number;
@@ -21,7 +21,7 @@ interface OrderHistoryContextType {
   onOpen: () => void;
   setStatus: (status?: OrderStatus) => void;
   status?: OrderStatus;
-  cancelOrder: (order: TwapOrder) => Promise<string>;
+  cancelOrder: (order: Order) => Promise<string>;
   cancelOrderTxHash: string | undefined;
   cancelOrderStatus?: SwapStatus;
 }

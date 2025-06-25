@@ -16,10 +16,11 @@ export {
   getOrderExcecutionRate,
   getOrderLimitPriceRate,
   type Order,
-  parseOrderStatus,
+  parseRawStatus,
   buildOrder,
   getOrderFillDelayMillis,
   getUserOrdersForChain,
   getUserOrdersForDEX,
+  getOrderProgress,
 } from "./lib/orders";
 export { Configs, TwapAbi, iwethabi, erc20abi, LensAbi };

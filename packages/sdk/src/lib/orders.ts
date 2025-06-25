@@ -78,7 +78,7 @@ const fetchWithRetryPaginated = async <T>({
   limit?: number;
 }): Promise<T[]> => {
   const endpoint = getTheGraphUrl(chainId);
-  if (!endpoint) throw new Error("no endpoint found");
+  if (!endpoint) throw new NoGraphEndpointError();
 
   let page = 0;
   const results: T[] = [];
@@ -218,10 +218,9 @@ export const buildOrder = ({
   maker,
   exchange,
   twapAddress,
-  srcTokenSymbol,
-  dstTokenSymbol,
   chainId,
-  status: _status,
+  status,
+  filledSrcAmount: _filledSrcAmount,
 }: {
   fills?: TwapFill[];
   srcAmount: string;
@@ -239,12 +238,11 @@ export const buildOrder = ({
   maker: string;
   exchange: string;
   twapAddress: string;
-  srcTokenSymbol: string;
-  dstTokenSymbol: string;
   chainId: number;
-  status?: RawStatus;
+  status?: OrderStatus;
+  filledSrcAmount?: string;
 }) => {
-  const { filledDstAmount, filledSrcAmount, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
+  const { filledDstAmount, filledSrcAmount: filledSrcAmountFromFills, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
   const chunks = new BN(srcAmount || 0)
     .div(srcAmountPerChunk) // Avoid division by zero
     .integerValue(BN.ROUND_FLOOR)
@@ -252,8 +250,8 @@ export const buildOrder = ({
   const type = getOrderType(dstMinAmountPerChunk, chunks);
   const isFilled = fills?.length === chunks;
   const filledDate = isFilled ? fills?.[fills?.length - 1]?.timestamp : undefined;
+  const filledSrcAmount = _filledSrcAmount || filledSrcAmountFromFills;
   const progress = getOrderProgress(srcAmount, filledSrcAmount);
-  const status = parseOrderStatusNew(progress, deadline, _status);
   return {
     id,
     type,
@@ -261,11 +259,11 @@ export const buildOrder = ({
     twapAddress,
     maker,
     progress,
-    filledDstAmount,
+    filledDstAmount: !fills ? "" : filledDstAmount,
     filledSrcAmount,
-    filledDollarValueIn,
-    filledDollarValueOut,
-    filledFee: dexFee,
+    filledDollarValueIn: !fills ? "" : filledDollarValueIn,
+    filledDollarValueOut: !fills ? "" : filledDollarValueOut,
+    filledFee: !fills ? "" : dexFee,
     fills,
     srcTokenAddress,
     dstTokenAddress,
@@ -275,14 +273,12 @@ export const buildOrder = ({
     deadline,
     createdAt,
     srcAmount,
-    dstMinAmountPerChunk: Number(dstMinAmountPerChunk) === 1 ? "0" : dstMinAmountPerChunk,
+    dstMinAmountPerChunk: Number(dstMinAmountPerChunk) === 1 ? "" : dstMinAmountPerChunk,
     srcAmountPerChunk,
     txHash,
     chunks,
-    dstMinAmount: Number(dstMinAmountPerChunk) === 1 ? "0" : new BN(dstMinAmountPerChunk).times(chunks).toString(),
+    dstMinAmount: Number(dstMinAmountPerChunk) === 1 ? "" : new BN(dstMinAmountPerChunk).times(chunks).toString(),
     isMarketOrder: type === OrderType.TWAP_MARKET,
-    srcTokenSymbol,
-    dstTokenSymbol,
     chainId,
     filledDate,
     status,
@@ -438,6 +434,13 @@ const getFills = async ({ chainId, orders, signal, exchanges }: { chainId: numbe
   return groupFillsByTWAP(fills);
 };
 
+export class NoGraphEndpointError extends Error {
+  constructor() {
+    super("No graph endpoint found");
+    this.name = "NoGraphEndpointError";
+  }
+}
+
 const getOrders = async ({ chainId, account: _account, signal, exchanges }: { chainId: number; account?: string; signal?: AbortSignal; exchanges?: string[] }) => {
   const account = _account?.toLowerCase();
   const orders = await getCreatedOrders({ chainId, account, signal, exchanges });
@@ -465,17 +468,22 @@ const getOrders = async ({ chainId, account: _account, signal, exchanges }: { ch
         maker: o.maker,
         exchange: o.exchange,
         twapAddress: o.twapAddress,
-        srcTokenSymbol: o.srcTokenSymbol,
-        dstTokenSymbol: o.dstTokenSymbol,
         chainId,
-        status: statuses.find((it) => it.twapId === o.Contract_id.toString() && eqIgnoreCase(it.twapAddress, o.twapAddress))?.status as RawStatus,
+        status: getStatus(o, orderFills?.fills || [], statuses),
       });
     })
     .sort((a, b) => b.createdAt - a.createdAt);
   return parsedOrders;
 };
 
-const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
+const getStatus = (order: GraphOrder, fills: TwapFill[], statuses?: GraphStatus[]): OrderStatus => {
+  const status = statuses?.find((it) => it.twapId === order.Contract_id.toString() && eqIgnoreCase(it.twapAddress, order.twapAddress))?.status;
+  const { filledSrcAmount } = parseFills(fills);
+  const progress = getOrderProgress(order.ask_srcAmount, filledSrcAmount);
+  return parseOrderStatus(progress, order.ask_deadline * 1000, status);
+};
+
+export const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
   if (!filledSrcAmount || !srcAmount) return 0;
   const progress = BN(filledSrcAmount).dividedBy(srcAmount).toNumber();
 
@@ -485,7 +493,7 @@ const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
   return progress * 100;
 };
 
-const parseOrderStatusNew = (progress: number, deadline: number, status?: RawStatus): OrderStatus => {
+const parseOrderStatus = (progress: number, deadline: number, status?: RawStatus): OrderStatus => {
   if (progress === 100) return OrderStatus.Completed;
   if (status === "CANCELED") return OrderStatus.Canceled;
   if (status === "COMPLETED") return OrderStatus.Completed;
@@ -495,7 +503,7 @@ const parseOrderStatusNew = (progress: number, deadline: number, status?: RawSta
   return OrderStatus.Expired;
 };
 
-export const parseOrderStatus = (progress: number, status?: number): OrderStatus => {
+export const parseRawStatus = (progress: number, status?: number): OrderStatus => {
   if (progress === 100) return OrderStatus.Completed;
   if (status && status > Date.now() / 1000) return OrderStatus.Open;
 

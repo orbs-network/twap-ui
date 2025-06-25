@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Token } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
-import { amountBN, amountUi, eqIgnoreCase, erc20abi, getNetwork, isNativeAddress, networks, zeroAddress } from "@orbs-network/twap-sdk";
+import { amountBN, amountUi, Configs, eqIgnoreCase, erc20abi, getNetwork, isNativeAddress, networks } from "@orbs-network/twap-sdk";
 import _ from "lodash";
 import { useAccount, usePublicClient, useReadContracts } from "wagmi";
 import { api } from "./api";
@@ -16,14 +16,21 @@ type Balance = {
 const useGetTokens = () => {
   const chainId = useAccount()?.chainId;
   const { address: account } = useAccount();
+  const { data: cronosZkEvm } = useCronosEvmTokens();
+  const isCronosEvm = chainId === Configs.H2Finance.chainId;
 
-  return useQuery<Token[]>(
+  const query = useQuery<Token[]>(
     ["useGetTokens", chainId],
     async ({ signal }) => {
       return api.getTokens(chainId!, signal);
     },
-    { enabled: !!account, staleTime: Infinity },
+    { enabled: !!account && !isCronosEvm, staleTime: Infinity },
   );
+
+  return {
+    ...query,
+    data: isCronosEvm ? cronosZkEvm?.tokens : query.data,
+  };
 };
 
 export const useTokenListBalances = () => {
@@ -61,7 +68,7 @@ export const useTokenListBalances = () => {
         };
       }, {}) as { [key: string]: Balance };
 
-      balances[zeroAddress] = { ui: amountUi(nativeToken?.decimals, nativeBalance), wei: nativeBalance };
+      balances[nativeToken?.address || ""] = { ui: amountUi(nativeToken?.decimals, nativeBalance), wei: nativeBalance };
 
       return balances;
     },
@@ -111,11 +118,15 @@ export const useTokenBalance = (token?: Token) => {
 
 export const useTokenUsd = (address?: string) => {
   const { data } = useTokensWithBalancesUSD();
+  const { data: cronosZkEvm } = useCronosEvmTokens();
 
   return useMemo(() => {
     if (!address) return 0;
+    if (cronosZkEvm) {
+      return cronosZkEvm.usd[address.toLowerCase()] || 0;
+    }
     return data?.[address.toLowerCase()] || 0;
-  }, [data, address]);
+  }, [data, address, cronosZkEvm]);
 };
 
 export const useTokensWithBalancesUSD = () => {
@@ -193,11 +204,39 @@ export function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
+export const useCronosEvmTokens = () => {
+  const { chainId } = useAccount();
+
+  return useQuery<{ tokens: Token[]; usd: { [key: string]: number } }>({
+    queryKey: ["useCronosEvmTokens"],
+    queryFn: async () => {
+      const response = await fetch("https://api.h2.finance/general/api/v1/info/top-tokens");
+      const data = await response.json();
+
+      return {
+        tokens: data.data.now.map(
+          (it: any): Token => ({
+            address: it.id,
+            decimals: it.decimals,
+            symbol: it.symbol,
+            logoUrl: "",
+          }),
+        ),
+        usd: Object.fromEntries(data.data.now.map((it: any) => [it.id.toLowerCase(), it.derivedUSD])),
+      };
+    },
+    refetchInterval: false,
+    enabled: chainId === Configs.H2Finance.chainId,
+    staleTime: Infinity,
+  });
+};
+
 export const usePriceUSD = (address?: string) => {
   const { chainId } = useAccount();
   const wToken = getNetwork(chainId)?.wToken.address;
+  const { data: cronosZkEvm } = useCronosEvmTokens();
 
-  return useQuery<number>({
+  const query = useQuery<number>({
     queryKey: ["usePriceUSD", address, chainId],
     queryFn: async () => {
       await delay(1_000);
@@ -208,6 +247,8 @@ export const usePriceUSD = (address?: string) => {
     refetchInterval: 10_000,
     enabled: !!address && !!chainId,
   }).data;
+
+  return cronosZkEvm ? cronosZkEvm.usd[address?.toLowerCase() || ""] : query;
 };
 
 const chainIdToName: { [key: number]: string } = {

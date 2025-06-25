@@ -1,5 +1,4 @@
-import BN from "bignumber.js";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
 import { Switch, Button, Link, Label } from "../../../components/base";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";

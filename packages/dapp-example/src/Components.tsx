@@ -8,7 +8,7 @@ import { Panels, useDappContext } from "./context";
 import { useSwitchChain } from "wagmi";
 import { NumericFormat } from "react-number-format";
 import BN from "bignumber.js";
-import { maxUint256 } from "viem";
+import { isAddress, maxUint256 } from "viem";
 import { useAppParams } from "./dapp/hooks";
 
 export const NumberInput = (props: {
@@ -124,6 +124,7 @@ const configs = Object.values(Configs);
 
 export const ConfigSelector = () => {
   const { setConfig, config } = useDappContext();
+
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("");
 
@@ -132,7 +133,7 @@ export const ConfigSelector = () => {
   const { switchChain } = useSwitchChain();
   const { partnerSelect } = useAppParams();
 
-  const network = useMemo(() => getNetwork(config.chainId), [config.chainId]);
+  const network = useMemo(() => getNetwork(config?.chainId), [config?.chainId]);
   const onSelect = useCallback(
     (config: Config) => {
       setConfig(config);
@@ -198,7 +199,7 @@ export const TokensList = ({ onClick }: TokensListProps) => {
 
   const [filterValue, setFilterValue] = useState("");
 
-  const dynamicToken = useToken(filterValue).token;
+  const dynamicToken = useToken(isAddress(filterValue) ? filterValue : undefined).token;
 
   const filteredTokens = useMemo(() => {
     if (!filterValue) return tokens;

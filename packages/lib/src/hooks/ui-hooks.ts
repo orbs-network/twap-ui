@@ -1,4 +1,4 @@
-import { amountUi, Config, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
@@ -16,7 +16,6 @@ import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useOrders } from "./order-hooks";
 import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
 
@@ -376,8 +375,4 @@ export const useLimitPriceMessage = () => {
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
     };
   }, [t, isMarketOrder, hide]);
-};
-
-export const useUserOrders = (config: Config) => {
-  return useOrders(config);
 };

@@ -20,7 +20,7 @@ type ThemeMode = "light" | "dark";
 const Context = createContext({} as ContextProps);
 
 const getConfigKey = (config: Config) => {
-  return `${config.name}-${config.chainId}`;
+  return `${config.name}_${config.chainId}`;
 };
 
 const useConfig = () => {
@@ -35,10 +35,12 @@ const useConfig = () => {
 
   const initialPartner = useMemo(() => {
     if (partner) {
-      const name = partner.split("-")[0];
-      const chainName = partner.split("-")[1];
+      const name = partner.split("_")[0];
+      const chainName = partner.split("_")[1];
 
-      return Object.values(Configs).find((it) => it.name.toLowerCase() === name && it.chainName.toLowerCase() === chainName);
+      return Object.values(Configs).find((it) => {
+        return it.name.toLowerCase() === name && it.chainName.toLowerCase() === chainName;
+      });
     }
     return initialConfig;
   }, [partner]);

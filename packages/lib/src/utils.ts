@@ -1,5 +1,4 @@
 import { AddressPadding, OrderType, Token } from "./types";
-import BN from "bignumber.js";
 import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
 import { decodeEventLog, TransactionReceipt } from "viem";
 export { getOrderLimitPriceRate } from "@orbs-network/twap-sdk";

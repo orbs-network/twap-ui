@@ -1,5 +1,5 @@
-import { getNetwork, getOrderFillDelayMillis, getOrderLimitPriceRate } from "@orbs-network/twap-sdk";
-import { TwapOrder, formatDecimals, fillDelayText, OrderStatus, OrdersProps } from "@orbs-network/twap-ui";
+import { getNetwork, getOrderFillDelayMillis, getOrderLimitPriceRate, Order } from "@orbs-network/twap-sdk";
+import { formatDecimals, fillDelayText, OrderStatus, OrdersProps } from "@orbs-network/twap-ui";
 import { TableProps, Typography, Button, Table } from "antd";
 import moment from "moment";
 import { useMemo, useState } from "react";
@@ -8,8 +8,8 @@ import { useDappContext } from "../context";
 import { useGetToken } from "./hooks";
 
 interface DataType {
-  order: TwapOrder;
-  cancelOrder: (order: TwapOrder) => Promise<string>;
+  order: Order;
+  cancelOrder: (order: Order) => Promise<string>;
   key: string;
 }
 
@@ -54,19 +54,19 @@ const useOrderColumns = () => {
         title: "Create at",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => <Typography>{moment(order.createdAt).format("YYYY-MM-DD HH:mm:ss")}</Typography>,
+        render: (order: Order) => <Typography>{moment(order.createdAt).format("YYYY-MM-DD HH:mm:ss")}</Typography>,
       },
       {
         title: "Expires at",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => <Typography>{moment(order.deadline).format("YYYY-MM-DD HH:mm:ss")}</Typography>,
+        render: (order: Order) => <Typography>{moment(order.deadline).format("YYYY-MM-DD HH:mm:ss")}</Typography>,
       },
       {
         title: "Input amount",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => {
+        render: (order: Order) => {
           const srcToken = getToken(order.srcTokenAddress);
 
           return (
@@ -80,7 +80,7 @@ const useOrderColumns = () => {
         title: "Individual trade size",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => {
+        render: (order: Order) => {
           const srcToken = getToken(order.srcTokenAddress);
           return (
             <Typography>
@@ -93,7 +93,7 @@ const useOrderColumns = () => {
         title: "No. of trades",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => {
+        render: (order: Order) => {
           return <Typography>{order.chunks}</Typography>;
         },
       },
@@ -101,7 +101,7 @@ const useOrderColumns = () => {
         title: "Min. received",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => {
+        render: (order: Order) => {
           const dstToken = getToken(order.dstTokenAddress);
 
           if (order.dstMinAmount === "0") {
@@ -118,7 +118,7 @@ const useOrderColumns = () => {
         title: "Fill delay",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => {
+        render: (order: Order) => {
           return <Typography>{fillDelayText(getOrderFillDelayMillis(order, config))}</Typography>;
         },
       },
@@ -126,7 +126,7 @@ const useOrderColumns = () => {
         title: "Progress",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => {
+        render: (order: Order) => {
           return <Typography>{formatDecimals(order.progress.toFixed(2))}%</Typography>;
         },
       },
@@ -134,7 +134,7 @@ const useOrderColumns = () => {
         title: "Status",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => {
+        render: (order: Order) => {
           return <Typography>{order.status}</Typography>;
         },
       },
@@ -142,7 +142,7 @@ const useOrderColumns = () => {
         title: "Tx hash",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder) => (
+        render: (order: Order) => (
           <a target="_blank" href={`${explorer}/tx/${order.txHash}`}>
             Link
           </a>
@@ -153,7 +153,7 @@ const useOrderColumns = () => {
         title: "Action",
         dataIndex: "order",
         key: "order",
-        render: (order: TwapOrder, record: DataType) => {
+        render: (order: Order, record: DataType) => {
           // const [isLoading, setIsLoading] = useState(false)
 
           if (order.status !== OrderStatus.Open) {
@@ -168,7 +168,7 @@ const useOrderColumns = () => {
   }, [getToken, explorer]);
 };
 
-const CancelButton = ({ order, cancelOrder }: { order: TwapOrder; cancelOrder: (order: TwapOrder) => Promise<string> }) => {
+const CancelButton = ({ order, cancelOrder }: { order: Order; cancelOrder: (order: Order) => Promise<string> }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCancel = async () => {

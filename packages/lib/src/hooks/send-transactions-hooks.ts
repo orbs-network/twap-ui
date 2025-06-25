@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Steps, Token, TwapOrder } from "../types";
+import { Steps, Token } from "../types";
 import BN from "bignumber.js";
 import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
@@ -13,10 +13,10 @@ import {
   useOrderDeadline,
   useSrcTokenChunkAmount,
 } from "./logic-hooks";
-import { amountUi, isNativeAddress, iwethabi, TwapAbi } from "@orbs-network/twap-sdk";
+import { amountUi, isNativeAddress, iwethabi, Order, TwapAbi } from "@orbs-network/twap-sdk";
 import { useCallback, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useOrders, usePersistedOrdersStore } from "./order-hooks";
+import { useOptimisticAddOrder, useOptimisticCancelOrder, useOrders } from "./order-hooks";
 import { useTwapStore } from "../useTwapStore";
 import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected } from "../utils";
 
@@ -66,9 +66,9 @@ export const useCancelOrder = () => {
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [swapStatus, setSwapStatus] = useState<SwapStatus | undefined>(undefined);
 
-  const { addCancelledOrderId } = usePersistedOrdersStore(twapSDK.config);
+  const optimisticCancelOrder = useOptimisticCancelOrder();
   const mutation = useMutation(
-    async (order: TwapOrder) => {
+    async (order: Order) => {
       if (!account) throw new Error("account not defined");
       if (!walletClient) throw new Error("walletClient not defined");
       if (!publicClient) throw new Error("publicClient not defined");
@@ -96,7 +96,7 @@ export const useCancelOrder = () => {
 
       console.log(`order canceled`);
       callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
-      addCancelledOrderId(order.id);
+      optimisticCancelOrder(order.id);
       return hash;
     },
     {
@@ -127,7 +127,7 @@ export const useCancelOrder = () => {
 const useCallbacks = () => {
   const { twapSDK, account, callbacks, srcToken, dstToken } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const { addCreatedOrder } = usePersistedOrdersStore(twapSDK.config);
+  const optimisticAddOrder = useOptimisticAddOrder();
   const destTokenAmountUI = useDestTokenAmount().amountUI;
   const { refetch: refetchOrders } = useOrders();
   const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);
@@ -147,9 +147,9 @@ const useCallbacks = () => {
         return await refetchOrders();
       }
 
-      addCreatedOrder(orderId, receipt.transactionHash, params, srcToken, dstToken!);
+      optimisticAddOrder(orderId, receipt.transactionHash, params, srcToken, dstToken!);
     },
-    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, addCreatedOrder, refetchOrders],
+    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, optimisticAddOrder, refetchOrders],
   );
 
   const onError = useCallback(

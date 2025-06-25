@@ -8,7 +8,7 @@ export const useAppParams = () => {
 
   const partnerSelect = useCallback(
     (config: Config) => {
-      setPartner(`${config.name.toLowerCase()}-${config.chainName.toLowerCase()}`);
+      setPartner(`${config.name.toLowerCase()}_${config.chainName.toLowerCase()}`);
     },
     [setPartner],
   );

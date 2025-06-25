@@ -4,7 +4,7 @@ import BN from "bignumber.js";
 import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate, getOrderFillDelayMillis } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
-import { Token, TwapOrder } from "../../../types";
+import { Token } from "../../../types";
 import Button from "../../../components/base/Button";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
@@ -92,7 +92,7 @@ const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: 
   );
 };
 
-const OrderInfo = ({ order }: { order: TwapOrder }) => {
+const OrderInfo = ({ order }: { order: Order }) => {
   const { useToken, config } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
@@ -120,7 +120,7 @@ const OrderInfo = ({ order }: { order: TwapOrder }) => {
   );
 };
 
-const ExcecutionSummary = ({ order }: { order: TwapOrder }) => {
+const ExcecutionSummary = ({ order }: { order: Order }) => {
   return (
     <OrderDetails>
       <OrderStatusComponent order={order} />
@@ -132,7 +132,7 @@ const ExcecutionSummary = ({ order }: { order: TwapOrder }) => {
   );
 };
 
-export const CancelOrderButton = ({ order }: { order: TwapOrder }) => {
+export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { cancelOrder } = useOrderHistoryContext();
   const translations = useTwapContext().translations;
 
@@ -170,6 +170,8 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
   const dstAmountUi = useAmountUi(dstToken?.decimals, order.filledDstAmount);
   const amount = useFormatNumber({ value: dstAmountUi, decimalScale: 3 });
 
+  if (!dstAmountUi) return null;
+
   return (
     <OrderDetails.DetailRow title={t.amountReceived}>
       <p>
@@ -195,7 +197,7 @@ const AmountIn = ({ order }: { order: Order }) => {
   );
 };
 
-const AmountInFilled = ({ order }: { order: TwapOrder }) => {
+const AmountInFilled = ({ order }: { order: Order }) => {
   const { useToken, translations: t } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
@@ -210,7 +212,7 @@ const AmountInFilled = ({ order }: { order: TwapOrder }) => {
     </OrderDetails.DetailRow>
   );
 };
-const OrderStatusComponent = ({ order }: { order: TwapOrder }) => {
+const OrderStatusComponent = ({ order }: { order: Order }) => {
   const { translations: t } = useTwapContext();
   const text = !order ? "" : order.status;
 
@@ -221,7 +223,7 @@ const OrderStatusComponent = ({ order }: { order: TwapOrder }) => {
   );
 };
 
-const Progress = ({ order }: { order: TwapOrder }) => {
+const Progress = ({ order }: { order: Order }) => {
   const { translations: t } = useTwapContext();
   const progress = useFormatNumber({ value: order?.progress, decimalScale: 2 });
   if (order?.chunks === 1) return null;
@@ -232,7 +234,7 @@ const Progress = ({ order }: { order: TwapOrder }) => {
   );
 };
 
-const LimitPrice = ({ order }: { order: TwapOrder }) => {
+const LimitPrice = ({ order }: { order: Order }) => {
   const { useToken, translations: t } = useTwapContext();
   const srcToken = useToken?.(order.srcTokenAddress);
   const dstToken = useToken?.(order.dstTokenAddress);
@@ -250,6 +252,8 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
   const { translations: t, useToken } = useTwapContext();
   const srcToken = useToken?.(order.srcTokenAddress);
   const dstToken = useToken?.(order.dstTokenAddress);
+
+  if (!order.filledDstAmount) return null;
 
   const excecutionPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
