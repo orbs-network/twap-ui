@@ -176,36 +176,33 @@ const useGetOrderFromLens = () => {
         functionName: "makerOrders",
         args: [account],
       });
-      return (result as any[]).map((o) => {
-        const progress = getOrderProgress(o.ask.srcAmount.toString(), o.srcFilledAmount.toString());
+      return (result as any[])
+        .map((o) => {
+          const progress = getOrderProgress(o.ask.srcAmount.toString(), o.srcFilledAmount.toString());
 
-        return buildOrder({
-          id: o.id.toString(),
-          createdAt: o.time * 1000,
-          srcTokenAddress: o.ask.srcToken,
-          dstTokenAddress: o.ask.dstToken,
-          srcAmountPerChunk: o.ask.srcBidAmount.toString(),
-          deadline: o.ask.deadline * 1000,
-          dstMinAmountPerChunk: o.ask.dstMinAmount.toString(),
-          status: parseRawStatus(progress, o.status),
-          filledSrcAmount: o.srcFilledAmount.toString(),
-          srcAmount: o.ask.srcAmount.toString(),
-          tradeDollarValueIn: "",
-          fillDelay: o.ask.fillDelay,
-          txHash: "",
-          maker: account!,
-          exchange: o.ask.exchange,
-          twapAddress: config.twapAddress,
-          chainId: config.chainId,
-        });
-      }).sort((a, b) => b.createdAt - a.createdAt);
+          return buildOrder({
+            id: o.id.toString(),
+            createdAt: o.time * 1000,
+            srcTokenAddress: o.ask.srcToken,
+            dstTokenAddress: o.ask.dstToken,
+            srcAmountPerChunk: o.ask.srcBidAmount.toString(),
+            deadline: o.ask.deadline * 1000,
+            dstMinAmountPerChunk: o.ask.dstMinAmount.toString(),
+            status: parseRawStatus(progress, o.status),
+            filledSrcAmount: o.srcFilledAmount.toString(),
+            srcAmount: o.ask.srcAmount.toString(),
+            tradeDollarValueIn: "",
+            fillDelay: o.ask.fillDelay,
+            txHash: "",
+            maker: account!,
+            exchange: o.ask.exchange,
+            twapAddress: config.twapAddress,
+            chainId: config.chainId,
+          });
+        })
+        .sort((a, b) => b.createdAt - a.createdAt);
     },
-    onSuccess: (data) => {
-      console.log(data);
-    },
-    onError: (error) => {
-      console.log(error);
-    },
+
   });
 };
 
@@ -224,6 +221,7 @@ const useOrdersQuery = () => {
       } else {
         orders = await getOrderFromLens();
       }
+
       handlePersistedOrders(orders);
       return orders.map((order) => {
         return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config) };

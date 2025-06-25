@@ -53,7 +53,6 @@ export const useApproveToken = () => {
     },
     {
       onError: (error) => {
-        console.log({ error });
 
         callbacks?.approve?.onFailed?.((error as any).message);
       },

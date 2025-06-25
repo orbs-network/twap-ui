@@ -40,25 +40,6 @@ type OrderFills = {
   twapAddress: string;
   exchange: string;
 };
-function groupFillsByTWAP(fills: TwapFill[]): OrderFills[] {
-  const groupedMap = new Map<number, TwapFill[]>();
-
-  for (const fill of fills) {
-    const id = fill.TWAP_id;
-
-    if (!groupedMap.has(id)) {
-      groupedMap.set(id, []);
-    }
-    groupedMap.get(id)!.push(fill);
-  }
-
-  return Array.from(groupedMap.entries()).map(([id, fills]) => ({
-    id,
-    fills,
-    twapAddress: fills[0].twapAddress,
-    exchange: fills[0].exchange,
-  }));
-}
 
 type GraphQLPageFetcher<T> = (page: number, limit: number) => string;
 
@@ -151,7 +132,7 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
       dollarValueOut: acc.dollarValueOut.plus(BN(it.dollarValueOut || 0)),
       dexFee: acc.dexFee.plus(BN(it.dstFee || 0)),
     }),
-    initial,
+    initial
   );
 
   return {
@@ -431,7 +412,7 @@ const getFills = async ({ chainId, orders, signal, exchanges }: { chainId: numbe
       })),
   });
 
-  return groupFillsByTWAP(fills);
+  return fills;
 };
 
 export class NoGraphEndpointError extends Error {
@@ -446,13 +427,12 @@ const getOrders = async ({ chainId, account: _account, signal, exchanges }: { ch
   const orders = await getCreatedOrders({ chainId, account, signal, exchanges });
   const fills = await getFills({ chainId, orders, signal, exchanges });
   const statuses = await getStatuses({ chainId, orders, signal });
-
   const parsedOrders = orders
     .map((o) => {
-      const orderFills = fills?.find((it) => it.id === Number(o.Contract_id) && eqIgnoreCase(it.exchange, o.exchange) && eqIgnoreCase(it.twapAddress, o.twapAddress));
+      const orderFills = fills?.filter((it) => it.TWAP_id === Number(o.Contract_id) && eqIgnoreCase(it.exchange, o.exchange) && eqIgnoreCase(it.twapAddress, o.twapAddress));
 
       return buildOrder({
-        fills: orderFills?.fills,
+        fills: orderFills,
         srcAmount: o.ask_srcAmount,
         srcTokenAddress: o.ask_srcToken,
         dstTokenAddress: o.ask_dstToken,
@@ -469,7 +449,7 @@ const getOrders = async ({ chainId, account: _account, signal, exchanges }: { ch
         exchange: o.exchange,
         twapAddress: o.twapAddress,
         chainId,
-        status: getStatus(o, orderFills?.fills || [], statuses),
+        status: getStatus(o, orderFills || [], statuses),
       });
     })
     .sort((a, b) => b.createdAt - a.createdAt);
