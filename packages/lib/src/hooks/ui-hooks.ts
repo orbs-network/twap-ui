@@ -5,7 +5,9 @@ import {
   useAmountUi,
   useDestTokenAmount,
   useFillDelay,
+  useFillDelayError,
   useLimitPrice,
+  useLimitPriceError,
   usePriceDiffFromMarketPercent,
   useShouldWrapOrUnwrapOnly,
   useSrcChunkAmountUSD,
@@ -193,11 +195,6 @@ export const useLimitPriceTokens = () => {
   };
 };
 
-export const useLimitPriceError = () => {
-  const { error } = useLimitPrice();
-  return error;
-};
-
 export const useLimitPanelUsd = () => {
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();
   const { value: limitPrice } = useLimitPriceInput();
@@ -301,8 +298,9 @@ export const usePriceToggle = () => {
 };
 
 export const useFillDelayPanel = () => {
-  const { setFillDelay, fillDelay, milliseconds, error } = useFillDelay();
+  const { setFillDelay, fillDelay, milliseconds } = useFillDelay();
   const { translations: t } = useTwapContext();
+  const error = useFillDelayError();
 
   const onInputChange = useCallback(
     (value: string) => {

@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import { Panel } from "../../components/Panel";
 import { Label, NumericInput } from "../../components/base";
 import { useTwapContext } from "../../context";
-import { useChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/logic-hooks";
+import { useChunks, useChunksError, useShouldWrapOrUnwrapOnly, useSrcChunkAmountUSD, useSrcTokenChunkAmount, useTradeSizeError } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapStore } from "../../useTwapStore";
 
@@ -10,8 +10,8 @@ const useTradeSize = () => {
   const chunkSize = useSrcChunkAmountUSD();
   const { amountUI } = useSrcTokenChunkAmount();
   const { srcToken, isLimitPanel } = useTwapContext();
-  const chunksError = useChunks().error;
-  const chunkSizeError = useSrcTokenChunkAmount().error;
+  const chunksError = useChunksError();
+  const chunkSizeError = useTradeSizeError();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const error = !typedSrcAmount ? false : chunksError || chunkSizeError;
   const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
@@ -48,15 +48,16 @@ export const Amount = () => {
 
 export const useTradesAmountPanel = () => {
   const { translations: t } = useTwapContext();
-  const { setChunks, chunks, error } = useChunks();
+  const { setChunks, chunks } = useChunks();
   const tradeSize = useTradeSize();
+  const error = useChunksError();
   return {
-    error,
     trades: chunks,
     onChange: setChunks,
     label: t.tradesAmountTitle,
     tooltip: t.totalTradesTooltip,
     tradeSize,
+    error,
   };
 };
 

@@ -3,7 +3,7 @@ import { Label, NumericInput, ResolutionSelect } from "../../components/base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import { Panel } from "../../components/Panel";
 import { useTwapContext } from "../../context";
-import { useOrderDuration, useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useOrderDuration, useOrderDurationError, useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 
 type Option = { text: string; value: TimeUnit };
 
@@ -83,7 +83,8 @@ const DurationLabel = () => {
 
 export const useDurationPanel = () => {
   const t = useTwapContext().translations;
-  const { orderDuration: duration, setOrderDuration: setDuration, milliseconds: durationMillis, error } = useOrderDuration();
+  const { orderDuration: duration, setOrderDuration: setDuration, milliseconds: durationMillis } = useOrderDuration();
+  const error = useOrderDurationError();
 
   const onInputChange = useCallback(
     (value: string) => {

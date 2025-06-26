@@ -5,8 +5,8 @@ import { Panel } from "../../components/Panel";
 import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
-import { useLimitPriceError, useLimitPricePanel } from "../../hooks/ui-hooks";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useLimitPricePanel } from "../../hooks/ui-hooks";
+import { useLimitPriceError, useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapStore } from "../../useTwapStore";
 

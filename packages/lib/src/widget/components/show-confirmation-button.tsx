@@ -91,18 +91,18 @@ export const useConfirmationButtonPanel = (showError = true) => {
         !srcToken || !dstToken
           ? t.placeOrder
           : !typedSrcAmount
-          ? t.enterAmount
-          : marketPriceLoading
-          ? t.outAmountLoading
-          : isButtonLoading
-          ? t.placeOrder
-          : balanceError
-          ? balanceError
-          : !showError
-          ? t.placeOrder
-          : error
-          ? error
-          : t.placeOrder,
+            ? t.enterAmount
+            : marketPriceLoading
+              ? t.outAmountLoading
+              : isButtonLoading
+                ? t.placeOrder
+                : balanceError
+                  ? balanceError
+                  : !showError
+                    ? t.placeOrder
+                    : error
+                      ? error
+                      : t.placeOrder,
       onClick: onOpen,
       loading: isButtonLoading,
       disabled: Boolean(swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || error),
