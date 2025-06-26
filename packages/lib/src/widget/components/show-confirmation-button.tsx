@@ -2,17 +2,18 @@ import React, { useMemo } from "react";
 import { Button } from "../../components/base";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useTwapContext } from "../../context";
-import { useError, useMinChunkSizeUsd, useOnOpenConfirmationModal, useSwitchChain, useShouldUnwrap, useShouldOnlyWrap } from "../../hooks/logic-hooks";
+import { useError, useMinChunkSizeUsd, useOnOpenConfirmationModal, useSwitchChain, useShouldUnwrap, useShouldOnlyWrap, useBalanceError } from "../../hooks/logic-hooks";
 import { useWrapOnly, useUnwrapToken } from "../../hooks/send-transactions-hooks";
 import { useTwapStore } from "../../useTwapStore";
 import BN from "bignumber.js";
 
-export const useConfirmationButtonPanel = () => {
+export const useConfirmationButtonPanel = (showError = true) => {
   const { isWrongChain, srcUsd1Token, account: maker, translations: t, callbacks, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const error = useError();
   const minChunkSizeUsd = useMinChunkSizeUsd();
+  const balanceError = useBalanceError();
 
   const onOpen = useOnOpenConfirmationModal();
   const onConnect = callbacks?.onConnect;
@@ -90,19 +91,23 @@ export const useConfirmationButtonPanel = () => {
         !srcToken || !dstToken
           ? t.placeOrder
           : !typedSrcAmount
-            ? t.enterAmount
-            : marketPriceLoading
-              ? t.outAmountLoading
-              : isButtonLoading
-                ? t.placeOrder
-                : error
-                  ? error
-                  : t.placeOrder,
+          ? t.enterAmount
+          : marketPriceLoading
+          ? t.outAmountLoading
+          : isButtonLoading
+          ? t.placeOrder
+          : balanceError
+          ? balanceError
+          : !showError
+          ? t.placeOrder
+          : error
+          ? error
+          : t.placeOrder,
       onClick: onOpen,
       loading: isButtonLoading,
       disabled: Boolean(swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || error),
     };
-  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, error, srcToken, dstToken, typedSrcAmount]);
+  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, error, srcToken, dstToken, typedSrcAmount, balanceError, showError]);
 
   return connect || invalidChain || wrapOnly || unwrapOnly || noLiquidity || swap;
 };

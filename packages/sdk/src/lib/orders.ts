@@ -132,7 +132,7 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
       dollarValueOut: acc.dollarValueOut.plus(BN(it.dollarValueOut || 0)),
       dexFee: acc.dexFee.plus(BN(it.dstFee || 0)),
     }),
-    initial
+    initial,
   );
 
   return {
