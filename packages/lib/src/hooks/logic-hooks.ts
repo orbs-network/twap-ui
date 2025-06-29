@@ -298,16 +298,15 @@ export const useError = () => {
   const orderDurationError = useOrderDuration().error;
   const tradeSizeError = useSrcTokenChunkAmount().error;
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const srcAmountError = useSrcAmount().error;
   const limitPriceError = useLimitPrice().error;
 
   if (shouldWrapOrUnwrapOnly) {
-    return srcAmountError || balanceError;
+    return balanceError;
   }
 
   if (BN(marketPrice || 0).isZero()) return;
 
-  return srcAmountError || limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError || (isLimitPanel && orderDurationError);
+  return  limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError || (isLimitPanel && orderDurationError);
 };
 
 export const useNetwork = () => {

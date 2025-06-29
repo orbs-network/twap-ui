@@ -2,18 +2,18 @@ import React, { useMemo } from "react";
 import { Button } from "../../components/base";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useTwapContext } from "../../context";
-import { useError, useMinChunkSizeUsd, useOnOpenConfirmationModal, useSwitchChain, useShouldUnwrap, useShouldOnlyWrap, useBalanceError } from "../../hooks/logic-hooks";
+import { useMinChunkSizeUsd, useOnOpenConfirmationModal, useSwitchChain, useShouldUnwrap, useShouldOnlyWrap, useBalanceError, useError } from "../../hooks/logic-hooks";
 import { useWrapOnly, useUnwrapToken } from "../../hooks/send-transactions-hooks";
 import { useTwapStore } from "../../useTwapStore";
 import BN from "bignumber.js";
 
-export const useConfirmationButtonPanel = (showError = true) => {
+export const useConfirmationButtonPanel = () => {
   const { isWrongChain, srcUsd1Token, account: maker, translations: t, callbacks, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const error = useError();
   const minChunkSizeUsd = useMinChunkSizeUsd();
   const balanceError = useBalanceError();
+  const disabled = useError();
 
   const onOpen = useOnOpenConfirmationModal();
   const onConnect = callbacks?.onConnect;
@@ -67,23 +67,23 @@ export const useConfirmationButtonPanel = (showError = true) => {
     if (!shouldOnlyWrap) return;
 
     return {
-      text: error || t.wrap,
+      text: t.wrap,
       onClick: () => wrap,
-      disabled: Boolean(error || wrapLoading),
+      disabled: Boolean(wrapLoading),
       loading: wrapLoading,
     };
-  }, [shouldOnlyWrap, wrap, wrapLoading, t, error]);
+  }, [shouldOnlyWrap, wrap, wrapLoading, t]);
 
   const unwrapOnly = useMemo(() => {
     if (!shouldUnwrap) return;
 
     return {
-      text: error || t.unwrap,
+      text: t.unwrap,
       onClick: () => unwrap(),
-      disabled: Boolean(error || unwrapLoading),
+      disabled: Boolean(disabled || unwrapLoading),
       loading: unwrapLoading,
     };
-  }, [shouldUnwrap, unwrap, error, unwrapLoading, t]);
+  }, [shouldUnwrap, unwrap, disabled, unwrapLoading, t]);
 
   const swap = useMemo(() => {
     return {
@@ -91,23 +91,19 @@ export const useConfirmationButtonPanel = (showError = true) => {
         !srcToken || !dstToken
           ? t.placeOrder
           : !typedSrcAmount
-          ? t.enterAmount
-          : marketPriceLoading
-          ? t.outAmountLoading
-          : isButtonLoading
-          ? t.placeOrder
-          : balanceError
-          ? balanceError
-          : !showError
-          ? t.placeOrder
-          : error
-          ? error
-          : t.placeOrder,
+            ? t.enterAmount
+            : marketPriceLoading
+              ? t.outAmountLoading
+              : isButtonLoading
+                ? t.placeOrder
+                : balanceError
+                  ? balanceError
+                  : t.placeOrder,
       onClick: onOpen,
       loading: isButtonLoading,
-      disabled: Boolean(swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || error),
+      disabled: Boolean(swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || disabled),
     };
-  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, error, srcToken, dstToken, typedSrcAmount, balanceError, showError]);
+  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, disabled, srcToken, dstToken, typedSrcAmount, balanceError]);
 
   return connect || invalidChain || wrapOnly || unwrapOnly || noLiquidity || swap;
 };

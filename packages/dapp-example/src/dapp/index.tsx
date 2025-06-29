@@ -367,6 +367,13 @@ const MarketPriceToggle = () => {
   );
 };
 
+
+const InputsError = () => {
+  const error = Widget.useInputsError();
+  if (!error) return null;
+  return <Typography style={{ color: "red" }}>{error}</Typography>;
+}
+
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
   const { config, panel } = useDappContext();
@@ -431,6 +438,7 @@ export const Dapp = () => {
             )}
             <TradeAmountMessage />
             <ConfirmationButton />
+            <InputsError />
             <Widget.PoweredByOrbs />
             <Widget.Orders />
             <Widget.WarningMessage />

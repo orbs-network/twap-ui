@@ -332,6 +332,16 @@ interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
   receipt: TransactionReceipt;
 }
 
+
+export enum InputErrors {
+  EMPTY_LIMIT_PRICE,
+  EMPTY_TRADE_SIZE,
+  EMPTY_FILL_DELAY,
+  EMPTY_DURATION,
+  EMPTY_TRADE_AMOUNT,
+  MAX_CHUNKS,
+}
+
 export type Callbacks = {
   onSubmitOrderRequest?: (args: CreateOrderCallbackArgs) => void;
   createOrder?: {
