@@ -4,19 +4,18 @@ import BN from "bignumber.js";
 import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate, getOrderFillDelayMillis } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
-import { Token } from "../../../types";
-import Button from "../../../components/base/Button";
-import { useFormatNumber } from "../../../hooks/useFormatNumber";
-import { useTwapContext } from "../../../context";
-import { useAmountUi, useOrderName } from "../../../hooks/logic-hooks";
+import { Token } from "../../types";
+import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useTwapContext } from "../../context";
+import { useAmountUi, useOrderName } from "../../hooks/logic-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { TokensDisplay } from "@orbs-network/swap-ui";
-import { OrderDetails } from "../../../components/order-details";
+import { OrderDetails } from "../../components/order-details";
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
-  const { useToken, components, translations: t, config } = useTwapContext();
-
+  const context = useTwapContext();
+  const { useToken, translations: t, config, components } = context;
   const { selectedOrderId, closePreview } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
   const srcToken = useToken?.(order?.srcTokenAddress);
@@ -69,11 +68,11 @@ export const HistoryOrderPreview = () => {
     </div>
   );
 
-  if (components.OrderHistorySelectedOrder) {
+  if (context?.OrderHistory?.SelectedOrder) {
     return (
-      <components.OrderHistorySelectedOrder order={order} onBackClick={closePreview}>
+      <context.OrderHistory.SelectedOrder order={order} onBackClick={closePreview}>
         {component}
-      </components.OrderHistorySelectedOrder>
+      </context.OrderHistory.SelectedOrder>
     );
   }
 
@@ -134,7 +133,7 @@ const ExcecutionSummary = ({ order }: { order: Order }) => {
 
 export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { cancelOrder } = useOrderHistoryContext();
-  const translations = useTwapContext().translations;
+  const context = useTwapContext();
 
   const onCancelOrder = useCallback(async () => {
     return cancelOrder(order);
@@ -142,11 +141,7 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
 
   if (!order || order.status !== OrderStatus.Open) return null;
 
-  return (
-    <Button onClick={onCancelOrder} className="twap-cancel-order">
-      {translations.cancelOrder}
-    </Button>
-  );
+  return <context.OrderHistory.CancelOrderButton order={order} isLoading={false} onClick={onCancelOrder} className="twap-cancel-order" />;
 };
 
 const CreatedAt = ({ order }: { order: Order }) => {
@@ -170,7 +165,7 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
   const dstAmountUi = useAmountUi(dstToken?.decimals, order.filledDstAmount);
   const amount = useFormatNumber({ value: dstAmountUi, decimalScale: 3 });
 
-  if (!dstAmountUi) return null;
+  if (dstAmountUi === undefined) return null;
 
   return (
     <OrderDetails.DetailRow title={t.amountReceived}>
@@ -253,7 +248,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
   const srcToken = useToken?.(order.srcTokenAddress);
   const dstToken = useToken?.(order.dstTokenAddress);
 
-  if (!order.filledDstAmount) return null;
+  if (order.filledDstAmount === undefined) return null;
 
   const excecutionPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;

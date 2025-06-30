@@ -3,7 +3,7 @@ import moment from "moment";
 import { fillDelayText, makeElipsisAddress } from "../utils";
 import { Token } from "../types";
 import { useFormatNumber } from "../hooks/useFormatNumber";
-import { Label } from "./base/Label";
+import { Label } from "./Label";
 import { useTwapContext } from "../context";
 import { useNetwork } from "../hooks/logic-hooks";
 

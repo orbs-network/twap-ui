@@ -1,12 +1,10 @@
-import React, { useCallback } from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { Switch, Button, Link, Label } from "../../../components/base";
-import { useFormatNumber } from "../../../hooks/useFormatNumber";
-import { useTwapContext } from "../../../context";
-import { useConfirmationModalButton, useFee } from "../../../hooks/ui-hooks";
-import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/logic-hooks";
-import { OrderDetails } from "../../../components/order-details";
-import { useTwapStore } from "../../../useTwapStore";
+import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useTwapContext } from "../../context";
+import { useFee } from "../../hooks/ui-hooks";
+import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../hooks/logic-hooks";
+import { OrderDetails } from "../../components/order-details";
+import { useTwapStore } from "../../useTwapStore";
 import { useTradePrice } from "./usePrice";
 
 const Price = () => {
@@ -25,29 +23,10 @@ const Price = () => {
   );
 };
 
-export const AcceptDisclaimer = ({ className = "" }: { className?: string }) => {
-  const { translations: t } = useTwapContext();
-  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
-  const updateState = useTwapStore((s) => s.updateState);
-
-  const onChange = useCallback(() => {
-    updateState({ disclaimerAccepted: !disclaimerAccepted });
-  }, [disclaimerAccepted, updateState]);
-
-  return (
-    <div className={`twap-order-modal-disclaimer ${className}`}>
-      <Label text={t.accept} />
-      <Link href="https://www.orbs.com/dtwap-dlimit-disclaimer">{t.disclaimer}</Link>
-      <div className="twap-order-modal-disclaimer-toggle">
-        <Switch checked={Boolean(disclaimerAccepted)} onChange={onChange} />
-      </div>
-    </div>
-  );
-};
-
 const FillDelaySummary = () => {
   const chunks = useChunks().chunks;
-  const fillDelayMillis = useFillDelay().milliseconds;
+  const { fillDelay } = useFillDelay();
+  const fillDelayMillis = fillDelay.unit * fillDelay.value;
   return <OrderDetails.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
 };
 
@@ -66,15 +45,13 @@ export const Main = () => {
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
-        inUsd={components.USD ? <components.USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
-        outUsd={components.USD ? <components.USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
+        inUsd={components.TransactionModal?.USD ? <components.TransactionModal.USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
+        outUsd={components.TransactionModal?.USD ? <components.TransactionModal.USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
       />
       {!swapStatus && (
         <div className="twap-create-order-bottom">
           <FillDelaySummary />
           <Details />
-          <AcceptDisclaimer />
-          <SubmitButton />
         </div>
       )}
     </>
@@ -89,7 +66,8 @@ const Details = () => {
   const deadline = useOrderDeadline();
 
   const dstMinAmountOut = useDestTokenMinAmount().amountUI;
-  const fillDelayMillis = useFillDelay().milliseconds;
+  const { fillDelay } = useFillDelay();
+  const fillDelayMillis = fillDelay.unit * fillDelay.value;
   const chunks = useChunks().chunks;
   const feeAmountF = useFormatNumber({ value: fee.amountUI, decimalScale: 2 });
   return (
@@ -112,15 +90,5 @@ const Details = () => {
       )}
       {fee.percent && <OrderDetails.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
     </div>
-  );
-};
-
-export const SubmitButton = () => {
-  const { text, onSubmit, isLoading, disabled } = useConfirmationModalButton();
-
-  return (
-    <Button className="twap-create-order-submit-btn twap-submit-button" onClick={onSubmit} loading={isLoading} disabled={disabled}>
-      {text}
-    </Button>
   );
 };

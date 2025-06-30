@@ -1,7 +1,7 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
+import { useCancelOrder } from "../../hooks/send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useOrders } from "../../../hooks/order-hooks";
+import { useOrders } from "../../hooks/order-hooks";
 import { OrderStatus, Order } from "@orbs-network/twap-sdk";
 
 export type OrdersMenuTab = {

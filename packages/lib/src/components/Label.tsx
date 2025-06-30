@@ -1,6 +1,6 @@
 import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
+import { useTwapContext } from "../context";
 import { Tooltip } from "./Tooltip";
-import { useTwapContext } from "../../context";
 
 interface Props {
   tooltip?: string;

@@ -101,6 +101,7 @@ export const useOptimisticAddOrder = () => {
         exchange: config.exchangeAddress,
         twapAddress: config.twapAddress,
         chainId: config.chainId,
+        status: OrderStatus.Open,
       });
 
       persistedOrdersStore.addCreatedOrder(order);
@@ -118,9 +119,10 @@ export const useOptimisticCancelOrder = () => {
   const persistedOrdersStore = usePersistedOrdersStore();
   return useCallback(
     (orderId: number) => {
+      persistedOrdersStore.addCancelledOrderId(orderId);
+
       queryClient.setQueryData(queryKey, (orders?: Order[]) => {
         if (!orders) return [];
-        persistedOrdersStore.addCancelledOrderId(orderId);
         return orders.map((order) => {
           if (order.id === orderId) {
             return { ...order, status: OrderStatus.Canceled };
@@ -147,16 +149,15 @@ const useHandlePersistedOrders = () => {
           orders.unshift(localStorageOrder);
         }
       });
-      const canceledOrders = new Set(getCancelledOrderIds());
+      const cancelledOrderIds = new Set(getCancelledOrderIds());
 
-      orders.forEach((order) => {
-        let status = order.status;
-        if (canceledOrders.has(order.id)) {
-          if (status !== OrderStatus.Canceled) {
-            console.log(`Cancelled added: ${order.id}`);
-            status = OrderStatus.Canceled;
+      orders.forEach((order, index) => {
+        if (cancelledOrderIds.has(order.id)) {
+          if (order.status !== OrderStatus.Canceled) {
+            console.log(`Marking order as cancelled: ${order.id}`);
+            orders[index] = { ...order, status: OrderStatus.Canceled };
           } else {
-            console.log(`Cancelled removed: ${order.id}`);
+            console.log(`Removing cancelled ID for already-cancelled order: ${order.id}`);
             deleteCancelledOrderId(order.id);
           }
         }
@@ -222,6 +223,7 @@ const useOrdersQuery = () => {
       }
 
       handlePersistedOrders(orders);
+
       return orders.map((order) => {
         return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config) };
       });

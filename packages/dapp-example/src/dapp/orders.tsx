@@ -1,5 +1,5 @@
 import { getNetwork, getOrderFillDelayMillis, getOrderLimitPriceRate, Order } from "@orbs-network/twap-sdk";
-import { formatDecimals, fillDelayText, OrderStatus, OrdersProps } from "@orbs-network/twap-ui";
+import { formatDecimals, fillDelayText, OrderStatus, OrdersHistoryProps } from "@orbs-network/twap-ui";
 import { TableProps, Typography, Button, Table } from "antd";
 import moment from "moment";
 import { useMemo, useState } from "react";
@@ -189,7 +189,7 @@ const CancelButton = ({ order, cancelOrder }: { order: Order; cancelOrder: (orde
   );
 };
 
-export const OrdersPanel = (props: OrdersProps) => {
+export const OrdersPanel = (props: OrdersHistoryProps) => {
   const columns = useOrderColumns();
   const items: DataType[] = useMemo(() => {
     return props.orders.all.map((order, index) => {

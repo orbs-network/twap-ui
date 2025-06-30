@@ -81,6 +81,7 @@ const Content = (props: TwapProps) => {
         twapSDK,
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,
+        noLiquidity: props.marketReferencePrice.noLiquidity,
       }}
     >
       <Listeners />

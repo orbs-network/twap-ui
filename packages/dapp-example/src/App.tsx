@@ -39,6 +39,7 @@ function App() {
               colorTextDisabled: "#fff",
               colorBgContainerDisabled: "#131313",
               borderColorDisabled: "transparent",
+              colorBgBase: "#141414",
             },
           },
         }}

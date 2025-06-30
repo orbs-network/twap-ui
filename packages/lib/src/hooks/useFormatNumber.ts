@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useNumericFormat } from "react-number-format";
 import { formatDecimals } from "../utils";
-import BN from "bignumber.js";
 
 export const useFormatDecimals = (value?: string | number, decimalPlaces?: number) => {
   return useMemo(() => formatDecimals(value?.toString(), decimalPlaces), [value, decimalPlaces]);

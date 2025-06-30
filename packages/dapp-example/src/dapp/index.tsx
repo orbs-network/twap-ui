@@ -4,18 +4,34 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar } from "antd";
 import {
   TooltipProps,
-  Widget,
-  OrderHistoryModalProps,
+  TWAP,
   OrderConfirmationModalProps,
   LinkProps,
   SelectMenuProps,
   SelectMeuItem,
-  ToggleProps,
-  ButtonProps,
-  InputProps,
   useFormatNumber,
+  usePriceTogglePanel,
+  useChunkSizeMessage,
+  useFillDelayPanel,
+  useDurationPanel,
+  DEFAULT_DURATION_OPTIONS,
+  useTokenPanel,
+  useShowOrderConfirmationModalButton,
+  useLimitPricePanel,
+  useInputsError,
+  OrderHistory,
+  useTradeType,
+  ORBS_LOGO,
+  ORBS_WEBSITE_URL,
+  CancelOrderButtonProps,
+  OrdersHistoryProps,
+  useSubmitOrderPanel,
+  DISCLAIMER_URL,
+  useChunksPanel,
 } from "@orbs-network/twap-ui";
-import { Config, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config } from "@orbs-network/twap-sdk";
+import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
+
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "../context";
@@ -25,22 +41,54 @@ import { useDappStore } from "./store";
 import { ChevronDown, Info, RefreshCcw } from "react-feather";
 import BN from "bignumber.js";
 import { useGetToken } from "./hooks";
+import styled from "styled-components";
 
-const OrderHistoryModal = (props: OrderHistoryModalProps) => {
+const OrderHistoryModal = (props: OrdersHistoryProps) => {
   return (
-    <Popup isOpen={props.isOpen} onClose={props.onClose}>
-      {props.children}
-    </Popup>
+    <>
+      <Popup isOpen={props.isOpen} onClose={props.onClose}>
+        {props.children}
+      </Popup>
+      <button onClick={props.onOpen} className="twap-orders__button">
+        {props.isLoading ? <Typography>Loading...</Typography> : <Typography> {props.openOrdersCount} Orders</Typography>}
+      </button>
+    </>
   );
 };
 
 const OrderConfirmationModal = (props: OrderConfirmationModalProps) => {
+  const { onConfirm, loadingApproval, disclaimerAccepted, inProgress, setDisclaimerAccepted } = useSubmitOrderPanel();
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
       {props.children}
+      {!inProgress && (
+        <>
+          <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
+            <Flex align="center" gap={6}>
+              Accept{" "}
+              <a href={DISCLAIMER_URL} target="_blank" rel="noreferrer">
+                Disclaimer
+              </a>
+            </Flex>
+            <Switch checked={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+          </Flex>
+          <StyledButton onClick={onConfirm} disabled={loadingApproval || !disclaimerAccepted}>
+            Confirm
+          </StyledButton>
+        </>
+      )}
     </Popup>
   );
 };
+
+const StyledButton = styled(Button)`
+  width: 100%;
+  background: black !important;
+  margin-top: 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+`;
 
 const useUSD = (address?: string) => {
   const res = usePriceUSD(address);
@@ -68,10 +116,6 @@ const Link = ({ href, children }: LinkProps) => {
       {children}
     </a>
   );
-};
-
-const Toggle = (props: ToggleProps) => {
-  return <Switch checked={props.checked} onChange={props.onChange} />;
 };
 
 const SelectMenu = (props: SelectMenuProps) => {
@@ -110,25 +154,6 @@ const SelectMenu = (props: SelectMenuProps) => {
   );
 };
 
-const CustomButton = (props: ButtonProps) => {
-  return (
-    <Button
-      type="primary"
-      onClick={props.onClick}
-      disabled={props.disabled}
-      loading={props.loading}
-      style={{
-        height: 45,
-        borderRadius: 12,
-        fontSize: 15,
-        fontWeight: 500,
-      }}
-    >
-      {props.children}
-    </Button>
-  );
-};
-
 export const useSwitchChain = () => {
   const { data: walletClient } = useWalletClient();
 
@@ -141,7 +166,7 @@ export const useSwitchChain = () => {
 };
 
 const ConfirmationButton = () => {
-  const { onClick, text, disabled: _disabled } = Widget.useConfirmationButtonPanel();
+  const { onClick, text, disabled: _disabled } = useShowOrderConfirmationModalButton();
   const { address, chainId } = useAccount();
   const { openConnectModal } = useConnectModal();
   const switchChain = useSwitchChain();
@@ -150,7 +175,7 @@ const ConfirmationButton = () => {
   const disabled = !address ? false : isWrongChain ? false : _disabled;
 
   return (
-    <Button
+    <StyledButton
       size="large"
       type="primary"
       style={{
@@ -168,12 +193,8 @@ const ConfirmationButton = () => {
       disabled={disabled}
     >
       {isWrongChain ? "Switch Network" : address ? text : "Connect Wallet"}
-    </Button>
+    </StyledButton>
   );
-};
-
-const CustomInput = (props: InputProps) => {
-  return <NumberInput onChange={props.onChange} value={props.value} loading={props.isLoading} />;
 };
 
 const useTokens = () => {
@@ -201,7 +222,7 @@ const useTokens = () => {
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const { input, usd, balance, token } = Widget.useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
+  const { input, usd, balance, token } = useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
 
   const { setSrcToken, setDstToken } = useDappStore();
 
@@ -223,7 +244,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const LimitPanel = () => {
-  const { input, usd, isInverted, percent, onInvert, isLimitOrder } = Widget.useLimitPanel();
+  const { input, usd, isInverted, percent, onInvert, isLimitOrder } = useLimitPricePanel();
   const { setSrcToken, setDstToken, srcToken, dstToken } = useDappStore();
   const onSelect = isInverted ? setSrcToken : setDstToken;
   const topToken = isInverted ? dstToken : srcToken;
@@ -270,7 +291,7 @@ const LimitPanel = () => {
 };
 
 const TradeAmountMessage = () => {
-  const { usdAmount, tokenAmount, token, hide, error } = Widget.useTradeAmountMessagePanel();
+  const { usdAmount, tokenAmount, token, hide, error } = useChunkSizeMessage();
   const tokenAmountF = useFormatNumber({ value: tokenAmount });
 
   if (hide) return null;
@@ -296,55 +317,40 @@ const Label = ({ label, tooltip }: { label: string; tooltip?: string }) => {
   );
 };
 
-const timeArr: { text: string; value: TimeUnit }[] = [
-  {
-    text: "Minutes",
-    value: TimeUnit.Minutes,
-  },
-  {
-    text: "Hours",
-    value: TimeUnit.Hours,
-  },
-  {
-    text: "Days",
-    value: TimeUnit.Days,
-  },
-];
-
 const OrderDuration = () => {
-  const { title, tooltip, duration, onUnitSelect, onInputChange } = Widget.useDurationPanel();
+  const { title, tooltip, duration, onUnitSelect, onInputChange } = useDurationPanel();
 
-  const selected = timeArr.find((it) => it.value === duration.unit);
+  const selected = DEFAULT_DURATION_OPTIONS.find((it) => it.value === duration.unit);
 
   return (
     <Section className="order-delay twap-input-panel">
       <Label label={title} tooltip={tooltip} />
       <Flex justify="space-between" style={{ width: "100%" }}>
         <NumberInput onChange={onInputChange} value={duration.value} />
-        <SelectMenu items={timeArr} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
+        <SelectMenu items={DEFAULT_DURATION_OPTIONS} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
       </Flex>
     </Section>
   );
 };
 
 const FillDelay = () => {
-  const { title, tooltip, onUnitSelect, fillDelay, onInputChange } = Widget.useFillDelayPanel();
+  const { title, tooltip, onUnitSelect, fillDelay, onInputChange } = useFillDelayPanel();
 
-  const selected = timeArr.find((it) => it.value === fillDelay.unit);
+  const selected = DEFAULT_DURATION_OPTIONS.find((it) => it.value === fillDelay.unit);
 
   return (
     <Section className="fill-duration twap-input-panel">
       <Label label={title} tooltip={tooltip} />
       <Flex justify="space-between" style={{ width: "100%" }}>
         <NumberInput onChange={onInputChange} value={fillDelay.value} />
-        <SelectMenu items={timeArr} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
+        <SelectMenu items={DEFAULT_DURATION_OPTIONS} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
       </Flex>
     </Section>
   );
 };
 
 const TradeAmount = () => {
-  const { onChange, trades, tooltip, label } = Widget.useTradesAmountPanel();
+  const { onChange, trades, tooltip, label } = useChunksPanel();
 
   return (
     <Section className="trade-amount twap-input-panel">
@@ -357,8 +363,12 @@ const TradeAmount = () => {
   );
 };
 
+const CancelOrderButton = (props: CancelOrderButtonProps) => {
+  return <StyledButton onClick={props.onClick}>Cancel</StyledButton>;
+};
+
 const MarketPriceToggle = () => {
-  const { isMarketOrder, setIsMarketOrder } = Widget.usePriceModePanel();
+  const { isMarketOrder, setIsMarketOrder } = usePriceTogglePanel();
   return (
     <Flex gap={10} align="center" justify="flex-end" style={{ width: "100%" }}>
       <Typography>Limit Price</Typography>
@@ -367,12 +377,36 @@ const MarketPriceToggle = () => {
   );
 };
 
+const WarningMessage = () => {
+  const type = useTradeType();
+
+  const text =
+    type === "limit"
+      ? `Limit orders may not execute when the token's price is equal or close to the limit price, due to gas and standard swap fees.`
+      : "Each individual trade in this order will be filled at the current market price at the time of execution.";
+
+  return (
+    <Flex style={{ width: "100%" }} justify="center" gap={10}>
+      <RiErrorWarningLine style={{ color: "white", width: 16, height: 16, position: "relative", top: 2 }} />
+      <Typography style={{ flex: 1 }}>{text}</Typography>
+    </Flex>
+  );
+};
 
 const InputsError = () => {
-  const error = Widget.useInputsError();
+  const error = useInputsError();
   if (!error) return null;
-  return <Typography style={{ color: "red" }}>{error}</Typography>;
-}
+  return <Typography style={{ color: "red", textAlign: "left", width: "100%" }}>{error.message}</Typography>;
+};
+
+const PoweredByOrbs = () => {
+  return (
+    <a href={ORBS_WEBSITE_URL} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <Typography>Powered by Orbs</Typography>
+      <img src={ORBS_LOGO} alt="Orbs" style={{ width: 22, height: 22 }} />
+    </a>
+  );
+};
 
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
@@ -389,7 +423,7 @@ export const Dapp = () => {
   return (
     <>
       <GlobalStyles isDarkMode={true} />
-      <Widget
+      <TWAP
         config={config}
         isExactAppoval={true}
         chainId={chainId}
@@ -402,16 +436,18 @@ export const Dapp = () => {
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         customMinChunkSizeUsd={5}
-        marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
+        marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
+        OrderHistory={{
+          Panel: OrderHistoryModal,
+          SelectMenu: SelectMenu,
+          CancelOrderButton,
+        }}
+        OrderConfirmationModal={OrderConfirmationModal}
         components={{
           Tooltip: CustomTooltip,
-          Link,
-          OrderConfirmationModal: OrderConfirmationModal,
-          OrdersModal: OrderHistoryModal,
-          SelectMenu,
-          Toggle,
-          Button: CustomButton,
-          Input: CustomInput,
+          TransactionModal: {
+            Link: Link,
+          },
         }}
         useToken={useToken}
         fee={0.25}
@@ -437,14 +473,15 @@ export const Dapp = () => {
               </Flex>
             )}
             <TradeAmountMessage />
-            <ConfirmationButton />
             <InputsError />
-            <Widget.PoweredByOrbs />
-            <Widget.Orders />
-            <Widget.WarningMessage />
+            <ConfirmationButton />
+
+            <PoweredByOrbs />
+            <OrderHistory />
+            <WarningMessage />
           </Flex>
         </StyledLayout>
-      </Widget>
+      </TWAP>
     </>
   );
 };

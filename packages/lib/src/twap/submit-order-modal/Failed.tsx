@@ -1,7 +1,7 @@
-import { isNativeBalanceError } from "../../../utils";
-import { useNetwork } from "../../../hooks/logic-hooks";
+import { isNativeBalanceError } from "../../utils";
+import { useNetwork } from "../../hooks/logic-hooks";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { useTwapContext } from "../../../context";
+import { useTwapContext } from "../../context";
 export function Failed(props: { error?: any }) {
   const { translations: t } = useTwapContext();
   const symbol = useNetwork()?.native.symbol || "Native token";

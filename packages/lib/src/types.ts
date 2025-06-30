@@ -1,5 +1,4 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { IconType } from "@react-icons/all-files";
 import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
@@ -108,7 +107,6 @@ export interface Translations {
   status: string;
   progress: string;
   finalExcecutionPrice: string;
-
   tradeIntervalTitle: string;
   tradesAmountTitle: string;
   tradesAmountSmallText: string;
@@ -134,57 +132,6 @@ export type OrderHistoryModalProps = {
   onClose: () => void;
   title?: string;
   children?: ReactNode;
-};
-
-export type TokenSelectModalProps = {
-  isSrcToken?: boolean;
-  isOpen: boolean;
-  onClose: () => void;
-  selectedToken?: Token;
-  onSelect: (token: any) => void;
-  children?: ReactNode;
-};
-
-export interface LimitPanelTokenSelectProps {
-  onSelect?: (token: any) => void;
-  isOpen: boolean;
-  onClose: () => void;
-  srcTokenSelected?: any;
-  dstTokenSelected?: any;
-  isSrc?: boolean;
-}
-
-export type InputProps = {
-  onChange: (value: string) => void;
-  value: string;
-  disabled?: boolean;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  isLoading?: boolean;
-};
-
-export type BalanceProps = {
-  balance: string;
-  onMax?: () => void;
-  balanceWei: string;
-  isLoading: boolean;
-  isSrcToken?: boolean;
-};
-
-export type USDProps = {
-  value: string;
-  isLoading: boolean;
-};
-
-export type CurrencySelectButtonProps = {
-  token?: Token;
-  onClick: () => void;
-  isSrcToken?: boolean;
-  onSelect?: (token: any) => void;
-};
-
-export type TokenAmountPercentSelectProps = {
-  onSelect: (percent: number) => void;
 };
 
 export type LimitPanelPercentSelectProps = {
@@ -249,7 +196,7 @@ export type OrdersButtonProps = {
   isLoading: boolean;
 };
 
-export type OrdersProps = {
+export type OrdersHistoryProps = {
   orders: {
     all: Order[];
     OPEN: Order[];
@@ -261,6 +208,12 @@ export type OrdersProps = {
   onCancelOrder: (order: Order) => Promise<string>;
   isRefetching: boolean;
   refetch: () => Promise<Order[] | undefined>;
+  isOpen: boolean;
+  onClose: () => void;
+  onOpen: () => void;
+  openOrdersCount: number;
+  title?: string;
+  children?: ReactNode;
 };
 
 export type CancelOrderProps = {
@@ -276,44 +229,34 @@ export type LinkProps = {
   children: ReactNode;
 };
 
+export type USDProps = {
+  value: string;
+  isLoading: boolean;
+};
+
+export type CancelOrderButtonProps = {
+  order: Order;
+  isLoading: boolean;
+  onClick: () => void;
+  className?: string;
+};
+
 interface Components {
   // shared
   Tooltip?: FC<TooltipProps>;
-  Input?: FC<InputProps>;
-  Button?: FC<ButtonProps>;
-  Toggle?: FC<ToggleProps>;
-  // token panel
-  Balance?: FC<BalanceProps>;
-  USD?: FC<USDProps>;
-  CurrencySelectButton?: FC<CurrencySelectButtonProps>;
-  TokenAmountPercentSelect?: FC<TokenAmountPercentSelectProps>;
-  Message?: FC<MessageProps>;
-  SelectMenu?: FC<SelectMenuProps>;
-  // limit panel
-  LimitPanelPercentSelect?: FC<LimitPanelPercentSelectProps>;
-  LimitPanelInvertButton?: FC<LimitPanelInvertButtonProps>;
-  // orders
-  OrderHistoryListOrder?: FC<OrderHistoryListOrderProps>;
-  OrderHistorySelectedOrder?: FC<OrderHistorySelectedOrderProps>;
-  DurationSelectButtons?: FC<DurationSelectButtonsProps>;
-  Link?: FC<LinkProps>;
 
   Label?: FC<LabelProps>;
-  SwitchTokens?: FC<SwitchTokensProps>;
   TokenLogo?: FC<TokenLogoProps>;
-  OrdersButton?: FC<OrdersButtonProps>;
-
-  OrdersPanel?: FC<OrdersProps>;
-  OrdersModal?: FC<OrderHistoryModalProps>;
-  OrderConfirmationModal?: FC<OrderConfirmationModalProps>;
-  TokenSelectModal?: FC<TokenSelectModalProps>;
-  CreateOrderPanelSpinner?: ReactNode;
-  CreateOrderPanelSuccessIcon?: ReactNode;
-  CreateOrderPanelErrorIcon?: ReactNode;
   CancelOrderPanel?: FC<CancelOrderProps>;
+  Button?: FC<ButtonProps>;
 
-  SkeletonLoader?: FC;
-  Spinner?: FC;
+  TransactionModal?: {
+    Spinner?: ReactNode;
+    SuccessIcon?: ReactNode;
+    ErrorIcon?: ReactNode;
+    Link?: FC<LinkProps>;
+    USD?: FC<USDProps>;
+  };
 }
 
 interface CreateOrderCallbackArgs {
@@ -332,14 +275,21 @@ interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
   receipt: TransactionReceipt;
 }
 
+export type InputError = {
+  type: InputErrors;
+  value: string | number;
+  message: string;
+};
 
 export enum InputErrors {
   EMPTY_LIMIT_PRICE,
-  EMPTY_TRADE_SIZE,
-  EMPTY_FILL_DELAY,
-  EMPTY_DURATION,
-  EMPTY_TRADE_AMOUNT,
   MAX_CHUNKS,
+  MIN_CHUNKS,
+  MIN_TRADE_SIZE,
+  MAX_FILL_DELAY,
+  MIN_FILL_DELAY,
+  MAX_ORDER_DURATION,
+  MISSING_LIMIT_PRICE,
 }
 
 export type Callbacks = {
@@ -364,15 +314,6 @@ export type Callbacks = {
     onSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
     onFailed?: (error: string) => void;
   };
-  unwrap?: {
-    onRequest?: (amount: string) => void;
-    onSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
-    onFailed?: (error: string) => void;
-  };
-  onSrcTokenSelect?: (token: any) => void;
-  onDstTokenSelect?: (token: any) => void;
-  onSwitchTokens?: () => void;
-  onConnect?: () => void;
 };
 
 export interface Provider {
@@ -393,7 +334,7 @@ export interface BaseTwapProps {
   dstBalance?: string;
   children?: React.ReactNode;
   askDataParams?: any[];
-  marketReferencePrice: { value?: string; isLoading?: boolean };
+  marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   customMinChunkSizeUsd?: number;
   chainId?: number;
   account?: string;
@@ -417,8 +358,18 @@ export interface TwapProps {
   isExactAppoval?: boolean;
   children?: React.ReactNode;
   components: Components;
+  OrderConfirmationModal?: FC<OrderConfirmationModalProps>;
+  OrderHistory: {
+    SelectMenu?: FC<SelectMenuProps>;
+    ListOrder?: FC<OrderHistoryListOrderProps>;
+    SelectedOrder?: FC<OrderHistorySelectedOrderProps>;
+    Panel: FC<OrdersHistoryProps>;
+    ShowOrdersButton?: FC<OrdersButtonProps>;
+    ListLoader?: ReactNode;
+    CancelOrderButton: FC<CancelOrderButtonProps>;
+  };
   askDataParams?: any[];
-  marketReferencePrice: { value?: string; isLoading?: boolean };
+  marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   customMinChunkSizeUsd?: number;
   useToken?: (value?: string) => Token | undefined;
   callbacks?: Callbacks;
@@ -439,6 +390,7 @@ export interface TwapContextType extends TwapProps {
   marketPrice?: string;
   marketPriceLoading?: boolean;
   account?: `0x${string}`;
+  noLiquidity?: boolean;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -473,18 +425,6 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
 export type ToggleProps = {
   checked: boolean;
   onChange: () => void;
-};
-
-export type Step = {
-  title: string;
-  description?: string;
-  link?: {
-    url: string;
-    text: string;
-  };
-  Icon?: IconType;
-  image?: string;
-  status: "pending" | "loading" | "completed" | "disabled";
 };
 
 export enum Steps {

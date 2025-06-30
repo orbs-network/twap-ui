@@ -1,12 +1,28 @@
 import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../context";
 import {
   useAmountUi,
+  useBalanceError,
+  useChunks,
+  useChunksError,
   useDestTokenAmount,
+  useDestTokenMinAmount,
   useFillDelay,
+  useFillDelayError,
+  useInputsError,
   useLimitPrice,
+  useLimitPriceError,
+  useMinChunkSizeUsd,
+  useMinTradeSizeError,
+  useOnCloseConfirmationModal,
+  useOnOpenConfirmationModal,
+  useOrderDeadline,
+  useOrderDuration,
+  useOrderDurationError,
   usePriceDiffFromMarketPercent,
+  useShouldOnlyWrap,
+  useShouldUnwrap,
   useShouldWrapOrUnwrapOnly,
   useSrcChunkAmountUSD,
   useSrcTokenChunkAmount,
@@ -14,10 +30,11 @@ import {
 } from "./logic-hooks";
 import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
-import { useSubmitOrderCallback } from "./send-transactions-hooks";
+import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
+import { useTradePrice } from "../twap/submit-order-modal/usePrice";
 
 const defaultPercent = [1, 5, 10];
 
@@ -39,39 +56,6 @@ const useDerivedLimitPrice = () => {
 const useLimitPriceLoading = () => {
   const { srcToken, dstToken, marketPrice } = useTwapContext();
   return Boolean(srcToken && dstToken && BN(marketPrice || 0).isZero());
-};
-
-export const useLimitPriceTokenSelect = () => {
-  const { callbacks } = useTwapContext();
-
-  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
-
-  const bottomTokenSelect = useCallback(
-    (token: any) => {
-      if (isInvertedPrice) {
-        callbacks?.onSrcTokenSelect?.(token);
-      } else {
-        callbacks?.onDstTokenSelect?.(token);
-      }
-    },
-    [isInvertedPrice, callbacks?.onDstTokenSelect, callbacks?.onSrcTokenSelect],
-  );
-
-  const topTokenSelect = useCallback(
-    (token: any) => {
-      if (isInvertedPrice) {
-        callbacks?.onDstTokenSelect?.(token);
-      } else {
-        callbacks?.onSrcTokenSelect?.(token);
-      }
-    },
-    [isInvertedPrice, callbacks?.onDstTokenSelect, callbacks?.onSrcTokenSelect],
-  );
-
-  return {
-    bottomTokenSelect,
-    topTokenSelect,
-  };
 };
 
 export const useLimitPriceInput = () => {
@@ -193,11 +177,6 @@ export const useLimitPriceTokens = () => {
   };
 };
 
-export const useLimitPriceError = () => {
-  const { error } = useLimitPrice();
-  return error;
-};
-
 export const useLimitPanelUsd = () => {
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();
   const { value: limitPrice } = useLimitPriceInput();
@@ -212,7 +191,6 @@ export const useLimitPricePanel = () => {
   const input = useLimitPriceInput();
   const percent = useLimitPricePercentSelect();
   const onInvert = useLimitPriceOnInvert();
-  const tokenSelect = useLimitPriceTokenSelect();
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const usd = useLimitPanelUsd();
@@ -224,64 +202,13 @@ export const useLimitPricePanel = () => {
     percent,
     onInvert,
     isInverted: isInvertedPrice,
-    tokenSelect,
     usd,
     isLimitOrder: !isMarketOrder,
     hide: isMarketOrder,
   };
 };
 
-export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { callbacks } = useTwapContext();
-  return useCallback(
-    (token: any) => {
-      isSrcToken ? callbacks?.onSrcTokenSelect?.(token) : callbacks?.onDstTokenSelect?.(token);
-    },
-    [isSrcToken, callbacks?.onSrcTokenSelect, callbacks?.onDstTokenSelect],
-  );
-};
 
-export const useSwitchTokensCallback = () => {
-  return useTwapContext().callbacks?.onSwitchTokens;
-};
-
-export const usePriceDisplay = (type: "limit" | "market") => {
-  const [inverted, setInverted] = useState(false);
-  const { marketPrice, dstToken, srcToken } = useTwapContext();
-  const limitPriceUI = useLimitPrice().amountUI;
-  const marketPriceUI = useAmountUi(dstToken?.decimals, marketPrice);
-
-  const onInvert = useCallback(() => {
-    setInverted(!inverted);
-  }, [inverted]);
-
-  const price = useMemo(() => {
-    const price = type === "limit" ? limitPriceUI : marketPriceUI;
-
-    if (inverted) return BN(1).div(price).toString();
-    return price;
-  }, [inverted, limitPriceUI, marketPriceUI]);
-
-  return {
-    onInvert,
-    price,
-    leftToken: !inverted ? srcToken : dstToken,
-    rightToken: !inverted ? dstToken : srcToken,
-  };
-};
-
-export const useChunkSizeMessage = () => {
-  const { srcUsd1Token, srcToken } = useTwapContext();
-  const srcTokenChunkAmountUI = useSrcTokenChunkAmount().amountUI;
-  const srcChunkAmountUsd = useSrcChunkAmountUSD();
-  const usd = useFormatNumber({ value: srcChunkAmountUsd, decimalScale: 2 });
-  const chunkSizeF = useFormatNumber({ value: srcTokenChunkAmountUI });
-  const usdF = usd ? `($${usd})` : "";
-
-  if (!srcUsd1Token || !srcToken) return null;
-
-  return `${chunkSizeF} ${srcToken?.symbol} per trade ${usdF}`;
-};
 
 export const usePriceToggle = () => {
   const updateState = useTwapStore((s) => s.updateState);
@@ -301,7 +228,8 @@ export const usePriceToggle = () => {
 };
 
 export const useFillDelayPanel = () => {
-  const { setFillDelay, fillDelay, milliseconds, error } = useFillDelay();
+  const { setFillDelay, fillDelay } = useFillDelay();
+  const error = useFillDelayError();
   const { translations: t } = useTwapContext();
 
   const onInputChange = useCallback(
@@ -322,7 +250,7 @@ export const useFillDelayPanel = () => {
     onInputChange,
     onUnitSelect,
     setFillDelay,
-    milliseconds,
+    milliseconds: fillDelay.unit * fillDelay.value,
     fillDelay,
     error,
     title: t.tradeIntervalTitle,
@@ -330,7 +258,17 @@ export const useFillDelayPanel = () => {
   };
 };
 
-export const useConfirmationModalButton = () => {
+export const useDisclaimerPanel = () => {
+  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
+  const setDisclaimerAccepted = useTwapStore((s) => s.updateState);
+
+  return {
+    disclaimerAccepted,
+    setDisclaimerAccepted,
+  };
+};
+
+export const useSubmitOrderPanelButton = () => {
   const { mutate: onSubmit, isLoading: mutationLoading } = useSubmitOrderCallback();
   const { translations: t } = useTwapContext();
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
@@ -375,4 +313,295 @@ export const useLimitPriceMessage = () => {
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
     };
   }, [t, isMarketOrder, hide]);
+};
+
+export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { srcBalance, dstBalance } = useTwapContext();
+  const token = useToken({ isSrcToken });
+  return useAmountUi(token?.decimals, isSrcToken ? srcBalance : dstBalance);
+};
+
+export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const dstAmountOut = useDestTokenAmount().amountUI;
+  const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(dstAmountOut, dstUsd1Token);
+
+  const token = useToken({ isSrcToken });
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  const data = isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd;
+
+  return {
+    data: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
+    isLoading: Boolean(token && !data),
+  };
+};
+
+export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { marketPriceLoading } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const updateState = useTwapStore((s) => s.updateState);
+  const destTokenAmountUI = useDestTokenAmount().amountUI;
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  const onChange = useCallback(
+    (value: string) => {
+      if (!isSrcToken) return;
+      updateState({ typedSrcAmount: value });
+    },
+    [updateState, isSrcToken],
+  );
+  return {
+    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(destTokenAmountUI, 8),
+    onChange,
+    isLoading: isSrcToken ? false : marketPriceLoading,
+  };
+};
+export const useToken = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { srcToken, dstToken } = useTwapContext();
+  return isSrcToken ? srcToken : dstToken;
+};
+
+export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  return {
+    balance: useTokenBalance({ isSrcToken }),
+    usd: useTokenUSD({ isSrcToken }),
+    input: useTokenInput({ isSrcToken }),
+    token: useToken({ isSrcToken }),
+    error: useBalanceError(),
+  };
+};
+
+export const useDurationPanel = () => {
+  const t = useTwapContext().translations;
+  const { orderDuration: duration, setOrderDuration: setDuration } = useOrderDuration();
+  const error = useOrderDurationError();
+
+  const onInputChange = useCallback(
+    (value: string) => {
+      setDuration({ unit: duration.unit, value: Number(value) });
+    },
+    [setDuration, duration],
+  );
+
+  const onUnitSelect = useCallback(
+    (unit: TimeUnit) => {
+      setDuration({ unit, value: duration.value });
+    },
+    [setDuration, duration],
+  );
+  return {
+    duration,
+    setDuration,
+    durationMillis: duration.unit * duration.value,
+    onInputChange,
+    onUnitSelect,
+    title: t.expiry,
+    tooltip: t.maxDurationTooltip,
+    error,
+  };
+};
+
+export const useTradeType = () => {
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  return isMarketOrder ? "market" : "limit";
+};
+
+export const useChunkSizeMessage = () => {
+  const chunkSize = useSrcChunkAmountUSD();
+  const { amountUI } = useSrcTokenChunkAmount();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const chunkSizeError = useMinTradeSizeError();
+  const error = !typedSrcAmount ? false : chunkSizeError;
+  const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
+  const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });
+  const { srcToken, isLimitPanel } = useTwapContext();
+
+  return {
+    hide: isLimitPanel || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0),
+    tokenAmount: amountUIF,
+    usdAmount: chunkSizeF,
+    error,
+    token: srcToken,
+  };
+};
+
+export const usePriceModePanel = () => {
+  const { isMarketOrder, setIsMarketOrder } = usePriceToggle();
+  return {
+    isMarketOrder,
+    setIsMarketOrder,
+  };
+};
+
+const useTradeSize = () => {
+  const chunkSize = useSrcChunkAmountUSD();
+  const { amountUI } = useSrcTokenChunkAmount();
+  const { srcToken, isLimitPanel } = useTwapContext();
+  const minTradeSizeError = useMinTradeSizeError();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const error = !typedSrcAmount ? false : minTradeSizeError;
+  const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
+  const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });
+
+  return useMemo(() => {
+    if (!chunkSizeF || isLimitPanel || !srcToken)
+      return {
+        value: amountUIF,
+        token: srcToken,
+        usd: chunkSizeF,
+        error,
+      };
+  }, [amountUI, chunkSize, isLimitPanel, srcToken, error, amountUIF, chunkSizeF]);
+};
+
+export const useChunksPanel = () => {
+  const { translations: t } = useTwapContext();
+  const { setChunks, chunks } = useChunks();
+  const error = useChunksError();
+  const tradeSize = useTradeSize();
+  return {
+    error,
+    trades: chunks,
+    onChange: setChunks,
+    label: t.tradesAmountTitle,
+    tooltip: t.totalTradesTooltip,
+    tradeSize,
+  };
+};
+
+export const useShowOrderConfirmationModalButton = () => {
+  const { srcUsd1Token, translations: t, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity } = useTwapContext();
+
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+
+  const minChunkSizeUsd = useMinChunkSizeUsd();
+  const balanceError = useBalanceError();
+  const inputsError = useInputsError();
+  const disabled = Boolean(balanceError || inputsError);
+
+  const onOpen = useOnOpenConfirmationModal();
+  const shouldUnwrap = useShouldUnwrap();
+  const shouldOnlyWrap = useShouldOnlyWrap();
+
+  const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
+  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
+
+  const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
+  const zeroMarketPrice = !BN(marketPrice || 0).gt(0);
+
+  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
+
+  const isButtonLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
+
+  const makeButton = (text: string, onClick: () => void, loading = false, disabled = false) => ({ text, onClick, loading, disabled });
+
+  // Handle no liquidity
+  if (noLiquidity) {
+    return makeButton(t.noLiquidity, () => {}, false, true);
+  }
+
+  // Handle wrap only
+  if (shouldOnlyWrap) {
+    return makeButton(t.wrap, () => wrap(), wrapLoading, wrapLoading);
+  }
+
+  // Handle unwrap
+  if (shouldUnwrap) {
+    return makeButton(t.unwrap, () => unwrap(), unwrapLoading, disabled || unwrapLoading);
+  }
+
+  // Default swap button
+  const getSwapText = () => {
+    if (!srcToken || !dstToken) return t.placeOrder;
+    if (BN(typedSrcAmount || "0").isZero()) return t.enterAmount;
+    if (marketPriceLoading) return t.outAmountLoading;
+    if (isButtonLoading) return t.placeOrder;
+    if (balanceError) return balanceError;
+    return t.placeOrder;
+  };
+
+  const swapButton = makeButton(
+    getSwapText(),
+    onOpen,
+    isButtonLoading,
+    Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount)),
+  );
+
+  return swapButton;
+};
+
+export const useSubmitOrderPanel = () => {
+  const { dstUsd1Token, srcUsd1Token, account } = useTwapContext();
+  const trade = useTwapStore((s) => s.state.trade);
+  const onClose = useOnCloseConfirmationModal();
+  const deadline = useOrderDeadline();
+  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
+  const chunks = useChunks().chunks;
+  const { fillDelay } = useFillDelay();
+  const fillDelayMillis = fillDelay.unit * fillDelay.value;
+  const destMinAmountOut = useDestTokenMinAmount().amountUI;
+  const fee = useFee();
+  const { mutateAsync: submitOrder, checkingApproval: loadingApproval } = useSubmitOrderCallback();
+  const srcUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token);
+  const activeStep = useTwapStore((s) => s.state.activeStep);
+  const swapError = useTwapStore((s) => s.state.swapError);
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const totalSteps = useTwapStore((s) => s.state.totalSteps);
+  const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
+  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
+  const showConfirmation = useTwapStore((s) => s.state.showConfirmation);
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const unwrapTxHash = useTwapStore((s) => s.state.unwrapTxHash);
+  const wrapTxHash = useTwapStore((s) => s.state.wrapTxHash);
+  const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
+  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
+  const updateState = useTwapStore((s) => s.updateState);
+  const price = useTradePrice();
+
+  const setDisclaimerAccepted = useCallback(
+    (accepted: boolean) => {
+      updateState({ disclaimerAccepted: accepted });
+    },
+    [updateState],
+  );
+
+  const onConfirm = useCallback(() => {
+    submitOrder();
+  }, [submitOrder]);
+
+  return {
+    ...trade,
+    onClose,
+    isOpen: Boolean(showConfirmation),
+    orderDeadline: deadline,
+    srcChunkAmount,
+    chunks,
+    fillDelay: fillDelayMillis,
+    destMinAmountOut,
+    fee,
+    onConfirm,
+    setDisclaimerAccepted,
+    loadingApproval,
+    srcUsd,
+    dstUsd,
+    activeStep,
+    swapError,
+    swapStatus,
+    totalSteps,
+    currentStepIndex,
+    disclaimerAccepted,
+    isMarketOrder,
+    unwrapTxHash,
+    wrapTxHash,
+    approveTxHash,
+    createOrderTxHash,
+    title: trade?.title,
+    price,
+    recipient: account,
+    inProgress: Boolean(swapStatus),
+  };
 };

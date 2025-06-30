@@ -2,20 +2,16 @@ import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { Order, OrderType } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext } from "./context";
 import * as React from "react";
-import { Loader } from "../../../components/base/Loader";
-import TokenLogo from "../../../components/base/TokenLogo";
-import { useTwapContext } from "../../../context";
+import { useTwapContext } from "../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
-import { useOrderName } from "../../../hooks/logic-hooks";
+import { useOrderName } from "../../hooks/logic-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
+import TokenLogo from "../../components/TokenLogo";
 
 const ListLoader = () => {
-  return (
-    <div className="twap-orders__loader">
-      <Loader />
-    </div>
-  );
+  const context = useTwapContext();
+  return <div className="twap-orders__loader">{context?.OrderHistory?.ListLoader || <p>Loading...</p>}</div>;
 };
 
 export const OrderHistoryList = () => {
@@ -40,7 +36,7 @@ export const OrderHistoryList = () => {
 };
 
 const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
-  const { components } = useTwapContext();
+  const context = useTwapContext();
 
   const component = (
     <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
@@ -54,11 +50,11 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
     </div>
   );
 
-  if (components.OrderHistoryListOrder) {
+  if (context.OrderHistory?.ListOrder) {
     return (
-      <components.OrderHistoryListOrder order={order} selectOrder={selectOrder}>
+      <context.OrderHistory.ListOrder order={order} selectOrder={selectOrder}>
         {component}
-      </components.OrderHistoryListOrder>
+      </context.OrderHistory.ListOrder>
     );
   }
 

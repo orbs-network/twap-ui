@@ -291,11 +291,11 @@ export const useWrapOnly = () => {
 };
 
 export const useUnwrapToken = () => {
-  const { account, walletClient, publicClient, callbacks } = useTwapContext();
+  const { account, walletClient, publicClient } = useTwapContext();
   const resetState = useTwapStore((s) => s.resetState);
   const updateState = useTwapStore((s) => s.updateState);
   const wTokenAddress = useNetwork()?.wToken.address;
-  const { amountWei, amountUI = "" } = useSrcAmount();
+  const { amountWei } = useSrcAmount();
 
   return useMutation(
     async () => {
@@ -318,17 +318,10 @@ export const useUnwrapToken = () => {
         confirmations: 2,
       });
 
-      await callbacks?.unwrap?.onSuccess?.(receipt, amountUI);
       return receipt;
     },
     {
-      onMutate: () => {
-        callbacks?.unwrap?.onRequest?.(amountUI);
-      },
       onSuccess: resetState,
-      onError: (error) => {
-        callbacks?.unwrap?.onFailed?.((error as any).message);
-      },
     },
   );
 };

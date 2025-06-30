@@ -1,6 +1,6 @@
-import { Modal } from "antd";
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
-import { Components, Token, useFormatNumber } from "@orbs-network/twap-ui";
+import { Modal, Typography } from "antd";
+import { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Token, useFormatNumber } from "@orbs-network/twap-ui";
 import { Config, Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
 import { useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
 import { Virtuoso } from "react-virtuoso";
@@ -10,6 +10,7 @@ import { NumericFormat } from "react-number-format";
 import BN from "bignumber.js";
 import { isAddress, maxUint256 } from "viem";
 import { useAppParams } from "./dapp/hooks";
+import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
 
 export const NumberInput = (props: {
   onChange: (value: string) => void;
@@ -88,6 +89,20 @@ export const TokenSearchInput = ({ setValue, value }: { value: string; setValue:
   return <input className="token-select-input" placeholder="Insert token name..." value={value || ""} onChange={(e: any) => setValue(e.target.value)} />;
 };
 
+function TokenLogo({ logo, className = "", style = {}, alt = "Token logo" }: { logo?: string; className?: string; style?: CSSProperties; alt?: string }) {
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setError(false);
+  }, [logo]);
+
+  return logo && !error ? (
+    <img alt={alt} style={style} onError={() => setError(true)} className={`twap-token-logo ${className}`} src={logo} />
+  ) : (
+    <AiFillQuestionCircle style={{ width: 20, height: 20 }} className="twap-token-svg" />
+  );
+}
+
 const Row = ({ onClick, token }: any) => {
   const balance = useTokenBalance(token).data?.ui;
   const balanceF = useFormatNumber({ value: balance, decimalScale: 6 });
@@ -98,7 +113,7 @@ const Row = ({ onClick, token }: any) => {
   return (
     <div onClick={() => onClick(token)} className="token-select-list-token list-item">
       <div className="token-select-list-token-left">
-        <Components.Base.TokenLogo
+        <TokenLogo
           logo={token.logoUrl}
           alt={token.symbol}
           style={{
@@ -109,12 +124,8 @@ const Row = ({ onClick, token }: any) => {
         {token.symbol}
       </div>
       <div className="token-select-list-token-right">
-        <Components.Base.SmallLabel loading={usd === undefined} className="usd">
-          {`$${usdF}`}
-        </Components.Base.SmallLabel>
-        <Components.Base.SmallLabel loading={balance === undefined} className="balance">
-          {balanceF}
-        </Components.Base.SmallLabel>
+        <Typography className="usd">{`$${usdF}`}</Typography>
+        <Typography className="balance">{balanceF}</Typography>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
-import { Provider, Token } from "../types";
+import { InputError, InputErrors, Provider, Token } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import * as chains from "viem/chains";
 import { getAllowance } from "../lib";
@@ -97,7 +97,7 @@ export const useHasAllowanceCallback = () => {
 };
 
 export const useLimitPrice = () => {
-  const { dstToken, marketPrice, translations: t } = useTwapContext();
+  const { dstToken, marketPrice } = useTwapContext();
   const typedPrice = useTwapStore((s) => s.state.typedPrice);
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
@@ -112,7 +112,6 @@ export const useLimitPrice = () => {
     amountWei,
     amountUI: useAmountUi(dstToken?.decimals, amountWei),
     onChange: useCallback((typedPrice?: string) => updateState({ typedPrice: typedPrice ? removeCommas(typedPrice) : typedPrice }), [updateState]),
-    error: typedPrice !== undefined && BN(typedPrice || 0).isZero() ? t.enterLimitPrice : undefined,
   };
 };
 
@@ -128,20 +127,9 @@ export const useChunks = () => {
   const { twapSDK, isLimitPanel } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const updateState = useTwapStore((s) => s.updateState);
-
   const maxChunks = useMaxChunks();
-  const t = useTwapContext().translations;
-  const minChunkSizeUsd = useMinChunkSizeUsd();
 
   const chunks = useMemo(() => twapSDK.getChunks(maxChunks, Boolean(isLimitPanel), typedChunks), [maxChunks, typedChunks, isLimitPanel, twapSDK]);
-  const error = useMemo(() => {
-    if (!chunks) {
-      return `${t.minChunksError} 1`;
-    }
-    const { isError } = twapSDK.getMaxChunksError(chunks, maxChunks, Boolean(isLimitPanel));
-    if (!isError) return undefined;
-    return t.minTradeSizeError.replace("{minTradeSize}", `${minChunkSizeUsd} USD`);
-  }, [chunks, twapSDK, maxChunks, isLimitPanel]);
 
   const setChunks = useCallback(
     (typedChunks: number) => {
@@ -154,29 +142,123 @@ export const useChunks = () => {
 
   return {
     chunks,
-    error,
     setChunks,
   };
 };
 
-export const useSrcTokenChunkAmount = () => {
-  const { twapSDK, srcToken, srcUsd1Token } = useTwapContext();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const minChunkSizeUsd = useMinChunkSizeUsd();
-  const { chunks } = useChunks();
+/// ---errors---- ////
+
+export const useLimitPriceError = () => {
+  const { translations: t } = useTwapContext();
+  const typedPrice = useTwapStore((s) => s.state.typedPrice);
+  return useMemo((): InputError | undefined => {
+    if (typedPrice !== undefined && BN(typedPrice || 0).isZero()) {
+      return {
+        type: InputErrors.MISSING_LIMIT_PRICE,
+        value: typedPrice,
+        message: t.enterLimitPrice,
+      };
+    }
+  }, [typedPrice, t]);
+};
+
+export const useChunksError = () => {
+  const chunks = useChunks().chunks;
+  const { twapSDK, isLimitPanel } = useTwapContext();
+  const maxChunks = useMaxChunks();
   const t = useTwapContext().translations;
-  const srcAmountWei = useSrcAmount().amountWei;
-  const amountWei = useMemo(() => twapSDK.getSrcTokenChunkAmount(srcAmountWei || "", chunks), [twapSDK, srcAmountWei, chunks]);
-  const error = useMemo(() => {
+
+  return useMemo((): InputError | undefined => {
+    if (!chunks) {
+      return {
+        type: InputErrors.MIN_CHUNKS,
+        value: 1,
+        message: `${t.minChunksError} 1`,
+      };
+    }
+    const { isError } = twapSDK.getMaxChunksError(chunks, maxChunks, Boolean(isLimitPanel));
+    if (isError) {
+      return {
+        type: InputErrors.MAX_CHUNKS,
+        value: maxChunks,
+        message: t.maxChunksError.replace("{maxChunks}", `${maxChunks}`),
+      };
+    }
+  }, [chunks, twapSDK, maxChunks, isLimitPanel]);
+};
+
+export const useFillDelayError = () => {
+  const { twapSDK, translations: t } = useTwapContext();
+  const { chunks } = useChunks();
+  const { fillDelay } = useFillDelay();
+
+  const maxFillDelayError = useMemo((): InputError | undefined => {
+    const { isError, value } = twapSDK.getMaxFillDelayError(fillDelay, chunks);
+    if (!isError) return undefined;
+    return {
+      type: InputErrors.MAX_FILL_DELAY,
+      value: value,
+      message: t.maxFillDelayError.replace("{fillDelay}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`),
+    };
+  }, [fillDelay, twapSDK, chunks, t]);
+
+  const minFillDelayError = useMemo((): InputError | undefined => {
+    const { isError, value } = twapSDK.getMinFillDelayError(fillDelay);
+    if (!isError) return undefined;
+    return {
+      type: InputErrors.MIN_FILL_DELAY,
+      value: value,
+      message: t.minFillDelayError.replace("{fillDelay}", `${millisToMinutes(value)} ${t.minutes}`),
+    };
+  }, [fillDelay, twapSDK, t]);
+
+  return maxFillDelayError || minFillDelayError;
+};
+
+export const useOrderDurationError = () => {
+  const { twapSDK, translations: t } = useTwapContext();
+  const { orderDuration } = useOrderDuration();
+
+  return useMemo((): InputError | undefined => {
+    const { isError, value } = twapSDK.getOrderDurationError(orderDuration);
+
+    if (isError) {
+      return {
+        type: InputErrors.MAX_ORDER_DURATION,
+        value: value,
+        message: t.maxDurationError.replace("{duration}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`),
+      };
+    }
+  }, [orderDuration, twapSDK]);
+};
+export const useMinTradeSizeError = () => {
+  const { twapSDK, translations: t } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const srcUsd1Token = useTwapContext().srcUsd1Token;
+  const minChunkSizeUsd = useMinChunkSizeUsd();
+
+  return useMemo((): InputError | undefined => {
     const { isError, value } = twapSDK.getMinTradeSizeError(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0);
 
-    if (!isError) return undefined;
-    return t.minTradeSizeError.replace("{minTradeSize}", `${value} USD`);
+    if (isError) {
+      return {
+        type: InputErrors.MIN_TRADE_SIZE,
+        value: value,
+        message: t.minTradeSizeError.replace("{minTradeSize}", `${value} USD`),
+      };
+    }
   }, [twapSDK, typedSrcAmount, srcUsd1Token, minChunkSizeUsd]);
+};
+
+export const useSrcTokenChunkAmount = () => {
+  const { twapSDK, srcToken } = useTwapContext();
+  const { chunks } = useChunks();
+  const srcAmountWei = useSrcAmount().amountWei;
+  const amountWei = useMemo(() => twapSDK.getSrcTokenChunkAmount(srcAmountWei || "", chunks), [twapSDK, srcAmountWei, chunks]);
+
   return {
     amountWei,
     amountUI: useAmountUi(srcToken?.decimals, amountWei),
-    error,
   };
 };
 
@@ -290,23 +372,18 @@ export const useShouldWrapOrUnwrapOnly = () => {
   return wrap || unwrap;
 };
 
-export const useError = () => {
-  const { marketPrice, isLimitPanel } = useTwapContext();
-  const balanceError = useBalanceError();
-  const chunksError = useChunks().error;
-  const fillDelayError = useFillDelay().error;
-  const orderDurationError = useOrderDuration().error;
-  const tradeSizeError = useSrcTokenChunkAmount().error;
-  const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const limitPriceError = useLimitPrice().error;
+export const useInputsError = () => {
+  const { marketPrice } = useTwapContext();
+  const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const chunksError = useChunksError();
+  const fillDelayError = useFillDelayError();
+  const orderDurationError = useOrderDurationError();
+  const tradeSizeError = useMinTradeSizeError();
+  const limitPriceError = useLimitPriceError();
 
-  if (shouldWrapOrUnwrapOnly) {
-    return balanceError;
-  }
+  if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()) return;
 
-  if (BN(marketPrice || 0).isZero()) return;
-
-  return  limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError || (isLimitPanel && orderDurationError);
+  return limitPriceError || chunksError || fillDelayError || tradeSizeError || orderDurationError;
 };
 
 export const useNetwork = () => {
@@ -324,28 +401,14 @@ export const useOrderDeadline = () => {
 };
 
 export const useFillDelay = () => {
-  const { twapSDK, isLimitPanel, translations: t } = useTwapContext();
+  const { twapSDK, isLimitPanel } = useTwapContext();
   const typedFillDelay = useTwapStore((s) => s.state.typedFillDelay);
   const updateState = useTwapStore((s) => s.updateState);
   const fillDelay = useMemo(() => twapSDK.getFillDelay(Boolean(isLimitPanel), typedFillDelay), [isLimitPanel, typedFillDelay, twapSDK]);
-  const chunks = useChunks().chunks;
-  const maxFillDelayError = useMemo(() => {
-    const { isError, value } = twapSDK.getMaxFillDelayError(fillDelay, chunks);
-    if (!isError) return undefined;
-    return t.maxFillDelayError.replace("{fillDelay}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`);
-  }, [fillDelay, twapSDK, chunks]);
-
-  const minFillDelayError = useMemo(() => {
-    const { isError, value } = twapSDK.getMinFillDelayError(fillDelay);
-    if (!isError) return undefined;
-    return t.minFillDelayError.replace("{fillDelay}", `${millisToMinutes(value)} ${t.minutes}`);
-  }, [fillDelay, twapSDK]);
 
   return {
     fillDelay,
     setFillDelay: useCallback((typedFillDelay: TimeDuration) => updateState({ typedFillDelay }), [updateState]),
-    error: maxFillDelayError || minFillDelayError,
-    milliseconds: fillDelay.unit * fillDelay.value,
   };
 };
 
@@ -362,27 +425,16 @@ export const useOrderName = (isMarketOrder = false, chunks = 1) => {
   }, [t, isMarketOrder, chunks]);
 };
 export const useOrderDuration = () => {
-  const { twapSDK, translations: t } = useTwapContext();
+  const { twapSDK } = useTwapContext();
   const { chunks } = useChunks();
   const { fillDelay } = useFillDelay();
-
   const typedDuration = useTwapStore((s) => s.state.typedDuration);
   const updateState = useTwapStore((s) => s.updateState);
-
   const orderDuration = useMemo(() => twapSDK.getOrderDuration(chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, twapSDK]);
-
-  const error = useMemo(() => {
-    const { isError, value } = twapSDK.getOrderDurationError(orderDuration);
-
-    if (!isError) return undefined;
-    return t.maxDurationError.replace("{duration}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`);
-  }, [orderDuration, twapSDK]);
 
   return {
     orderDuration,
-    milliseconds: orderDuration.unit * orderDuration.value,
     setOrderDuration: useCallback((typedDuration: TimeDuration) => updateState({ typedDuration }), [updateState]),
-    error,
   };
 };
 
@@ -459,14 +511,6 @@ export const useOnSrcInputPercentClick = () => {
     },
     [maxAmount, srcBalance, updateState, srcToken],
   );
-};
-
-export const useSwitchChain = () => {
-  const { config, walletClient } = useTwapContext();
-
-  return useCallback(() => {
-    (walletClient as any)?.switchChain({ id: config.chainId });
-  }, [config, walletClient]);
 };
 
 export const useInitiateWallet = (
