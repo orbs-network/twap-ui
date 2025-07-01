@@ -32,10 +32,11 @@ const FillDelaySummary = () => {
 
 export const Main = () => {
   const { translations, components, srcUsd1Token, dstUsd1Token } = useTwapContext();
-  const trade = useTwapStore((s) => s.state.trade);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const srcAmountUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token);
-  const dstAmountUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token);
+  const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
+  const srcAmountUsd = useUsdAmount(srcAmount, srcUsd1Token);
+  const dstAmountUsd = useUsdAmount(acceptedDstAmount, dstUsd1Token);
 
   const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });

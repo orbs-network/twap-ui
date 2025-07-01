@@ -20,7 +20,7 @@ import {
   useLimitPricePanel,
   useInputsError,
   OrderHistory,
-  useTradeType,
+  useDisclaimerMessage,
   ORBS_LOGO,
   ORBS_WEBSITE_URL,
   CancelOrderButtonProps,
@@ -28,6 +28,7 @@ import {
   useSubmitOrderPanel,
   DISCLAIMER_URL,
   useChunksPanel,
+  useOrderHistoryPanel,
 } from "@orbs-network/twap-ui";
 import { Config } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -44,24 +45,29 @@ import { useGetToken } from "./hooks";
 import styled from "styled-components";
 
 const OrderHistoryModal = (props: OrdersHistoryProps) => {
+  const { isOpen, onClose, onOpen, isLoading, openOrdersCount } = useOrderHistoryPanel();
   return (
     <>
-      <Popup isOpen={props.isOpen} onClose={props.onClose}>
+      <Popup isOpen={isOpen} onClose={onClose}>
         {props.children}
       </Popup>
-      <button onClick={props.onOpen} className="twap-orders__button">
-        {props.isLoading ? <Typography>Loading...</Typography> : <Typography> {props.openOrdersCount} Orders</Typography>}
+      <button onClick={onOpen} className="twap-orders__button">
+        {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Orders</Typography>}
       </button>
     </>
   );
 };
 
 const OrderConfirmationModal = (props: OrderConfirmationModalProps) => {
-  const { onConfirm, loadingApproval, disclaimerAccepted, inProgress, setDisclaimerAccepted } = useSubmitOrderPanel();
+  const {
+    swap: { onSubmit, submitted, disabled },
+    setDisclaimerAccepted,
+    disclaimerAccepted,
+  } = useSubmitOrderPanel();
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
       {props.children}
-      {!inProgress && (
+      {!submitted && (
         <>
           <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
             <Flex align="center" gap={6}>
@@ -72,7 +78,7 @@ const OrderConfirmationModal = (props: OrderConfirmationModalProps) => {
             </Flex>
             <Switch checked={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
           </Flex>
-          <StyledButton onClick={onConfirm} disabled={loadingApproval || !disclaimerAccepted}>
+          <StyledButton onClick={onSubmit} disabled={disabled}>
             Confirm
           </StyledButton>
         </>
@@ -291,10 +297,8 @@ const LimitPanel = () => {
 };
 
 const TradeAmountMessage = () => {
-  const { usdAmount, tokenAmount, token, hide, error } = useChunkSizeMessage();
+  const { usdAmount, tokenAmount, token, error } = useChunkSizeMessage();
   const tokenAmountF = useFormatNumber({ value: tokenAmount });
-
-  if (hide) return null;
 
   return (
     <Typography className={`trade-amount-message ${error ? "trade-amount-message-error" : ""}`}>
@@ -378,12 +382,7 @@ const MarketPriceToggle = () => {
 };
 
 const WarningMessage = () => {
-  const type = useTradeType();
-
-  const text =
-    type === "limit"
-      ? `Limit orders may not execute when the token's price is equal or close to the limit price, due to gas and standard swap fees.`
-      : "Each individual trade in this order will be filled at the current market price at the time of execution.";
+  const { text } = useDisclaimerMessage();
 
   return (
     <Flex style={{ width: "100%" }} justify="center" gap={10}>

@@ -3,14 +3,15 @@ import { useMemo } from "react";
 import BN from "bignumber.js";
 
 export const useTradePrice = () => {
-  const trade = useTwapStore((s) => s.state.trade);
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
 
   const price = useMemo(
     () =>
-      BN(trade?.dstAmount || 0)
-        .dividedBy(trade?.srcAmount || 0)
+      BN(acceptedDstAmount || 0)
+        .dividedBy(typedSrcAmount || 0)
         .toString(),
-    [trade?.dstAmount, trade?.srcAmount],
+    [acceptedDstAmount, typedSrcAmount],
   );
 
   return price;

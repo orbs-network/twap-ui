@@ -20,10 +20,8 @@ export const useTwapStore = create<TwapStore>((set, get) => ({
       state: {
         ...initialState,
         currentTime: Date.now(),
-        trade: get().state.trade,
-        swapStatus: get().state.swapStatus,
+        acceptedDstAmount: get().state.acceptedDstAmount,
         isMarketOrder: get().state.isMarketOrder,
-        typedDuration: get().state.typedDuration,
       },
     });
   },

@@ -149,7 +149,7 @@ export function getOrderIdFromCreateOrderEvent(receipt: TransactionReceipt) {
 
 export const ensureWrappedToken = (token: Token, chainId: number) => {
   const network = getNetwork(chainId);
-  if (!network) throw new Error("Invalid chainId");
+  if (!network) return token;
   if (isNativeAddress(token.address)) {
     return network.wToken;
   }

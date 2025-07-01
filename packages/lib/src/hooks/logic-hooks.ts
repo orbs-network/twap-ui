@@ -7,7 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
-import { InputError, InputErrors, Provider, Token } from "../types";
+import { InputError, InputErrors, Provider, State, Token } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import * as chains from "viem/chains";
 import { getAllowance } from "../lib";
@@ -220,16 +220,24 @@ export const useOrderDurationError = () => {
   const { orderDuration } = useOrderDuration();
 
   return useMemo((): InputError | undefined => {
-    const { isError, value } = twapSDK.getOrderDurationError(orderDuration);
+    const maxError = twapSDK.getMaxOrderDurationError(orderDuration);
+    const minError = twapSDK.getMinOrderDurationError(orderDuration);
 
-    if (isError) {
+    if (maxError.isError) {
       return {
         type: InputErrors.MAX_ORDER_DURATION,
-        value: value,
-        message: t.maxDurationError.replace("{duration}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`),
+        value: maxError.value,
+        message: t.maxDurationError.replace("{duration}", `${Math.floor(millisToDays(maxError.value)).toFixed(0)} ${t.days}`),
       };
     }
-  }, [orderDuration, twapSDK]);
+    if (minError.isError) {
+      return {
+        type: InputErrors.MIN_ORDER_DURATION,
+        value: minError.value,
+        message: t.minDurationError.replace("{duration}", `${Math.floor(millisToMinutes(minError.value)).toFixed(0)} ${t.minutes}`),
+      };
+    }
+  }, [orderDuration, twapSDK, t]);
 };
 export const useMinTradeSizeError = () => {
   const { twapSDK, translations: t } = useTwapContext();
@@ -439,29 +447,17 @@ export const useOrderDuration = () => {
 };
 
 export const useOnOpenConfirmationModal = () => {
-  const { srcToken, dstToken } = useTwapContext();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const updateState = useTwapStore((s) => s.updateState);
-  const chunks = useChunks().chunks;
   const dstAmount = useDestTokenAmount().amountUI;
-  const orderName = useOrderName(isMarketOrder, chunks);
   return useCallback(() => {
     updateState({ showConfirmation: true });
     if (swapStatus === SwapStatus.LOADING) return;
     updateState({
       swapStatus: undefined,
-      // prevent data to change during order creation
-      trade: {
-        srcAmount: typedSrcAmount,
-        dstAmount,
-        srcToken,
-        dstToken,
-        title: orderName,
-      },
+      acceptedDstAmount: dstAmount,
     });
-  }, [updateState, typedSrcAmount, dstAmount, srcToken, dstToken, swapStatus, orderName]);
+  }, [updateState, dstAmount, swapStatus]);
 };
 
 export const useOnCloseConfirmationModal = () => {
@@ -535,4 +531,13 @@ export const useInitiateWallet = (
     walletClient,
     publicClient,
   };
+};
+
+export const useResetState = (partialState?: Partial<State>) => {
+  const updateState = useTwapStore((s) => s.updateState);
+  return useCallback(() => {
+    updateState({
+      ...(partialState || {}),
+    });
+  }, [updateState, partialState]);
 };

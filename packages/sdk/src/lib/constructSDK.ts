@@ -1,5 +1,5 @@
 import { Analytics } from "./analytics";
-import { MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
+import { MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
 import {
   getEstimatedDelayBetweenChunksMillis,
   getDeadline,
@@ -12,7 +12,7 @@ import {
   getDestTokenAmount,
   getAskParams,
 } from "./lib";
-import { getUserOrdersForDEX } from "./orders";
+import { getOrders } from "./orders";
 import { Config, getAskParamsProps, TimeDuration } from "./types";
 import { getTimeDurationMillis } from "./utils";
 import BN from "bignumber.js";
@@ -84,10 +84,17 @@ export class TwapSDK {
     };
   }
 
-  getOrderDurationError(duration: TimeDuration) {
+  getMaxOrderDurationError(duration: TimeDuration) {
     return {
       isError: getTimeDurationMillis(duration) > MAX_ORDER_DURATION_MILLIS,
       value: MAX_ORDER_DURATION_MILLIS,
+    };
+  }
+
+  getMinOrderDurationError(duration: TimeDuration) {
+    return {
+      isError: getTimeDurationMillis(duration) < MIN_ORDER_DURATION_MILLIS,
+      value: MIN_ORDER_DURATION_MILLIS,
     };
   }
 
@@ -113,7 +120,7 @@ export class TwapSDK {
   }
 
   async getOrders(account: string, signal?: AbortSignal) {
-    return getUserOrdersForDEX({ dexConfig: this.config, account, signal });
+    return getOrders({ chainId: this.config.chainId, signal, filters: { account, config: this.config } });
   }
 }
 

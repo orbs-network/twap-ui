@@ -197,22 +197,6 @@ export type OrdersButtonProps = {
 };
 
 export type OrdersHistoryProps = {
-  orders: {
-    all: Order[];
-    OPEN: Order[];
-    COMPLETED: Order[];
-    EXPIRED: Order[];
-    CANCELED: Order[];
-  };
-  isLoading: boolean;
-  onCancelOrder: (order: Order) => Promise<string>;
-  isRefetching: boolean;
-  refetch: () => Promise<Order[] | undefined>;
-  isOpen: boolean;
-  onClose: () => void;
-  onOpen: () => void;
-  openOrdersCount: number;
-  title?: string;
   children?: ReactNode;
 };
 
@@ -289,6 +273,7 @@ export enum InputErrors {
   MAX_FILL_DELAY,
   MIN_FILL_DELAY,
   MAX_ORDER_DURATION,
+  MIN_ORDER_DURATION,
   MISSING_LIMIT_PRICE,
 }
 
@@ -446,14 +431,7 @@ export interface State {
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   typedSrcAmount?: string;
-  trade?: {
-    srcToken?: Token;
-    dstToken?: Token;
-    srcAmount?: string;
-    dstAmount?: string;
-    title?: string;
-  };
-
+  acceptedDstAmount?: string;
   typedChunks?: number;
   typedFillDelay: TimeDuration;
   typedDuration?: TimeDuration;

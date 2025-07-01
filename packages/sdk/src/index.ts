@@ -9,18 +9,8 @@ export * from "./lib/types";
 export * from "./lib/consts";
 export { constructSDK, TwapSDK } from "./lib/constructSDK";
 export * from "./lib/lib";
-export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase } from "./lib/utils";
+export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase, getConfigByExchange } from "./lib/utils";
 export { networks } from "./lib/networks";
 
-export {
-  getOrderExcecutionRate,
-  getOrderLimitPriceRate,
-  type Order,
-  parseRawStatus,
-  buildOrder,
-  getOrderFillDelayMillis,
-  getUserOrdersForChain,
-  getUserOrdersForDEX,
-  getOrderProgress,
-} from "./lib/orders";
+export { getOrderExcecutionRate, getOrderLimitPriceRate, type Order, parseRawStatus, buildOrder, getOrderFillDelayMillis, getOrderProgress, getOrders } from "./lib/orders";
 export { Configs, TwapAbi, iwethabi, erc20abi, LensAbi };

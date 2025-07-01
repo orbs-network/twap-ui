@@ -6,30 +6,15 @@ import { useMemo } from "react";
 import { useTwapContext } from "../../context";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { useTransactionExplorerLink } from "../../hooks/logic-hooks";
-import { useCancelOrder } from "../../hooks/send-transactions-hooks";
-import { useOrders } from "../../hooks/order-hooks";
 import { Portal } from "../../components/Portal";
 
 const PORTAL_ID = "twap-orders-portal";
 
 const OrdersContent = () => {
-  const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
-  const { mutateAsync: cancelOrder } = useCancelOrder();
-  const { isOpen, onClose, onOpen } = useOrderHistoryContext();
   const context = useTwapContext();
 
   return (
-    <context.OrderHistory.Panel
-      onCancelOrder={cancelOrder}
-      orders={orders}
-      openOrdersCount={orders?.OPEN?.length || 0}
-      isLoading={orderLoading}
-      refetch={refetch}
-      isRefetching={isRefetching}
-      isOpen={isOpen}
-      onClose={onClose}
-      onOpen={onOpen}
-    >
+    <context.OrderHistory.Panel>
       <OrderHistory />
     </context.OrderHistory.Panel>
   );

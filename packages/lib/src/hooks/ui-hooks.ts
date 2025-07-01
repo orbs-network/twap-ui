@@ -7,7 +7,6 @@ import {
   useChunks,
   useChunksError,
   useDestTokenAmount,
-  useDestTokenMinAmount,
   useFillDelay,
   useFillDelayError,
   useInputsError,
@@ -15,9 +14,7 @@ import {
   useLimitPriceError,
   useMinChunkSizeUsd,
   useMinTradeSizeError,
-  useOnCloseConfirmationModal,
   useOnOpenConfirmationModal,
-  useOrderDeadline,
   useOrderDuration,
   useOrderDurationError,
   usePriceDiffFromMarketPercent,
@@ -30,11 +27,12 @@ import {
 } from "./logic-hooks";
 import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
-import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
+import { useCancelOrder, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
-import { useTradePrice } from "../twap/submit-order-modal/usePrice";
+import { useOrderHistoryContext } from "../twap/orders/context";
+import { useOrders } from "./order-hooks";
 
 const defaultPercent = [1, 5, 10];
 
@@ -208,8 +206,6 @@ export const useLimitPricePanel = () => {
   };
 };
 
-
-
 export const usePriceToggle = () => {
   const updateState = useTwapStore((s) => s.updateState);
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
@@ -266,23 +262,6 @@ export const useDisclaimerPanel = () => {
     disclaimerAccepted,
     setDisclaimerAccepted,
   };
-};
-
-export const useSubmitOrderPanelButton = () => {
-  const { mutate: onSubmit, isLoading: mutationLoading } = useSubmitOrderCallback();
-  const { translations: t } = useTwapContext();
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
-
-  return useMemo(() => {
-    const isLoading = mutationLoading || swapStatus === SwapStatus.LOADING;
-    return {
-      text: t.confirmOrder,
-      onSubmit,
-      isLoading,
-      disabled: !disclaimerAccepted || isLoading,
-    };
-  }, [t, onSubmit, disclaimerAccepted, mutationLoading, swapStatus]);
 };
 
 export const useFee = () => {
@@ -403,9 +382,16 @@ export const useDurationPanel = () => {
   };
 };
 
-export const useTradeType = () => {
+export const useDisclaimerMessage = () => {
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  return isMarketOrder ? "market" : "limit";
+  const { translations: t } = useTwapContext();
+  return useMemo(() => {
+    return {
+      type: isMarketOrder ? "market" : "limit",
+      text: isMarketOrder ? t.marketOrderWarning : t.limitPriceMessage,
+      url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
+    };
+  }, [isMarketOrder, t]);
 };
 
 export const useChunkSizeMessage = () => {
@@ -413,17 +399,19 @@ export const useChunkSizeMessage = () => {
   const { amountUI } = useSrcTokenChunkAmount();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const chunkSizeError = useMinTradeSizeError();
+  const { chunks } = useChunks();
   const error = !typedSrcAmount ? false : chunkSizeError;
   const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
   const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });
   const { srcToken, isLimitPanel } = useTwapContext();
-
+  const isZero = isLimitPanel || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0) || !chunks;
   return {
-    hide: isLimitPanel || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0),
-    tokenAmount: amountUIF,
-    usdAmount: chunkSizeF,
+    hide: isLimitPanel,
+    tokenAmount: isZero ? "0" : amountUIF,
+    usdAmount: isZero ? "0" : chunkSizeF,
     error,
     token: srcToken,
+    zeroAmount: isZero,
   };
 };
 
@@ -533,75 +521,20 @@ export const useShowOrderConfirmationModalButton = () => {
   return swapButton;
 };
 
-export const useSubmitOrderPanel = () => {
-  const { dstUsd1Token, srcUsd1Token, account } = useTwapContext();
-  const trade = useTwapStore((s) => s.state.trade);
-  const onClose = useOnCloseConfirmationModal();
-  const deadline = useOrderDeadline();
-  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
-  const chunks = useChunks().chunks;
-  const { fillDelay } = useFillDelay();
-  const fillDelayMillis = fillDelay.unit * fillDelay.value;
-  const destMinAmountOut = useDestTokenMinAmount().amountUI;
-  const fee = useFee();
-  const { mutateAsync: submitOrder, checkingApproval: loadingApproval } = useSubmitOrderCallback();
-  const srcUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token);
-  const dstUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token);
-  const activeStep = useTwapStore((s) => s.state.activeStep);
-  const swapError = useTwapStore((s) => s.state.swapError);
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const totalSteps = useTwapStore((s) => s.state.totalSteps);
-  const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
-  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
-  const showConfirmation = useTwapStore((s) => s.state.showConfirmation);
-  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const unwrapTxHash = useTwapStore((s) => s.state.unwrapTxHash);
-  const wrapTxHash = useTwapStore((s) => s.state.wrapTxHash);
-  const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
-  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
-  const updateState = useTwapStore((s) => s.updateState);
-  const price = useTradePrice();
-
-  const setDisclaimerAccepted = useCallback(
-    (accepted: boolean) => {
-      updateState({ disclaimerAccepted: accepted });
-    },
-    [updateState],
-  );
-
-  const onConfirm = useCallback(() => {
-    submitOrder();
-  }, [submitOrder]);
+export const useOrderHistoryPanel = () => {
+  const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
+  const { mutateAsync: cancelOrder } = useCancelOrder();
+  const { isOpen, onClose, onOpen } = useOrderHistoryContext();
 
   return {
-    ...trade,
+    orders,
+    isLoading: orderLoading,
+    refetch,
+    isRefetching,
+    cancelOrder,
+    isOpen,
     onClose,
-    isOpen: Boolean(showConfirmation),
-    orderDeadline: deadline,
-    srcChunkAmount,
-    chunks,
-    fillDelay: fillDelayMillis,
-    destMinAmountOut,
-    fee,
-    onConfirm,
-    setDisclaimerAccepted,
-    loadingApproval,
-    srcUsd,
-    dstUsd,
-    activeStep,
-    swapError,
-    swapStatus,
-    totalSteps,
-    currentStepIndex,
-    disclaimerAccepted,
-    isMarketOrder,
-    unwrapTxHash,
-    wrapTxHash,
-    approveTxHash,
-    createOrderTxHash,
-    title: trade?.title,
-    price,
-    recipient: account,
-    inProgress: Boolean(swapStatus),
+    onOpen,
+    openOrdersCount: orders?.OPEN?.length || 0,
   };
 };

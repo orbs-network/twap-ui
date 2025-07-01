@@ -14,7 +14,7 @@ import {
   useSrcTokenChunkAmount,
 } from "./logic-hooks";
 import { amountUi, isNativeAddress, iwethabi, Order, TwapAbi } from "@orbs-network/twap-sdk";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOptimisticAddOrder, useOptimisticCancelOrder, useOrders } from "./order-hooks";
 import { useTwapStore } from "../useTwapStore";
@@ -165,15 +165,41 @@ const useCallbacks = () => {
   };
 };
 
-export const useCreateOrder = () => {
-  const { account, walletClient, publicClient, twapSDK, chainId, dstToken } = useTwapContext();
-  const updateState = useTwapStore((s) => s.updateState);
-  const callbacks = useCallbacks();
-  const srcAmount = useSrcAmount().amountWei;
+export const useOrderSubmissionArgs = () => {
+  const { twapSDK: sdk, srcToken: _srcToken, dstToken, chainId, account } = useTwapContext();
   const destTokenMinAmount = useDestTokenMinAmount().amountWei;
   const srcChunkAmount = useSrcTokenChunkAmount().amountWei;
   const deadline = useOrderDeadline();
   const fillDelay = useFillDelay().fillDelay;
+  const srcAmount = useSrcAmount().amountWei;
+
+  return useMemo(() => {
+    const srcToken = _srcToken && chainId ? ensureWrappedToken(_srcToken, chainId) : undefined;
+
+    if (!srcToken || !dstToken) return;
+    return {
+      params: sdk.getAskParams({
+        destTokenMinAmount,
+        srcChunkAmount,
+        deadline,
+        fillDelay,
+        srcAmount,
+        srcTokenAddress: srcToken.address,
+        destTokenAddress: dstToken.address,
+      }),
+      abi: TwapAbi,
+      functionName: "ask",
+      contractAddress: sdk.config.twapAddress,
+      account,
+    };
+  }, [dstToken, destTokenMinAmount, srcChunkAmount, deadline, fillDelay, srcAmount, sdk, _srcToken, chainId, account]);
+};
+
+export const useCreateOrder = () => {
+  const { account, walletClient, publicClient, chainId, dstToken } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
+  const callbacks = useCallbacks();
+  const orderSubmissionArgs = useOrderSubmissionArgs();
 
   return useMutation(
     async (srcToken: Token) => {
@@ -183,27 +209,16 @@ export const useCreateOrder = () => {
       if (!chainId) throw new Error("chainId is not defined");
       if (!dstToken) throw new Error("dstToken is not defined");
 
-      const params = twapSDK.getAskParams({
-        destTokenMinAmount,
-        srcChunkAmount,
-        deadline,
-        fillDelay,
-        srcAmount,
-        // src token cant be native token
-        srcTokenAddress: srcToken.address,
-        destTokenAddress: dstToken.address,
-      });
+      if (!orderSubmissionArgs?.params) throw new Error("failed to get params for ask method");
 
-      if (!params) throw new Error("failed to get params for ask method");
-
-      callbacks.onRequest(params);
+      callbacks.onRequest(orderSubmissionArgs.params);
 
       const txHash = await walletClient.writeContract({
         account: account.toLowerCase() as `0x${string}`,
-        address: twapSDK.config.twapAddress.toLowerCase() as `0x${string}`,
-        abi: TwapAbi,
-        functionName: "ask",
-        args: [params],
+        address: orderSubmissionArgs.contractAddress.toLowerCase() as `0x${string}`,
+        abi: orderSubmissionArgs.abi,
+        functionName: orderSubmissionArgs.functionName,
+        args: [orderSubmissionArgs.params],
         chain: walletClient.chain,
       });
       updateState({ createOrderTxHash: txHash });
@@ -218,7 +233,7 @@ export const useCreateOrder = () => {
       }
       const orderId = getOrderIdFromCreateOrderEvent(receipt);
 
-      await callbacks.onSuccess(receipt, params, srcToken, orderId);
+      await callbacks.onSuccess(receipt, orderSubmissionArgs.params, srcToken, orderId);
 
       return {
         orderId,
@@ -333,21 +348,6 @@ const getTotalSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
   return stepsCount;
 };
 
-const useSubmitOrderCallbacks = () => {
-  const { callbacks, srcToken, dstToken } = useTwapContext();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount || "");
-  const dstAmount = useDestTokenAmount().amountUI;
-  const onRequest = useCallback(() => {
-    callbacks?.onSubmitOrderRequest?.({
-      srcToken: srcToken!,
-      dstToken: dstToken!,
-      srcAmount: typedSrcAmount,
-      dstAmount,
-    });
-  }, [callbacks, srcToken, dstToken, typedSrcAmount, dstAmount]);
-  return { onRequest };
-};
-
 export const useSubmitOrderCallback = () => {
   const { srcToken, dstToken, isExactAppoval, chainId } = useTwapContext();
   const { mutateAsync: getHasAllowance } = useHasAllowanceCallback();
@@ -355,7 +355,6 @@ export const useSubmitOrderCallback = () => {
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
-  const { onRequest } = useSubmitOrderCallbacks();
   const srcAmount = useSrcAmount().amountWei;
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256.toString();
   const [checkingApproval, setCheckingApproval] = useState(false);
@@ -394,12 +393,10 @@ export const useSubmitOrderCallback = () => {
       updateState({ activeStep: Steps.CREATE });
       const order = await createOrder(ensureWrappedToken(srcToken, chainId));
 
-      // we refetch balances only if we wrapped the token
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;
     },
     {
-      onMutate: onRequest,
       onError(error) {
         if (isTxRejected(error) && !wrappedRef.current) {
           updateState({ activeStep: undefined, swapStatus: undefined, currentStepIndex: undefined });

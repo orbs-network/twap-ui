@@ -1,7 +1,8 @@
-import { LEGACY_EXCHANGES_MAP, maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
+import { LEGACY_EXCHANGES_MAP, getPartnerIdentifier, maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
 import { Config, TimeDuration, TimeUnit } from "./types";
 import { networks } from "./networks";
+import { Configs } from "..";
 
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
@@ -115,11 +116,34 @@ export const getNetwork = (chainId?: number) => {
 };
 
 export const getExchanges = (config: Config) => {
-  const key = `${config.name}-${config.chainId}`;
+  const key = getPartnerIdentifier(config);
 
   return [config.exchangeAddress, ...(LEGACY_EXCHANGES_MAP[key] || [])].map((a) => `"${a.toLowerCase()}"`);
 };
 
 export const isSupportedByTheGraph = (chainId?: number) => {
   return getTheGraphUrl(chainId) !== undefined;
+};
+
+export const getConfigByExchange = (exchange: string, chainId: number): Config | undefined => {
+  const normalized = exchange.toLowerCase();
+
+  // 1. Try matching the main exchangeAddress in configs
+  const primaryMatch = Object.values(Configs).find((cfg) => cfg.exchangeAddress.toLowerCase() === normalized && cfg.chainId === chainId);
+  if (primaryMatch) return primaryMatch as Config;
+
+  // 2. Try matching legacy exchange addresses
+  for (const [key, legacyAddresses] of Object.entries(LEGACY_EXCHANGES_MAP)) {
+    if (legacyAddresses.some((addr) => addr.toLowerCase() === normalized)) {
+      const config = Object.values(Configs).find((cfg) => {
+        const name = key.split("_")[0];
+
+        return cfg.name === name && cfg.chainId === Number(chainId);
+      });
+      if (config) return config as Config;
+    }
+  }
+
+  // 3. Not found
+  return undefined;
 };

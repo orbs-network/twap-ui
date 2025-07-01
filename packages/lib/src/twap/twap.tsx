@@ -11,16 +11,17 @@ import {
   useFillDelayPanel,
   useLimitPricePanel,
   usePriceModePanel,
-  useSubmitOrderPanel,
   useTokenPanel,
   useChunkSizeMessage,
   useChunksPanel,
-  useTradeType,
+  useDisclaimerMessage,
+  useOrderHistoryPanel,
 } from "../hooks/ui-hooks";
 import { DISCLAIMER_URL, ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
 import { useOrders } from "../hooks/order-hooks";
-import { useInputsError } from "../hooks/logic-hooks";
+import { useInputsError, useResetState } from "../hooks/logic-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "./consts";
+import { useSubmitOrderPanel } from "../hooks/use-submit-order-panel";
 
 const TWAP = (props: TwapProps) => {
   const shouldWrapOrUnwrap = useMemo(() => {
@@ -52,7 +53,9 @@ export {
   useLimitPricePanel,
   useDisclaimerPanel,
   useInputsError,
-  useTradeType,
+  useDisclaimerMessage,
+  useOrderHistoryPanel,
+  useResetState,
   ORBS_WEBSITE_URL,
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,

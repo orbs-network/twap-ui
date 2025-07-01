@@ -50,6 +50,7 @@ const fetchWithRetryPaginated = async <T>({
   signal,
   retries = 1,
   limit = 1000,
+  page: _page,
 }: {
   chainId: number;
   buildQuery: GraphQLPageFetcher<T>;
@@ -57,50 +58,65 @@ const fetchWithRetryPaginated = async <T>({
   signal?: AbortSignal;
   retries?: number;
   limit?: number;
+  page?: number;
 }): Promise<T[]> => {
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) throw new NoGraphEndpointError();
 
+  const fetchPage = async (query: string): Promise<T[]> => {
+    let attempts = 0;
+    while (attempts <= retries) {
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          body: JSON.stringify({ query }),
+          signal,
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+        const json = await res.json();
+        if (json.errors) {
+          throw new Error(json.errors[0].message);
+        }
+
+        return extractResults(json);
+      } catch (err) {
+        if (attempts === retries) throw err;
+        await new Promise((r) => setTimeout(r, 500 * 2 ** attempts));
+        attempts++;
+      }
+    }
+    return []; // should never reach here
+  };
+
   let page = 0;
   const results: T[] = [];
+
+  if (_page !== undefined) {
+    const query = buildQuery(_page, limit);
+    try {
+      return await fetchPage(query);
+    } catch (err) {
+      console.warn(`Page ${_page} failed, retrying one final time...`);
+      try {
+        return await fetchPage(query);
+      } catch (finalErr) {
+        return [];
+      }
+    }
+  }
 
   while (true) {
     const query = buildQuery(page, limit);
 
-    const fetchPage = async (): Promise<T[]> => {
-      let attempts = 0;
-      while (attempts <= retries) {
-        try {
-          const res = await fetch(endpoint, {
-            method: "POST",
-            body: JSON.stringify({ query }),
-            signal,
-            headers: { "Content-Type": "application/json" },
-          });
-          if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-
-          const json = await res.json();
-          if (json.errors) {
-            throw new Error(json.errors[0].message);
-          }
-
-          return extractResults(json);
-        } catch (err) {
-          if (attempts === retries) throw err;
-          await new Promise((r) => setTimeout(r, 500 * 2 ** attempts));
-          attempts++;
-        }
-      }
-      return []; // should never reach here
-    };
-
     let pageResults: T[];
     try {
-      pageResults = await fetchPage();
+      pageResults = await fetchPage(query);
     } catch (err) {
       console.warn(`Page ${page} failed, retrying one final time...`);
       try {
-        pageResults = await fetchPage(); // Final page-level retry
+        pageResults = await fetchPage(query); // Final page-level retry
       } catch (finalErr) {
         return results;
       }
@@ -270,23 +286,34 @@ export async function getCreatedOrders({
   account,
   signal,
   exchanges,
+  page,
+  limit: _limit,
+  txHash,
+  orderId,
 }: {
   chainId: number;
   account?: string;
   signal?: AbortSignal;
   exchanges?: string[];
+  page?: number;
+  limit?: number;
+  txHash?: string;
+  orderId?: number;
 }): Promise<GraphOrder[]> {
-  const limit = 1000;
+  const limit = _limit || 1000;
 
   const exchange = exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "";
   const maker = account ? `maker: "${account}"` : "";
+  const txHashFilter = txHash ? `transactionHash: "${txHash}"` : "";
+  const orderIdFilter = orderId ? `Contract_id: ${orderId}` : "";
 
-  const where = `where:{${exchange}, ${maker}}`;
+  const where = `where:{${exchange}, ${maker}, ${txHashFilter}, ${orderIdFilter}}`;
 
   const orders = await fetchWithRetryPaginated<GraphOrder>({
     chainId,
     signal,
     limit,
+    page,
     buildQuery: (page, limit) => `
       {
         orderCreateds(
@@ -327,22 +354,6 @@ export async function getCreatedOrders({
 
   return orders;
 }
-
-export const getUserOrdersForDEX = async ({ dexConfig, account: _account, signal }: { dexConfig: Config; account: string; signal?: AbortSignal }) => {
-  return getOrders({ chainId: dexConfig.chainId, account: _account, signal, exchanges: getExchanges(dexConfig) });
-};
-
-export const getUserOrdersForChain = async ({ chainId, account: _account, signal }: { chainId: number; account: string; signal?: AbortSignal }) => {
-  return getOrders({ chainId, account: _account, signal });
-};
-
-export const getAllOrdersForChain = async ({ chainId, signal }: { chainId: number; signal?: AbortSignal }) => {
-  return getOrders({ chainId, signal });
-};
-
-export const getAllOrdersForDEX = async ({ dexConfig, signal }: { dexConfig: Config; signal?: AbortSignal }) => {
-  return getOrders({ chainId: dexConfig.chainId, signal, exchanges: getExchanges(dexConfig) });
-};
 
 type GraphStatus = {
   twapId: string;
@@ -422,9 +433,28 @@ export class NoGraphEndpointError extends Error {
   }
 }
 
-const getOrders = async ({ chainId, account: _account, signal, exchanges }: { chainId: number; account?: string; signal?: AbortSignal; exchanges?: string[] }) => {
+const _getOrders = async ({
+  chainId,
+  account: _account,
+  signal,
+  config,
+  page,
+  limit,
+  txHash,
+  orderId,
+}: {
+  chainId: number;
+  account?: string;
+  signal?: AbortSignal;
+  config?: Config;
+  page?: number;
+  limit?: number;
+  txHash?: string;
+  orderId?: number;
+}) => {
+  const exchanges = config ? getExchanges(config) : undefined;
   const account = _account?.toLowerCase();
-  const orders = await getCreatedOrders({ chainId, account, signal, exchanges });
+  const orders = await getCreatedOrders({ chainId, account, signal, exchanges, page, limit, txHash, orderId });
   const fills = await getFills({ chainId, orders, signal, exchanges });
   const statuses = await getStatuses({ chainId, orders, signal });
   const parsedOrders = orders
@@ -454,6 +484,26 @@ const getOrders = async ({ chainId, account: _account, signal, exchanges }: { ch
     })
     .sort((a, b) => b.createdAt - a.createdAt);
   return parsedOrders;
+};
+export const getOrders = async ({
+  chainId,
+  signal,
+  page,
+  limit,
+  filters,
+}: {
+  chainId: number;
+  signal?: AbortSignal;
+  page?: number;
+  limit?: number;
+  filters?: {
+    txHash?: string;
+    orderId?: number;
+    account?: string;
+    config?: Config;
+  };
+}) => {
+  return _getOrders({ chainId, signal, page, limit, orderId: filters?.orderId, txHash: filters?.txHash, account: filters?.account, config: filters?.config });
 };
 
 const getStatus = (order: GraphOrder, fills: TwapFill[], statuses?: GraphStatus[]): OrderStatus => {
