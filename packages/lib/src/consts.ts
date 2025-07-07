@@ -20,5 +20,3 @@ export const DISCLAIMER_URL = "https://www.orbs.com/dtwap-dlimit-disclaimer";
 export const TX_GAS_COST = 500_000;
 
 export { Configs };
-
-

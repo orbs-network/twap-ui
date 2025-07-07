@@ -18,7 +18,7 @@ const katana: Chain = defineChain({
   },
   contracts: {
     multicall3: {
-      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      address: "0xca11bde05977b3631167028862be2a173976ca11",
       blockCreated: 7654707,
     },
   },
@@ -27,11 +27,11 @@ const chains = [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base
 
 const transports = chains
   .map((chain) => {
-    if(chain.id === katana.id){
+    if (chain.id === katana.id) {
       return {
         chainId: chain.id,
         transport: http(`https://rpc.katana.network`),
-      }
+      };
     }
     return {
       chainId: chain.id,

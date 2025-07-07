@@ -162,7 +162,7 @@ export class Analytics {
   }
 
   onConfigChange(config: Config) {
-    if (config.partner !== this.data?.partner) {
+    if (config.chainId !== this.data?.chainId) {
       this.data = {
         _id: generateId(),
         action: "module-import",

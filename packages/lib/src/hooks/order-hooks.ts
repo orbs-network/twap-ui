@@ -194,7 +194,7 @@ const useOrdersQuery = () => {
     async ({ signal }) => {
       if (!publicClient) throw new Error("publicClient is not defined");
       let orders: Order[] = [];
-      
+
       if (isSupportedByTheGraph(config.chainId)) {
         orders = await twapSDK.getOrders(account!, signal);
       } else {
