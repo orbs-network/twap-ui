@@ -1,4 +1,4 @@
-import { buildOrder, getOrderFillDelayMillis, LensAbi, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { buildOrder, getOrderFillDelayMillis, isSupportedByTheGraph, LensAbi, Order, OrderStatus, parseLensOrder } from "@orbs-network/twap-sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -6,8 +6,6 @@ import moment from "moment";
 import { useTwapContext } from "../context";
 import { Token } from "../types";
 import { useCancelOrder } from "./send-transactions-hooks";
-import { isSupportedByTheGraph } from "@orbs-network/twap-sdk/dist/lib/utils";
-import { getOrderProgress, parseRawStatus } from "@orbs-network/twap-sdk/dist/lib/orders";
 
 const useOrdersQueryKey = () => {
   const { account, config } = useTwapContext();
@@ -179,27 +177,7 @@ const useGetOrderFromLens = () => {
       });
       return (result as any[])
         .map((o) => {
-          const progress = getOrderProgress(o.ask.srcAmount.toString(), o.srcFilledAmount.toString());
-
-          return buildOrder({
-            id: o.id.toString(),
-            createdAt: o.time * 1000,
-            srcTokenAddress: o.ask.srcToken,
-            dstTokenAddress: o.ask.dstToken,
-            srcAmountPerChunk: o.ask.srcBidAmount.toString(),
-            deadline: o.ask.deadline * 1000,
-            dstMinAmountPerChunk: o.ask.dstMinAmount.toString(),
-            status: parseRawStatus(progress, o.status),
-            filledSrcAmount: o.srcFilledAmount.toString(),
-            srcAmount: o.ask.srcAmount.toString(),
-            tradeDollarValueIn: "",
-            fillDelay: o.ask.fillDelay,
-            txHash: "",
-            maker: account!,
-            exchange: o.ask.exchange,
-            twapAddress: config.twapAddress,
-            chainId: config.chainId,
-          });
+          return parseLensOrder(o, account!, config);
         })
         .sort((a, b) => b.createdAt - a.createdAt);
     },
@@ -216,6 +194,7 @@ const useOrdersQuery = () => {
     async ({ signal }) => {
       if (!publicClient) throw new Error("publicClient is not defined");
       let orders: Order[] = [];
+      
       if (isSupportedByTheGraph(config.chainId)) {
         orders = await twapSDK.getOrders(account!, signal);
       } else {

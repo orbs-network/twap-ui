@@ -380,4 +380,25 @@ export const networks = {
     explorer: "https://explorer.zkevm.cronos.org",
     eip1559: true,
   },
+  katana: {
+    id: 747474,
+    name: "Katana",
+    shortname: "katana",
+    native: {
+      address: zeroAddress,
+      symbol: "ETH",
+      decimals: 18,
+      logoUrl: "https://katana.network/assets/katana-logo.svg",
+    },
+    wToken: {
+      symbol: "WETH",
+      address: "0x4200000000000000000000000000000000000006", // standard L2 WETH address (example, verify if custom)
+      decimals: 18,
+      logoUrl: "https://katana.network/assets/weth-logo.svg",
+    },
+    publicRpcUrl: "https://rpc.katana.network",
+    logoUrl: "https://katana.network/assets/katana-logo.svg",
+    explorer: "https://explorer.katana.garden", // placeholder — replace with actual if known
+    eip1559: true,
+  },
 };

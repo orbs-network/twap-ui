@@ -63,3 +63,32 @@ export type TwapFill = {
   exchange: string;
   transactionHash: string;
 };
+
+export type LensOrder = {
+  id: bigint;
+  ask: {
+    bidDelay: number;
+    data: `0x${string}`;
+    deadline: number;
+    dstMinAmount: bigint;
+    dstToken: `0x${string}`;
+    exchange: `0x${string}`;
+    fillDelay: number;
+    srcAmount: bigint;
+    srcBidAmount: bigint;
+    srcToken: `0x${string}`;
+  };
+  bid: {
+    data: `0x${string}`;
+    dstAmount: bigint;
+    dstFee: bigint;
+    exchange: `0x${string}`;
+    taker: `0x${string}`;
+    time: number;
+  };
+  maker: `0x${string}`;
+  status: number;
+  time: number;
+  filledTime: number;
+  srcFilledAmount: bigint;
+};

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-constant-condition */
-import { Config, OrderStatus, OrderType, TwapFill } from "./types";
+import { Config, LensOrder, OrderStatus, OrderType, TwapFill } from "./types";
 import BN from "bignumber.js";
 import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
@@ -32,13 +32,6 @@ type ParsedFills = {
   filledDollarValueIn: string;
   filledDollarValueOut: string;
   dexFee: string;
-};
-
-type OrderFills = {
-  id: number;
-  fills: TwapFill[];
-  twapAddress: string;
-  exchange: string;
 };
 
 type GraphQLPageFetcher<T> = (page: number, limit: number) => string;
@@ -236,7 +229,7 @@ export const buildOrder = ({
   exchange: string;
   twapAddress: string;
   chainId: number;
-  status?: OrderStatus;
+  status: OrderStatus;
   filledSrcAmount?: string;
 }) => {
   const { filledDstAmount, filledSrcAmount: filledSrcAmountFromFills, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
@@ -520,7 +513,7 @@ export const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => 
   if (progress >= 0.99) return 100;
   if (progress <= 0) return 0;
 
-  return progress * 100;
+  return Number((progress * 100).toFixed(2));
 };
 
 const parseOrderStatus = (progress: number, deadline: number, status?: RawStatus): OrderStatus => {
@@ -549,4 +542,28 @@ export const parseRawStatus = (progress: number, status?: number): OrderStatus =
 
 export const getOrderFillDelayMillis = (order: Order, config: Config) => {
   return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
+};
+
+export const parseLensOrder = (order: LensOrder, account: string, config: Config) => {
+  const progress = getOrderProgress(order.ask.srcAmount.toString(), order.srcFilledAmount.toString());
+
+  return buildOrder({
+    id: Number(order.id.toString()),
+    createdAt: order.time * 1000,
+    srcTokenAddress: order.ask.srcToken,
+    dstTokenAddress: order.ask.dstToken,
+    srcAmountPerChunk: order.ask.srcBidAmount.toString(),
+    deadline: order.ask.deadline * 1000,
+    dstMinAmountPerChunk: order.ask.dstMinAmount.toString(),
+    status: parseRawStatus(progress, order.status),
+    filledSrcAmount: order.srcFilledAmount.toString(),
+    srcAmount: order.ask.srcAmount.toString(),
+    tradeDollarValueIn: "",
+    fillDelay: order.ask.fillDelay,
+    txHash: "",
+    maker: account!,
+    exchange: order.ask.exchange,
+    twapAddress: config.twapAddress,
+    chainId: config.chainId,
+  });
 };
