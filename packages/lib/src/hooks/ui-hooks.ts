@@ -460,7 +460,7 @@ export const useChunksPanel = () => {
 };
 
 export const useShowOrderConfirmationModalButton = () => {
-  const { srcUsd1Token, translations: t, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity } = useTwapContext();
+  const { srcUsd1Token, translations: t, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity, account } = useTwapContext();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
@@ -487,8 +487,13 @@ export const useShowOrderConfirmationModalButton = () => {
   const makeButton = (text: string, onClick: () => void, loading = false, disabled = false) => ({ text, onClick, loading, disabled });
 
   // Handle no liquidity
+
   if (noLiquidity) {
     return makeButton(t.noLiquidity, () => {}, false, true);
+  }
+
+  if (!account || !srcToken || !dstToken) {
+    return makeButton(t.placeOrder, () => {}, false, true);
   }
 
   // Handle wrap only

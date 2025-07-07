@@ -3,7 +3,7 @@ import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/tw
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
-export { OrderStatus, type TwapFill } from "@orbs-network/twap-sdk";
+export { OrderStatus, type TwapFill, OrderType } from "@orbs-network/twap-sdk";
 
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
@@ -114,13 +114,7 @@ export interface Translations {
 
 export type MessageVariant = "error" | "warning" | "info";
 
-export enum OrderType {
-  LIMIT = "LIMIT",
-  TWAP_MARKET = "TWAP_MARKET",
-  TWAP_LIMIT = "TWAP_LIMIT",
-}
-
-export type OrderConfirmationModalProps = {
+export type SubmitOrderPanelProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -158,6 +152,7 @@ export type OrderHistoryListOrderProps = {
   order: Order;
   selectOrder: (orderId: number) => void;
   children: ReactNode;
+  cancelOrder: (orderId: number) => Promise<string>;
 };
 
 export type LimitPanelInvertButtonProps = {
@@ -198,6 +193,8 @@ export type OrdersButtonProps = {
 
 export type OrdersHistoryProps = {
   children?: ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
 };
 
 export type CancelOrderProps = {
@@ -225,7 +222,7 @@ export type CancelOrderButtonProps = {
   className?: string;
 };
 
-interface Components {
+export interface Components {
   // shared
   Tooltip?: FC<TooltipProps>;
 
@@ -342,8 +339,8 @@ export interface TwapProps {
   dstBalance?: string;
   isExactAppoval?: boolean;
   children?: React.ReactNode;
-  components: Components;
-  OrderConfirmationModal?: FC<OrderConfirmationModalProps>;
+  components?: Components;
+  SubmitOrderPanel: FC<SubmitOrderPanelProps>;
   OrderHistory: {
     SelectMenu?: FC<SelectMenuProps>;
     ListOrder?: FC<OrderHistoryListOrderProps>;
@@ -376,6 +373,7 @@ export interface TwapContextType extends TwapProps {
   marketPriceLoading?: boolean;
   account?: `0x${string}`;
   noLiquidity?: boolean;
+  components: Components;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };

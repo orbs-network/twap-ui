@@ -37,6 +37,11 @@ export const OrderHistoryList = () => {
 
 const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
   const context = useTwapContext();
+  const { cancelOrder } = useOrderHistoryContext();
+
+  const handleCancelOrder = React.useCallback(() => {
+    return cancelOrder(order);
+  }, [cancelOrder, order]);
 
   const component = (
     <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
@@ -52,7 +57,7 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
 
   if (context.OrderHistory?.ListOrder) {
     return (
-      <context.OrderHistory.ListOrder order={order} selectOrder={selectOrder}>
+      <context.OrderHistory.ListOrder order={order} selectOrder={selectOrder} cancelOrder={handleCancelOrder}>
         {component}
       </context.OrderHistory.ListOrder>
     );

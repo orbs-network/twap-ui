@@ -5,7 +5,7 @@ import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar 
 import {
   TooltipProps,
   TWAP,
-  OrderConfirmationModalProps,
+  SubmitOrderPanelProps,
   LinkProps,
   SelectMenuProps,
   SelectMeuItem,
@@ -58,7 +58,7 @@ const OrderHistoryModal = (props: OrdersHistoryProps) => {
   );
 };
 
-const OrderConfirmationModal = (props: OrderConfirmationModalProps) => {
+const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const {
     swap: { onSubmit, submitted, disabled },
     setDisclaimerAccepted,
@@ -441,7 +441,7 @@ export const Dapp = () => {
           SelectMenu: SelectMenu,
           CancelOrderButton,
         }}
-        OrderConfirmationModal={OrderConfirmationModal}
+        SubmitOrderPanel={SubmitOrderPanel}
         components={{
           Tooltip: CustomTooltip,
           TransactionModal: {

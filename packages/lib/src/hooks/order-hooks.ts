@@ -141,7 +141,7 @@ const useHandlePersistedOrders = () => {
   return useCallback(
     (orders: Order[]) => {
       getCreatedOrders().forEach((localStorageOrder) => {
-        if (orders.some((order) => order.id === localStorageOrder.id)) {
+        if (orders.some((order) => order.id.toString() === localStorageOrder.id.toString())) {
           console.log(`removing order: ${localStorageOrder.id}`);
           deleteCreatedOrder(localStorageOrder.id);
         } else {
@@ -152,7 +152,7 @@ const useHandlePersistedOrders = () => {
       const cancelledOrderIds = new Set(getCancelledOrderIds());
 
       orders.forEach((order, index) => {
-        if (cancelledOrderIds.has(order.id)) {
+        if (cancelledOrderIds.has(Number(order.id))) {
           if (order.status !== OrderStatus.Canceled) {
             console.log(`Marking order as cancelled: ${order.id}`);
             orders[index] = { ...order, status: OrderStatus.Canceled };

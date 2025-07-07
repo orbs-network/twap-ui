@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Orders, OrdersPortal } from "./orders/Orders";
-import { SubmitOrderModal } from "./submit-order-modal/SubmitOrderModal";
+import { SubmitOrderPanel } from "./submit-order-modal/SubmitOrderModal";
 import { TwapProvider } from "../context";
 import { TwapProps } from "../types";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
@@ -22,6 +22,7 @@ import { useOrders } from "../hooks/order-hooks";
 import { useInputsError, useResetState } from "../hooks/logic-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "./consts";
 import { useSubmitOrderPanel } from "../hooks/use-submit-order-panel";
+import { Portal } from "../components/Portal";
 
 const TWAP = (props: TwapProps) => {
   const shouldWrapOrUnwrap = useMemo(() => {
@@ -31,7 +32,7 @@ const TWAP = (props: TwapProps) => {
     <TwapProvider {...props}>
       <div className={`twap-widget ${shouldWrapOrUnwrap ? "twap-widget-wrap-only" : ""}`}>
         <Orders />
-        <SubmitOrderModal />
+        <SubmitOrderPanel />
         {props.children}
       </div>
     </TwapProvider>
@@ -60,4 +61,5 @@ export {
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,
   DISCLAIMER_URL,
+  Portal,
 };

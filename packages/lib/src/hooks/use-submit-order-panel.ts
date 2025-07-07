@@ -49,11 +49,12 @@ export const useSubmitOrderPanel = () => {
   const submitOrder = useCallback(() => mutateAsync(), [mutateAsync]);
 
   return {
-    modal: {
-      onClose,
-      isOpen: Boolean(showConfirmation),
-    },
-    details: {
+    onClose,
+    isOpen: Boolean(showConfirmation),
+    setDisclaimerAccepted,
+    disclaimerAccepted,
+    orderSubmissionArgs,
+    orderDetails: {
       orderType: getOrderType(Boolean(isMarketOrder), chunks),
       srcToken,
       dstToken,
@@ -87,8 +88,5 @@ export const useSubmitOrderPanel = () => {
       approveTxHash,
       createOrderTxHash,
     },
-    setDisclaimerAccepted,
-    disclaimerAccepted,
-    orderSubmissionArgs,
   };
 };

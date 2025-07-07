@@ -12,16 +12,12 @@ import { useSubmitOrderPanel } from "../twap";
 
 const Modal = ({ children }: { children: ReactNode }) => {
   const context = useTwapContext();
-  const {
-    modal: { isOpen, onClose },
-  } = useSubmitOrderPanel();
-
-  if (!context.OrderConfirmationModal) return null;
+  const { isOpen, onClose } = useSubmitOrderPanel();
 
   return (
-    <context.OrderConfirmationModal isOpen={Boolean(isOpen)} onClose={onClose} title="Create order">
+    <context.SubmitOrderPanel isOpen={Boolean(isOpen)} onClose={onClose} title="Create order">
       <div className="twap-create-order">{children}</div>
-    </context.OrderConfirmationModal>
+    </context.SubmitOrderPanel>
   );
 };
 
@@ -67,7 +63,7 @@ const useStep = () => {
   }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, successTitle, t, wrapExplorerUrl]);
 };
 
-export const SubmitOrderModal = () => {
+export const SubmitOrderPanel = () => {
   const { components, srcToken, dstToken } = useTwapContext();
   const swapError = useTwapStore((s) => s.state.swapError);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);

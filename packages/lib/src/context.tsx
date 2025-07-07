@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { constructSDK } from "@orbs-network/twap-sdk";
-import { TwapProps, TwapContextType, Translations } from "./types";
+import { TwapProps, TwapContextType, Translations, Components } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
@@ -82,6 +82,7 @@ const Content = (props: TwapProps) => {
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,
         noLiquidity: props.marketReferencePrice.noLiquidity,
+        components: props.components || ({} as Components),
       }}
     >
       <Listeners />

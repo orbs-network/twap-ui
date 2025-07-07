@@ -187,3 +187,5 @@ export const shouldUnwrapOnly = (srcToken?: Token, dstToken?: Token, chainId?: n
   const network = getNetwork(chainId);
   return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(dstToken?.address || "");
 };
+
+export { eqIgnoreCase, isNativeAddress };

@@ -7,14 +7,16 @@ import { useTwapContext } from "../../context";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { useTransactionExplorerLink } from "../../hooks/logic-hooks";
 import { Portal } from "../../components/Portal";
+import { useOrderHistoryPanel } from "../twap";
 
 const PORTAL_ID = "twap-orders-portal";
 
 const OrdersContent = () => {
   const context = useTwapContext();
+  const { isOpen, onClose } = useOrderHistoryPanel();
 
   return (
-    <context.OrderHistory.Panel>
+    <context.OrderHistory.Panel isOpen={isOpen} onClose={onClose}>
       <OrderHistory />
     </context.OrderHistory.Panel>
   );
