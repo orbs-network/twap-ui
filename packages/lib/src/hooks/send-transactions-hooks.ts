@@ -20,9 +20,39 @@ import { useOptimisticAddOrder, useOptimisticCancelOrder, useOrders } from "./or
 import { useTwapStore } from "../useTwapStore";
 import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected } from "../utils";
 
+const useGetTransactionReceipt = () => {
+  const { publicClient } = useTwapContext();
+
+  return useMutation(async (txHash: `0x${string}`) => {
+    if (!publicClient) throw new Error("publicClient is not defined");
+
+    const maxRetries = 10;
+    let attempt = 0;
+    let delay = 1000;
+
+    while (attempt < maxRetries) {
+      try {
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash: txHash,
+          confirmations: 2,
+          retryDelay: delay,
+        });
+        return receipt;
+      } catch (error) {
+        attempt++;
+        if (attempt >= maxRetries) {
+          throw new Error(`Failed after ${maxRetries} attempts: ${error}`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+      }
+    }
+  }).mutateAsync;
+};
 export const useApproveToken = () => {
   const { account, config, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
+  const getTransactionReceipt = useGetTransactionReceipt();
   return useMutation(
     async ({ token, amount }: { token: Token; amount: string }) => {
       if (!account) throw new Error("account is not defined");
@@ -39,10 +69,11 @@ export const useApproveToken = () => {
         chain: walletClient.chain,
       });
       updateState({ approveTxHash: hash });
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash,
-        confirmations: 2,
-      });
+      const receipt = await getTransactionReceipt(hash);
+
+      if (!receipt) {
+        throw new Error("failed to get transaction receipt");
+      }
 
       if (receipt.status === "reverted") {
         throw new Error("failed to approve token");
@@ -63,6 +94,7 @@ export const useCancelOrder = () => {
   const { account, callbacks, walletClient, publicClient, twapSDK } = useTwapContext();
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [swapStatus, setSwapStatus] = useState<SwapStatus | undefined>(undefined);
+  const getTransactionReceipt = useGetTransactionReceipt();
 
   const optimisticCancelOrder = useOptimisticCancelOrder();
   const mutation = useMutation(
@@ -83,10 +115,11 @@ export const useCancelOrder = () => {
         chain: walletClient.chain,
       });
       setTxHash(hash);
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash,
-        confirmations: 2,
-      });
+      const receipt = await getTransactionReceipt(hash);
+
+      if (!receipt) {
+        throw new Error("failed to get transaction receipt");
+      }
 
       if (receipt.status === "reverted") {
         throw new Error("failed to cancel order");
@@ -200,6 +233,7 @@ export const useCreateOrder = () => {
   const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
   const orderSubmissionArgs = useOrderSubmissionArgs();
+  const getTransactionReceipt = useGetTransactionReceipt();
 
   return useMutation(
     async (srcToken: Token) => {
@@ -223,10 +257,10 @@ export const useCreateOrder = () => {
       });
       updateState({ createOrderTxHash: txHash });
 
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: txHash,
-        confirmations: 2,
-      });
+      const receipt = await getTransactionReceipt(txHash);
+      if (!receipt) {
+        throw new Error("failed to get transaction receipt");
+      }
 
       if (receipt.status === "reverted") {
         throw new Error("failed to create order");
@@ -254,6 +288,7 @@ export const useWrapToken = () => {
   const updateState = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount || "");
   const tokenAddress = useNetwork()?.wToken.address;
+  const getTransactionReceipt = useGetTransactionReceipt();
 
   return useMutation(
     async (amount: string) => {
@@ -272,10 +307,11 @@ export const useWrapToken = () => {
       });
       updateState({ wrapTxHash: hash });
 
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash,
-        confirmations: 2,
-      });
+      const receipt = await getTransactionReceipt(hash);
+      if (!receipt) {
+        throw new Error("failed to get transaction receipt");
+      }
+
       if (receipt.status === "reverted") {
         throw new Error("failed to wrap token");
       }
@@ -311,6 +347,7 @@ export const useUnwrapToken = () => {
   const updateState = useTwapStore((s) => s.updateState);
   const wTokenAddress = useNetwork()?.wToken.address;
   const { amountWei } = useSrcAmount();
+  const getTransactionReceipt = useGetTransactionReceipt();
 
   return useMutation(
     async () => {
@@ -328,10 +365,10 @@ export const useUnwrapToken = () => {
         chain: walletClient.chain,
       });
       updateState({ unwrapTxHash: hash });
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash,
-        confirmations: 2,
-      });
+      const receipt = await getTransactionReceipt(hash);
+      if (!receipt) {
+        throw new Error("failed to get transaction receipt");
+      }
 
       return receipt;
     },

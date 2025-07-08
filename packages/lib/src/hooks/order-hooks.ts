@@ -104,7 +104,9 @@ export const useOptimisticAddOrder = () => {
 
       persistedOrdersStore.addCreatedOrder(order);
       queryClient.setQueryData(queryKey, (orders?: Order[]) => {
-        return !orders ? [order] : [order, ...orders];
+        if (!orders) return [order];
+        if (orders?.some((o) => o.id === order.id)) return orders;
+        return [order, ...orders];
       });
     },
     [persistedOrdersStore.addCreatedOrder, queryClient, queryKey, config, account],
