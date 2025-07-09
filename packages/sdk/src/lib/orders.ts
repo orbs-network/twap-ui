@@ -211,6 +211,8 @@ export const buildOrder = ({
   chainId,
   status,
   filledSrcAmount: _filledSrcAmount,
+  srcTokenSymbol,
+  dstTokenSymbol,
 }: {
   fills?: TwapFill[];
   srcAmount: string;
@@ -231,6 +233,8 @@ export const buildOrder = ({
   chainId: number;
   status: OrderStatus;
   filledSrcAmount?: string;
+  srcTokenSymbol?: string;
+  dstTokenSymbol?: string;
 }) => {
   const { filledDstAmount, filledSrcAmount: filledSrcAmountFromFills, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
   const chunks = new BN(srcAmount || 0)
@@ -272,35 +276,50 @@ export const buildOrder = ({
     chainId,
     filledDate,
     status,
+    srcTokenSymbol,
+    dstTokenSymbol,
   };
+};
+
+const getCreatedOrdersFilters = (filters?: GetOrdersFilters) => {
+  if (!filters) return {};
+  const { txHash, orderId, config, account: _account, dollarValueIn, inTokenSymbol, outTokenSymbol, inTokenAddress, outTokenAddress } = filters || {};
+  const account = _account?.toLowerCase();
+  const exchanges = config ? getExchanges(config) : undefined;
+
+  return [
+    exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "",
+    account ? `maker: "${account}"` : "",
+    txHash ? `transactionHash: "${txHash}"` : "",
+    orderId ? `Contract_id: ${orderId}` : "",
+    dollarValueIn ? `dollarValueIn_gte: ${dollarValueIn}` : "",
+    inTokenSymbol ? `srcTokenSymbol: "${inTokenSymbol}"` : "",
+    outTokenSymbol ? `dstTokenSymbol: "${outTokenSymbol}"` : "",
+    inTokenAddress ? `srcTokenAddress: "${inTokenAddress}"` : "",
+    outTokenAddress ? `dstTokenAddress: "${outTokenAddress}"` : "",
+  ]
+    .filter(Boolean)
+    .join(", ");
 };
 export async function getCreatedOrders({
   chainId,
-  account,
   signal,
-  exchanges,
   page,
   limit: _limit,
-  txHash,
-  orderId,
+  filters,
 }: {
   chainId: number;
-  account?: string;
   signal?: AbortSignal;
   exchanges?: string[];
   page?: number;
   limit?: number;
-  txHash?: string;
-  orderId?: number;
+  filters?: GetOrdersFilters;
 }): Promise<GraphOrder[]> {
   const limit = _limit || 1000;
 
-  const exchange = exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "";
-  const maker = account ? `maker: "${account}"` : "";
-  const txHashFilter = txHash ? `transactionHash: "${txHash}"` : "";
-  const orderIdFilter = orderId ? `Contract_id: ${orderId}` : "";
+  const filter = getCreatedOrdersFilters(filters);
 
-  const where = `where:{${exchange}, ${maker}, ${txHashFilter}, ${orderIdFilter}}`;
+  const where = `where:{${filter}}`;
 
   const orders = await fetchWithRetryPaginated<GraphOrder>({
     chainId,
@@ -355,10 +374,15 @@ type GraphStatus = {
 };
 
 export const getStatuses = async ({ chainId, orders, signal }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal }): Promise<GraphStatus[]> => {
-  const ids = orders.map((o) => `"${o.Contract_id}"`).join(", ");
-  const addresses = orders.map((o) => `"${o.twapAddress}"`).join(", ");
+  if (orders.length === 0) return [];
 
-  const where = `where: { twapId_in: [${ids}], twapAddress_in: [${addresses}] }`;
+  const ids = uniq(orders.map((o) => o.Contract_id.toString()));
+
+  if (!ids.length) return [];
+
+  const formattedIds = ids.map((id) => `"${id}"`).join(", ");
+
+  const where = `where: { twapId_in: [${formattedIds}]}`;
 
   const statuses = await fetchWithRetryPaginated<GraphStatus>({
     chainId,
@@ -382,11 +406,23 @@ export const getStatuses = async ({ chainId, orders, signal }: { chainId: number
 
   return statuses;
 };
-const getFills = async ({ chainId, orders, signal, exchanges }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal; exchanges?: string[] }) => {
-  const ids = orders.map((rawOrder) => rawOrder.Contract_id.toString()).join(", ");
-  const exchange = exchanges ? `exchange_in: [${exchanges}]` : "";
-  const where = `where: { TWAP_id_in: [${ids}], ${exchange} }`;
 
+export function uniq<T>(array: T[]): T[] {
+  return Array.from(new Set(array));
+}
+
+const getFills = async ({ chainId, orders, signal }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal }) => {
+  const ids = uniq(orders.map((o) => o.Contract_id)); // no `.toString()`
+  const twapAddresses = uniq(orders.map((o) => o.twapAddress)).filter(Boolean);
+
+  if (ids.length === 0) return [];
+
+  const formattedIds = ids.join(", "); // no quotes
+  const formattedTwapAddresses = twapAddresses.map((addr) => `"${addr}"`).join(", ");
+  const twapAddressClause = twapAddresses.length ? `twapAddress_in: [${formattedTwapAddresses}]` : "";
+
+  const whereFields = [`TWAP_id_in: [${formattedIds}]`, twapAddressClause].filter(Boolean);
+  const where = `where: { ${whereFields.join(", ")} }`;
   const fills = await fetchWithRetryPaginated<TwapFill>({
     chainId,
     signal,
@@ -426,30 +462,34 @@ export class NoGraphEndpointError extends Error {
   }
 }
 
-const _getOrders = async ({
-  chainId,
-  account: _account,
-  signal,
-  config,
-  page,
-  limit,
-  txHash,
-  orderId,
-}: {
-  chainId: number;
-  account?: string;
-  signal?: AbortSignal;
-  config?: Config;
-  page?: number;
-  limit?: number;
+export type GetOrdersFilters = {
   txHash?: string;
   orderId?: number;
+  account?: string;
+  config?: Config;
+  inTokenSymbol?: string;
+  outTokenSymbol?: string;
+  inTokenAddress?: string;
+  outTokenAddress?: string;
+  dollarValueIn?: string;
+};
+
+export const getOrders = async ({
+  chainId,
+  signal,
+  page,
+  limit,
+  filters,
+}: {
+  chainId: number;
+  signal?: AbortSignal;
+  page?: number;
+  limit?: number;
+  filters?: GetOrdersFilters;
 }) => {
-  const exchanges = config ? getExchanges(config) : undefined;
-  const account = _account?.toLowerCase();
-  const orders = await getCreatedOrders({ chainId, account, signal, exchanges, page, limit, txHash, orderId });
-  const fills = await getFills({ chainId, orders, signal, exchanges });
-  const statuses = await getStatuses({ chainId, orders, signal });
+  const orders = await getCreatedOrders({ chainId, signal, page, limit, filters });
+  const [fills, statuses] = await Promise.all([getFills({ chainId, orders, signal }), getStatuses({ chainId, orders, signal })]);
+
   const parsedOrders = orders
     .map((o) => {
       const orderFills = fills?.filter((it) => it.TWAP_id === Number(o.Contract_id) && eqIgnoreCase(it.exchange, o.exchange) && eqIgnoreCase(it.twapAddress, o.twapAddress));
@@ -473,30 +513,12 @@ const _getOrders = async ({
         twapAddress: o.twapAddress,
         chainId,
         status: getStatus(o, orderFills || [], statuses),
+        srcTokenSymbol: o.srcTokenSymbol,
+        dstTokenSymbol: o.dstTokenSymbol,
       });
     })
     .sort((a, b) => b.createdAt - a.createdAt);
   return parsedOrders;
-};
-export const getOrders = async ({
-  chainId,
-  signal,
-  page,
-  limit,
-  filters,
-}: {
-  chainId: number;
-  signal?: AbortSignal;
-  page?: number;
-  limit?: number;
-  filters?: {
-    txHash?: string;
-    orderId?: number;
-    account?: string;
-    config?: Config;
-  };
-}) => {
-  return _getOrders({ chainId, signal, page, limit, orderId: filters?.orderId, txHash: filters?.txHash, account: filters?.account, config: filters?.config });
 };
 
 const getStatus = (order: GraphOrder, fills: TwapFill[], statuses?: GraphStatus[]): OrderStatus => {
