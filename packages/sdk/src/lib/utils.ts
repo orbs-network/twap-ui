@@ -115,11 +115,23 @@ export const getNetwork = (chainId?: number) => {
   return Object.values(networks).find((it) => it.id === chainId);
 };
 
-export const getExchanges = (config: Config) => {
-  const key = getPartnerIdentifier(config);
+export const getExchanges = (config?: Config[]) => {
+  if (!config) return undefined;
+  const keys = config.map((c) => getPartnerIdentifier(c));
 
-  return [config.exchangeAddress, ...(LEGACY_EXCHANGES_MAP[key] || [])].map((a) => `"${a.toLowerCase()}"`);
+  const legacyAddresses = Object.entries(LEGACY_EXCHANGES_MAP)
+    .filter(([key]) => {
+      return keys.includes(key);
+    })
+    .flatMap(([, addresses]) => addresses);
+  const exchangeAddresses = config.map((c) => c.exchangeAddress);
+
+  const allAddresses = new Set([...exchangeAddresses, ...legacyAddresses].map((a) => a.toLowerCase()));
+
+  return Array.from(allAddresses);
 };
+
+export const normalizeSubgraphList = <T>(list?: T[], transform?: (val: T) => string) => (list && list.length ? list.map(transform || ((v) => `${v}`)) : undefined);
 
 export const isSupportedByTheGraph = (chainId?: number) => {
   return getTheGraphUrl(chainId) !== undefined;

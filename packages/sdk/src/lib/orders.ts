@@ -2,7 +2,7 @@
 /* eslint-disable no-constant-condition */
 import { Config, LensOrder, OrderStatus, OrderType, TwapFill } from "./types";
 import BN from "bignumber.js";
-import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl } from "./utils";
+import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl, normalizeSubgraphList } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
 type GraphOrder = {
@@ -282,21 +282,30 @@ export const buildOrder = ({
 };
 
 const getCreatedOrdersFilters = (filters?: GetOrdersFilters) => {
-  if (!filters) return {};
-  const { txHash, orderId, config, account: _account, dollarValueIn, inTokenSymbol, outTokenSymbol, inTokenAddress, outTokenAddress } = filters || {};
-  const account = _account?.toLowerCase();
-  const exchanges = config ? getExchanges(config) : undefined;
+  if (!filters) return "";
+
+  const accounts = normalizeSubgraphList(filters.accounts, (a) => `"${a.toLowerCase()}"`);
+  const exchanges = normalizeSubgraphList(getExchanges(filters.configs), (e) => `"${e.toLowerCase()}"`);
+  const inTokenSymbols = normalizeSubgraphList(filters.inTokenSymbols, (s) => `"${s.toUpperCase()}"`);
+  const outTokenSymbols = normalizeSubgraphList(filters.outTokenSymbols, (s) => `"${s.toUpperCase()}"`);
+  const inTokenAddresses = normalizeSubgraphList(filters.inTokenAddresses, (a) => `"${a.toLowerCase()}"`);
+  const outTokenAddresses = normalizeSubgraphList(filters.outTokenAddresses, (a) => `"${a.toLowerCase()}"`);
+  const transactionHashes = normalizeSubgraphList(filters.transactionHashes, (h) => `"${h.toLowerCase()}"`);
+  const orderIds = normalizeSubgraphList(filters.orderIds, (id) => `"${id}"`);
+  const minDollarValueIn = filters.minDollarValueIn;
 
   return [
     exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "",
-    account ? `maker: "${account}"` : "",
-    txHash ? `transactionHash: "${txHash}"` : "",
-    orderId ? `Contract_id: ${orderId}` : "",
-    dollarValueIn ? `dollarValueIn_gte: ${dollarValueIn}` : "",
-    inTokenSymbol ? `srcTokenSymbol: "${inTokenSymbol}"` : "",
-    outTokenSymbol ? `dstTokenSymbol: "${outTokenSymbol}"` : "",
-    inTokenAddress ? `srcTokenAddress: "${inTokenAddress}"` : "",
-    outTokenAddress ? `dstTokenAddress: "${outTokenAddress}"` : "",
+    accounts ? `maker_in: [${accounts.join(", ")}]` : "",
+    transactionHashes ? `transactionHash_in: [${transactionHashes.join(", ")}]` : "",
+    orderIds ? `Contract_id_in: [${orderIds.join(", ")}]` : "",
+    minDollarValueIn ? `dollarValueIn_gte: ${minDollarValueIn}` : "",
+    inTokenSymbols ? `srcTokenSymbol_in: [${inTokenSymbols.join(", ")}]` : "",
+    outTokenSymbols ? `dstTokenSymbol_in: [${outTokenSymbols.join(", ")}]` : "",
+    inTokenAddresses ? `srcTokenAddress_in: [${inTokenAddresses.join(", ")}]` : "",
+    outTokenAddresses ? `dstTokenAddress_in: [${outTokenAddresses.join(", ")}]` : "",
+    filters?.startDate ? `blockTimestamp_gte: ${filters.startDate}` : "",
+    filters?.endDate ? `blockTimestamp_lte: ${filters.endDate}` : "",
   ]
     .filter(Boolean)
     .join(", ");
@@ -317,9 +326,7 @@ export async function getCreatedOrders({
 }): Promise<GraphOrder[]> {
   const limit = _limit || 1000;
 
-  const filter = getCreatedOrdersFilters(filters);
-
-  const where = `where:{${filter}}`;
+  const whereClause = getCreatedOrdersFilters(filters);
 
   const orders = await fetchWithRetryPaginated<GraphOrder>({
     chainId,
@@ -329,11 +336,11 @@ export async function getCreatedOrders({
     buildQuery: (page, limit) => `
       {
         orderCreateds(
+          ${whereClause ? `where: { ${whereClause} }` : ""},
           first: ${limit},
           skip: ${page * limit},
           orderBy: timestamp,
           orderDirection: desc,
-          ${where}
         ) {
           id
           twapAddress
@@ -463,15 +470,17 @@ export class NoGraphEndpointError extends Error {
 }
 
 export type GetOrdersFilters = {
-  txHash?: string;
-  orderId?: number;
-  account?: string;
-  config?: Config;
-  inTokenSymbol?: string;
-  outTokenSymbol?: string;
-  inTokenAddress?: string;
-  outTokenAddress?: string;
-  dollarValueIn?: string;
+  transactionHashes?: string[];
+  orderIds?: number[];
+  accounts?: string[];
+  configs?: Config[];
+  inTokenSymbols?: string[];
+  outTokenSymbols?: string[];
+  inTokenAddresses?: string[];
+  outTokenAddresses?: string[];
+  minDollarValueIn?: number;
+  startDate?: number;
+  endDate?: number;
 };
 
 export const getOrders = async ({

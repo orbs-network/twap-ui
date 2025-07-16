@@ -120,7 +120,7 @@ export class TwapSDK {
   }
 
   async getOrders(account: string, signal?: AbortSignal) {
-    return getOrders({ chainId: this.config.chainId, signal, filters: { account, config: this.config } });
+    return getOrders({ chainId: this.config.chainId, signal, filters: { accounts: [account], configs: [this.config] } });
   }
 }
 
