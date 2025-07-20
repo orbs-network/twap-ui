@@ -145,11 +145,11 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
   );
 
   return {
-    filledDstAmount: result.dstAmountOut.toString(),
-    filledSrcAmount: result.srcAmountIn.toString(),
-    filledDollarValueIn: result.dollarValueIn.toString(),
-    filledDollarValueOut: result.dollarValueOut.toString(),
-    dexFee: result.dexFee.toString(),
+    filledDstAmount: result.dstAmountOut.toFixed(),
+    filledSrcAmount: result.srcAmountIn.toFixed(),
+    filledDollarValueIn: result.dollarValueIn.toFixed(),
+    filledDollarValueOut: result.dollarValueOut.toFixed(),
+    dexFee: result.dexFee.toFixed(),
   };
 };
 
@@ -306,6 +306,8 @@ const getCreatedOrdersFilters = (filters?: GetOrdersFilters) => {
     outTokenAddresses ? `dstTokenAddress_in: [${outTokenAddresses.join(", ")}]` : "",
     filters?.startDate ? `blockTimestamp_gte: ${filters.startDate}` : "",
     filters?.endDate ? `blockTimestamp_lte: ${filters.endDate}` : "",
+    filters?.orderType === "limit" ? `ask_dstMinAmount_gt: 1` : "",
+    filters?.orderType === "market" ? `ask_dstMinAmount_lte: 1` : "",
   ]
     .filter(Boolean)
     .join(", ");
@@ -481,6 +483,7 @@ export type GetOrdersFilters = {
   minDollarValueIn?: number;
   startDate?: number;
   endDate?: number;
+  orderType?: "limit" | "market";
 };
 
 export const getOrders = async ({

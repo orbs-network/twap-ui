@@ -12,6 +12,10 @@ export const MIN_ORDER_DURATION_MILLIS = 5 * 60 * 1000;
 
 export const MIN_FILL_DELAY_MINUTES = new Date(MIN_FILL_DELAY_MILLIS).getMinutes();
 
+const getGfURL = (name: string) => {
+  return `https://hub.orbs.network/api/private/project_cm7nb67z86nyr01z12gs0fxpf/subgraphs/orbs-twap-${name}/prod/gn`;
+};
+
 const THE_GRAPH_API = "https://hub.orbs.network/api/apikey/subgraphs/id";
 export const THE_GRAPH_ORDERS_API = {
   [networks.eth.id]: `${THE_GRAPH_API}/Bf7bvMYcJbDAvYWJmhMpHZ4cpFjqzkhK6GXXEpnPRq6`,
@@ -24,6 +28,7 @@ export const THE_GRAPH_ORDERS_API = {
   [networks.sonic.id]: `${THE_GRAPH_API}/DtBr6a5vsoDd2oAXdPszcn4gLgrr1XC68Q3AJQKXnNLV`,
   [networks.ftm.id]: `${THE_GRAPH_API}/DdRo1pmJkrJC9fjsjEBWnNE1uqrbh7Diz4tVKd7rfupp`,
   [networks.katana.id]: `${THE_GRAPH_API}/CGi9sDFMQcnBwF3C3NoCFqnaE34sssbgwPLTwiskSXmW`,
+  [networks.flare.id]: getGfURL("flare"),
 };
 
 export const zeroAddress = "0x0000000000000000000000000000000000000000";
