@@ -249,7 +249,7 @@ export const useFillDelayPanel = () => {
     milliseconds: fillDelay.unit * fillDelay.value,
     fillDelay,
     error,
-    title: t.tradeIntervalTitle,
+    label: t.tradeIntervalTitle,
     tooltip: t.tradeIntervalTootlip,
   };
 };
