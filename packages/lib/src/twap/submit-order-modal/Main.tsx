@@ -4,7 +4,7 @@ import { useTwapContext } from "../../context";
 import { useFee } from "../../hooks/ui-hooks";
 import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../hooks/logic-hooks";
 import { OrderDetails } from "../../components/order-details";
-import { useTwapStore } from "../../useTwapStore";
+import { useSwap, useTwapStore } from "../../useTwapStore";
 import { useTradePrice } from "./usePrice";
 
 const Price = () => {
@@ -32,7 +32,8 @@ const FillDelaySummary = () => {
 
 export const Main = () => {
   const { translations, components, srcUsd1Token, dstUsd1Token } = useTwapContext();
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const { state: swapState } = useSwap();
+  const swapStatus = swapState?.swapStatus;
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
   const srcAmountUsd = useUsdAmount(srcAmount, srcUsd1Token);

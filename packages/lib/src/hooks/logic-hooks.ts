@@ -5,10 +5,9 @@ import { getMinNativeBalance, millisToDays, millisToMinutes, removeCommas, shoul
 import BN from "bignumber.js";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
-import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
 import { InputError, InputErrors, Provider, State, Token } from "../types";
-import { useTwapStore } from "../useTwapStore";
+import { useSwap, useTwapStore } from "../useTwapStore";
 import * as chains from "viem/chains";
 import { getAllowance } from "../lib";
 
@@ -447,34 +446,31 @@ export const useOrderDuration = () => {
 };
 
 export const useOnOpenConfirmationModal = () => {
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const { state: swapState } = useSwap();
+  const swapStatus = swapState?.swapStatus;
   const updateState = useTwapStore((s) => s.updateState);
+  const swapIndex = useTwapStore((s) => s.state.swapIndex);
   const dstAmount = useDestTokenAmount().amountUI;
   return useCallback(() => {
     updateState({ showConfirmation: true });
-    if (swapStatus === SwapStatus.LOADING) return;
-    updateState({
-      swapStatus: undefined,
-      acceptedDstAmount: dstAmount,
-    });
-  }, [updateState, dstAmount, swapStatus]);
+    console.log(swapState?.createOrderTxHash);
+    
+    if (!swapState?.createOrderTxHash) return;
+    updateState({ swapIndex: swapIndex + 1 });
+  }, [updateState, dstAmount, swapStatus, swapIndex, swapState]);
 };
 
 export const useOnCloseConfirmationModal = () => {
   const updateState = useTwapStore((s) => s.updateState);
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const { state: swapState } = useSwap();
   const resetState = useTwapStore((s) => s.resetState);
 
   return useCallback(() => {
     updateState({ showConfirmation: false });
-    if (swapStatus === SwapStatus.SUCCESS) {
+    if (swapState?.createOrderTxHash) {
       resetState();
     }
-
-    if (swapStatus === SwapStatus.FAILED) {
-      updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
-    }
-  }, [resetState, updateState, swapStatus]);
+  }, [resetState, updateState, swapState]);
 };
 
 export const useTransactionExplorerLink = (txHash?: string) => {

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Steps, Token } from "../types";
+import { Steps, SwapState, Token } from "../types";
 import BN from "bignumber.js";
 import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
@@ -17,7 +17,7 @@ import { amountUi, isNativeAddress, iwethabi, Order, TwapAbi } from "@orbs-netwo
 import { useCallback, useMemo, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOptimisticAddOrder, useOptimisticCancelOrder, useOrders } from "./order-hooks";
-import { useTwapStore } from "../useTwapStore";
+import { useSwap, useTwapStore } from "../useTwapStore";
 import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected } from "../utils";
 
 const useGetTransactionReceipt = () => {
@@ -51,10 +51,10 @@ const useGetTransactionReceipt = () => {
 };
 export const useApproveToken = () => {
   const { account, config, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
-  const updateState = useTwapStore((s) => s.updateState);
   const getTransactionReceipt = useGetTransactionReceipt();
+  const { updateSwapState } = useSwap();
   return useMutation(
-    async ({ token, amount }: { token: Token; amount: string }) => {
+    async ({ token, amount, swapIndex }: { token: Token; amount: string; swapIndex: number }) => {
       if (!account) throw new Error("account is not defined");
       if (!walletClient) throw new Error("walletClient is not defined");
       if (!publicClient) throw new Error("publicClient is not defined");
@@ -68,7 +68,7 @@ export const useApproveToken = () => {
         args: [config.twapAddress as `0x${string}`, BigInt(BN(amount).decimalPlaces(0).toFixed())],
         chain: walletClient.chain,
       });
-      updateState({ approveTxHash: hash });
+      updateSwapState(swapIndex, { approveTxHash: hash });
       const receipt = await getTransactionReceipt(hash);
 
       if (!receipt) {
@@ -86,7 +86,7 @@ export const useApproveToken = () => {
       onError: (error) => {
         callbacks?.approve?.onFailed?.((error as any).message);
       },
-    },
+    }
   );
 };
 
@@ -145,7 +145,7 @@ export const useCancelOrder = () => {
           callbacks?.cancelOrder?.onFailed?.(error.message);
         }
       },
-    },
+    }
   );
   const resetSwapStatus = useCallback(() => {
     setSwapStatus(undefined);
@@ -180,7 +180,7 @@ const useCallbacks = () => {
 
       optimisticAddOrder(orderId, receipt.transactionHash, params, srcToken, dstToken!);
     },
-    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, optimisticAddOrder, refetchOrders],
+    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, optimisticAddOrder, refetchOrders]
   );
 
   const onError = useCallback(
@@ -188,7 +188,7 @@ const useCallbacks = () => {
       callbacks?.createOrder?.onFailed?.((error as any).message);
       twapSDK.analytics.onCreateOrderError(error);
     },
-    [callbacks, twapSDK],
+    [callbacks, twapSDK]
   );
 
   return {
@@ -230,13 +230,13 @@ export const useOrderSubmissionArgs = () => {
 
 export const useCreateOrder = () => {
   const { account, walletClient, publicClient, chainId, dstToken } = useTwapContext();
-  const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
   const orderSubmissionArgs = useOrderSubmissionArgs();
   const getTransactionReceipt = useGetTransactionReceipt();
+  const { updateSwapState } = useSwap();
 
   return useMutation(
-    async (srcToken: Token) => {
+    async ({ srcToken, swapIndex }: { srcToken: Token; swapIndex: number }) => {
       if (!account) throw new Error("account is not defined");
       if (!walletClient) throw new Error("walletClient is not defined");
       if (!publicClient) throw new Error("publicClient is not defined");
@@ -255,7 +255,7 @@ export const useCreateOrder = () => {
         args: [orderSubmissionArgs.params],
         chain: walletClient.chain,
       });
-      updateState({ createOrderTxHash: txHash });
+      updateSwapState(swapIndex, { createOrderTxHash: txHash });
 
       const receipt = await getTransactionReceipt(txHash);
       if (!receipt) {
@@ -279,19 +279,19 @@ export const useCreateOrder = () => {
         console.error(error);
         callbacks.onError(error);
       },
-    },
+    }
   );
 };
 
 export const useWrapToken = () => {
   const { account, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
-  const updateState = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount || "");
   const tokenAddress = useNetwork()?.wToken.address;
   const getTransactionReceipt = useGetTransactionReceipt();
+  const { updateSwapState } = useSwap();
 
   return useMutation(
-    async (amount: string) => {
+    async ({ amount, swapIndex }: { amount: string; swapIndex: number }) => {
       if (!account) throw new Error("account is not defined");
       if (!tokenAddress) throw new Error("tokenAddress is not defined");
       if (!walletClient) throw new Error("walletClient is not defined");
@@ -305,7 +305,7 @@ export const useWrapToken = () => {
         value: BigInt(BN(amount).decimalPlaces(0).toFixed()),
         chain: walletClient.chain,
       });
-      updateState({ wrapTxHash: hash });
+      updateSwapState(swapIndex, { wrapTxHash: hash });
 
       const receipt = await getTransactionReceipt(hash);
       if (!receipt) {
@@ -327,7 +327,7 @@ export const useWrapToken = () => {
       onError: (error) => {
         callbacks?.wrap?.onFailed?.((error as any).message);
       },
-    },
+    }
   );
 };
 
@@ -335,8 +335,9 @@ export const useWrapOnly = () => {
   const { mutateAsync } = useWrapToken();
   const srcAmount = useSrcAmount().amountWei;
   const resetState = useTwapStore((s) => s.resetState);
+  const swapIndex = useTwapStore((s) => s.state.swapIndex);
   return useMutation(async () => {
-    await mutateAsync(srcAmount);
+    await mutateAsync({ amount: srcAmount, swapIndex });
     resetState();
   });
 };
@@ -344,7 +345,6 @@ export const useWrapOnly = () => {
 export const useUnwrapToken = () => {
   const { account, walletClient, publicClient } = useTwapContext();
   const resetState = useTwapStore((s) => s.resetState);
-  const updateState = useTwapStore((s) => s.updateState);
   const wTokenAddress = useNetwork()?.wToken.address;
   const { amountWei } = useSrcAmount();
   const getTransactionReceipt = useGetTransactionReceipt();
@@ -364,17 +364,16 @@ export const useUnwrapToken = () => {
         args: [BigInt(BN(amountWei).decimalPlaces(0).toFixed())],
         chain: walletClient.chain,
       });
-      updateState({ unwrapTxHash: hash });
       const receipt = await getTransactionReceipt(hash);
       if (!receipt) {
         throw new Error("failed to get transaction receipt");
       }
 
-      return receipt;
+      return hash;
     },
     {
       onSuccess: resetState,
-    },
+    }
   );
 };
 
@@ -388,17 +387,29 @@ const getTotalSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 export const useSubmitOrderCallback = () => {
   const { srcToken, dstToken, isExactAppoval, chainId } = useTwapContext();
   const { mutateAsync: getHasAllowance } = useHasAllowanceCallback();
-  const updateState = useTwapStore((s) => s.updateState);
+  const _swapIndex = useTwapStore((s) => s.state.swapIndex);
+
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
   const srcAmount = useSrcAmount().amountWei;
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256.toString();
   const [checkingApproval, setCheckingApproval] = useState(false);
+  const { updateSwapState } = useSwap();
 
   const wrappedRef = useRef(false);
-  const mutation = useMutation(
-    async () => {
+  const mutation = useMutation(async () => {
+    let state = {} as SwapState;
+    const swapIndex = _swapIndex;
+
+    const updateLocalSwap = (partialState: Partial<SwapState>) => {
+      state = {
+        ...state,
+        ...partialState,
+      };
+      updateSwapState(swapIndex, state);
+    };
+    try {
       if (!srcToken) throw new Error("srcToken is not defined");
       if (!dstToken) throw new Error("dstToken is not defined");
       if (!chainId) throw new Error("chainId is not defined");
@@ -408,41 +419,39 @@ export const useSubmitOrderCallback = () => {
       const haveAllowance = await ensureAllowance();
       setCheckingApproval(false);
       let stepIndex = 0;
-      updateState({ swapStatus: SwapStatus.LOADING, totalSteps: getTotalSteps(shouldWrap, !haveAllowance) });
+
+      updateLocalSwap({ swapStatus: SwapStatus.LOADING, totalSteps: getTotalSteps(shouldWrap, !haveAllowance) });
 
       if (shouldWrap) {
-        updateState({ activeStep: Steps.WRAP });
-        await wrapToken(srcAmount);
+        updateLocalSwap({ activeStep: Steps.WRAP });
+        await wrapToken({ amount: srcAmount, swapIndex });
         stepIndex++;
-        updateState({ currentStepIndex: stepIndex });
+        updateLocalSwap({ currentStepIndex: stepIndex });
       }
 
       if (!haveAllowance) {
-        updateState({ activeStep: Steps.APPROVE });
-        await approve({ token: ensureWrappedToken(srcToken, chainId), amount: approvalAmount });
+        updateLocalSwap({ activeStep: Steps.APPROVE });
+        await approve({ token: ensureWrappedToken(srcToken, chainId), amount: approvalAmount, swapIndex });
         // make sure the allowance was set
         if (!(await ensureAllowance())) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
         }
         stepIndex++;
-        updateState({ currentStepIndex: stepIndex });
+        updateLocalSwap({ currentStepIndex: stepIndex });
       }
-      updateState({ activeStep: Steps.CREATE });
-      const order = await createOrder(ensureWrappedToken(srcToken, chainId));
+      updateLocalSwap({ activeStep: Steps.CREATE });
+      const order = await createOrder({ srcToken: ensureWrappedToken(srcToken, chainId), swapIndex });
 
-      updateState({ swapStatus: SwapStatus.SUCCESS });
+      updateLocalSwap({ swapStatus: SwapStatus.SUCCESS });
       return order;
-    },
-    {
-      onError(error) {
-        if (isTxRejected(error) && !wrappedRef.current) {
-          updateState({ activeStep: undefined, swapStatus: undefined, currentStepIndex: undefined });
-        } else {
-          updateState({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message });
-        }
-      },
-    },
-  );
+    } catch (error) {
+      if (isTxRejected(error) && !wrappedRef.current) {
+        updateLocalSwap({ activeStep: undefined, swapStatus: undefined, currentStepIndex: undefined });
+      } else {
+        updateLocalSwap({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message });
+      }
+    }
+  });
 
   return {
     ...mutation,

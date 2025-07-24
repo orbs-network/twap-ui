@@ -416,8 +416,7 @@ export enum Steps {
   CREATE = "create",
 }
 
-export interface State {
-  totalSteps?: number;
+export interface SwapState {
   swapStatus?: SwapStatus;
   activeStep?: Steps;
   currentStepIndex?: number;
@@ -426,6 +425,12 @@ export interface State {
   approveTxHash?: string;
   wrapTxHash?: string;
   unwrapTxHash?: string;
+  totalSteps?: number;
+}
+
+export interface State {
+  swap?: { [key: number]: SwapState };
+  swapIndex: number;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   typedSrcAmount?: string;
@@ -433,7 +438,6 @@ export interface State {
   typedChunks?: number;
   typedFillDelay: TimeDuration;
   typedDuration?: TimeDuration;
-
   typedPrice?: string;
   isInvertedPrice?: boolean;
   selectedPricePercent?: string;

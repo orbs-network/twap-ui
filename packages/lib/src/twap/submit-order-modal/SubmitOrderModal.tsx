@@ -7,7 +7,7 @@ import { useTwapContext } from "../../context";
 import { useChunks, useNetwork, useOrderName, useTransactionExplorerLink } from "../../hooks/logic-hooks";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Steps } from "../../types";
-import { useTwapStore } from "../../useTwapStore";
+import { useSwap, useTwapStore } from "../../useTwapStore";
 import { useSubmitOrderPanel } from "../twap";
 
 const Modal = ({ children }: { children: ReactNode }) => {
@@ -31,10 +31,11 @@ const useTitle = () => {
 
 const useStep = () => {
   const { translations: t, srcToken } = useTwapContext();
-  const activeStep = useTwapStore((s) => s.state.activeStep);
-  const wrapTxHash = useTwapStore((s) => s.state.wrapTxHash);
-  const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
-  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
+  const { state: swapState } = useSwap();
+  const activeStep = swapState?.activeStep;
+  const wrapTxHash = swapState?.wrapTxHash;
+  const approveTxHash = swapState?.approveTxHash;
+  const createOrderTxHash = swapState?.createOrderTxHash;
   const network = useNetwork();
   const wrapExplorerUrl = useTransactionExplorerLink(wrapTxHash);
   const approveExplorerUrl = useTransactionExplorerLink(approveTxHash);
@@ -65,10 +66,12 @@ const useStep = () => {
 
 export const SubmitOrderPanel = () => {
   const { components, srcToken, dstToken } = useTwapContext();
-  const swapError = useTwapStore((s) => s.state.swapError);
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const totalSteps = useTwapStore((s) => s.state.totalSteps);
-  const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
+  const { state: swapState } = useSwap();
+  
+  const swapError = swapState?.swapError;
+  const swapStatus = swapState?.swapStatus;
+  const totalSteps = swapState?.totalSteps;
+  const currentStepIndex = swapState?.currentStepIndex;
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
   const srcAmountF = useFormatNumber({ value: srcAmount });
@@ -102,7 +105,8 @@ export const SubmitOrderPanel = () => {
 };
 
 const SuccessContent = () => {
-  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
+  const { state: swapState } = useSwap();
+  const createOrderTxHash = swapState?.createOrderTxHash;
   const explorerUrl = useTransactionExplorerLink(createOrderTxHash);
   const successTitle = useTitle();
   return <SwapFlow.Success title={successTitle} explorerUrl={explorerUrl} />;

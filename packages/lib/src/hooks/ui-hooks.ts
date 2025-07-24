@@ -29,7 +29,7 @@ import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
 import { useCancelOrder, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useTwapStore } from "../useTwapStore";
+import { useSwap, useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
 import { useOrderHistoryContext } from "../twap/orders/context";
 import { useOrders } from "./order-hooks";
@@ -466,7 +466,8 @@ export const useShowOrderConfirmationModalButton = () => {
   const { srcUsd1Token, translations: t, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity, account } = useTwapContext();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const { state: swapState } = useSwap();
+  const swapStatus = swapState?.swapStatus;
 
   const minChunkSizeUsd = useMinChunkSizeUsd();
   const balanceError = useBalanceError();
