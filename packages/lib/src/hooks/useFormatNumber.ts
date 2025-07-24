@@ -1,13 +1,15 @@
 import { useMemo } from "react";
 import { useNumericFormat } from "react-number-format";
 import { formatDecimals } from "../utils";
+import { useTwapContext } from "../context";
 
 export const useFormatDecimals = (value?: string | number, decimalPlaces?: number) => {
   return useMemo(() => formatDecimals(value?.toString(), decimalPlaces), [value, decimalPlaces]);
 };
 
-export const useFormatNumber = ({ value, decimalScale = 4, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
   const _value = useFormatDecimals(value, decimalScale);
+  const { numberFormat } = useTwapContext();
 
   const result = useNumericFormat({
     allowLeadingZeros: true,
@@ -18,5 +20,10 @@ export const useFormatNumber = ({ value, decimalScale = 4, prefix, suffix }: { v
     prefix,
     suffix,
   });
+
+  if (numberFormat) {
+    return numberFormat(value || "");
+  }
+
   return result.value?.toString();
 };
