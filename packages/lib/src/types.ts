@@ -360,7 +360,7 @@ export interface TwapProps {
   account?: string;
   orderDisclaimerAcceptedByDefault?: boolean;
   isTwapMarketByDefault?: boolean;
-  onSrcAmountChange?: (amount: string) => void;
+  onInputAmountChange?: (amountWei: string, amountUI: string) => void;
 }
 
 export interface TwapContextType extends TwapProps {

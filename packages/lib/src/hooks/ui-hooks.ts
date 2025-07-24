@@ -33,6 +33,7 @@ import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
 import { useOrderHistoryContext } from "../twap/orders/context";
 import { useOrders } from "./order-hooks";
+import { DEFAULT_DURATION_OPTIONS } from "../twap/consts";
 
 const defaultPercent = [1, 5, 10];
 
@@ -249,8 +250,9 @@ export const useFillDelayPanel = () => {
     milliseconds: fillDelay.unit * fillDelay.value,
     fillDelay,
     error,
-    label: t.tradeIntervalTitle,
+    title: t.tradeIntervalTitle,
     tooltip: t.tradeIntervalTootlip,
+    units: DEFAULT_DURATION_OPTIONS,
   };
 };
 
@@ -379,6 +381,7 @@ export const useDurationPanel = () => {
     title: t.expiry,
     tooltip: t.maxDurationTooltip,
     error,
+    units: DEFAULT_DURATION_OPTIONS,
   };
 };
 

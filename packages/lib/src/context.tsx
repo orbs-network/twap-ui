@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { constructSDK } from "@orbs-network/twap-sdk";
+import { amountBN, constructSDK } from "@orbs-network/twap-sdk";
+import BN from "bignumber.js";
 import { TwapProps, TwapContextType, Translations, Components } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
@@ -21,7 +22,7 @@ const Listeners = () => {
   const updateStore = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
-  const { isLimitPanel, isTwapMarketByDefault, srcToken, dstToken, onSrcAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
+  const { isLimitPanel, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
 
   useEffect(() => {
     updateStore({ disclaimerAccepted: orderDisclaimerAcceptedByDefault });
@@ -32,10 +33,10 @@ const Listeners = () => {
   }, [srcToken?.address, dstToken?.address]);
 
   useEffect(() => {
-    if (onSrcAmountChange) {
-      onSrcAmountChange(typedSrcAmount || "");
+    if (onInputAmountChange) {
+      onInputAmountChange(typedSrcAmount || "", amountBN(srcToken?.decimals, typedSrcAmount));
     }
-  }, [typedSrcAmount]);
+  }, [typedSrcAmount, srcToken?.decimals, onInputAmountChange]);
 
   useEffect(() => {
     if (isLimitPanel) {
@@ -68,7 +69,6 @@ const Content = (props: TwapProps) => {
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
-
   return (
     <TwapContext.Provider
       value={{
