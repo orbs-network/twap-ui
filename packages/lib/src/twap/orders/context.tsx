@@ -24,6 +24,7 @@ interface OrderHistoryContextType {
   cancelOrder: (order: Order) => Promise<string>;
   cancelOrderTxHash: string | undefined;
   cancelOrderStatus?: SwapStatus;
+  cancelOrderError?: string;
 }
 
 export const useSelectedOrder = () => {
@@ -46,7 +47,7 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const selectedOrders = !orders ? [] : !status ? orders.all : orders[status.toUpperCase() as keyof typeof orders];
 
-  const { mutateAsync: cancelOrder, swapStatus: cancelOrderStatus, txHash: cancelOrderTxHash, resetSwapStatus: resetCancelOrderStatus } = useCancelOrder();
+  const { mutateAsync: cancelOrder, swapStatus: cancelOrderStatus, error: cancelOrderError, txHash: cancelOrderTxHash, resetSwapStatus: resetCancelOrderStatus } = useCancelOrder();
 
   useEffect(() => {
     if (!isOpen) {
@@ -86,6 +87,7 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
         isOpen,
         onClose,
         onOpen,
+        cancelOrderError: cancelOrderError?.message || undefined,
       }}
     >
       {children}

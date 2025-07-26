@@ -1,14 +1,14 @@
 import { Main } from "./Main";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { Failed } from "./Failed";
-import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { ReactNode, useMemo } from "react";
 import { useTwapContext } from "../../context";
-import { useChunks, useNetwork, useOrderName, useTransactionExplorerLink } from "../../hooks/logic-hooks";
+import { useChunks, useDestTokenAmount, useNetwork, useOrderName, useOrderType, useSrcAmount, useTransactionExplorerLink } from "../../hooks/logic-hooks";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Steps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { useSubmitOrderPanel } from "../twap";
+import { SwapFlowComponent } from "../swap-flow";
 
 const Modal = ({ children }: { children: ReactNode }) => {
   const context = useTwapContext();
@@ -64,46 +64,68 @@ const useStep = () => {
 };
 
 export const SubmitOrderPanel = () => {
-  const { components, srcToken, dstToken } = useTwapContext();
   const swapError = useTwapStore((s) => s.state.swapError);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const totalSteps = useTwapStore((s) => s.state.totalSteps);
   const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
-  const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
-  const srcAmountF = useFormatNumber({ value: srcAmount });
-  const outAmountF = useFormatNumber({ value: acceptedDstAmount });
+  const srcAmount = useSrcAmount().amountUI || "";
+  const dstAmount = useDestTokenAmount().amountUI;
+  const { srcToken, dstToken, TransactionModal } = useTwapContext();
 
   return (
     <Modal>
-      <SwapFlow
-        inAmount={srcAmountF}
-        outAmount={outAmountF}
+      <SwapFlowComponent
         swapStatus={swapStatus}
         totalSteps={totalSteps}
         currentStep={useStep()}
         currentStepIndex={currentStepIndex}
+        failedContent={<Failed error={swapError} />}
+        successContent={<SuccessContent />}
+        mainContent={<Main />}
+        loadingViewContent={TransactionModal?.CreateOrder?.LoadingView && srcToken && dstToken ? <LoadingView /> : null}
+        srcAmount={srcAmount}
+        dstAmount={dstAmount}
         inToken={srcToken}
         outToken={dstToken}
-        components={{
-          SrcTokenLogo: components.TokenLogo && <components.TokenLogo token={srcToken} />,
-          DstTokenLogo: components.TokenLogo && <components.TokenLogo token={dstToken} />,
-          Failed: <Failed error={swapError} />,
-          Success: <SuccessContent />,
-          Main: <Main />,
-          Loader: components.TransactionModal?.Spinner,
-          SuccessIcon: components.TransactionModal?.SuccessIcon,
-          FailedIcon: components.TransactionModal?.ErrorIcon,
-          Link: components.TransactionModal?.Link,
-        }}
       />
     </Modal>
   );
 };
 
+const LoadingView = () => {
+  const { TransactionModal } = useTwapContext();
+  const dstAmount = useDestTokenAmount().amountUI;
+  const srcAmount = useSrcAmount().amountUI || "";
+  const orderType = useOrderType();
+  const step = useTwapStore((s) => s.state.activeStep);
+  const { srcToken, dstToken } = useTwapContext();
+
+  if (TransactionModal?.CreateOrder?.LoadingView && srcToken && dstToken) {
+    return <TransactionModal.CreateOrder.LoadingView srcToken={srcToken} dstToken={dstToken} orderType={orderType} srcAmount={srcAmount} dstAmount={dstAmount} step={step!} />;
+  }
+  return null;
+};
+
 const SuccessContent = () => {
   const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
   const explorerUrl = useTransactionExplorerLink(createOrderTxHash);
+  const { TransactionModal, srcToken, dstToken } = useTwapContext();
   const successTitle = useTitle();
+  const orderType = useOrderType();
+  const srcAmount = useSrcAmount().amountUI || "";
+  const dstAmount = useDestTokenAmount().amountUI;
+
+  if (TransactionModal?.CreateOrder?.SuccessContent && srcToken && dstToken) {
+    return (
+      <TransactionModal.CreateOrder.SuccessContent
+        srcToken={srcToken}
+        dstToken={dstToken}
+        srcAmount={srcAmount}
+        dstAmount={dstAmount}
+        orderType={orderType}
+        explorerUrl={explorerUrl || ""}
+      />
+    );
+  }
   return <SwapFlow.Success title={successTitle} explorerUrl={explorerUrl} />;
 };

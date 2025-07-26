@@ -442,11 +442,11 @@ export const Dapp = () => {
           CancelOrderButton,
         }}
         SubmitOrderPanel={SubmitOrderPanel}
+        TransactionModal={{
+          Link: Link,
+        }}
         components={{
           Tooltip: CustomTooltip,
-          TransactionModal: {
-            Link: Link,
-          },
         }}
         useToken={useToken}
         fee={0.25}

@@ -2,7 +2,7 @@ import { SwapFlow } from "@orbs-network/swap-ui";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 import { useFee } from "../../hooks/ui-hooks";
-import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../hooks/logic-hooks";
+import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useOrderType, useSrcTokenChunkAmount, useUsdAmount } from "../../hooks/logic-hooks";
 import { OrderDetails } from "../../components/order-details";
 import { useTwapStore } from "../../useTwapStore";
 import { useTradePrice } from "./usePrice";
@@ -31,23 +31,52 @@ const FillDelaySummary = () => {
 };
 
 export const Main = () => {
-  const { translations, components, srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const { translations, srcUsd1Token, dstUsd1Token, srcToken, dstToken, account, TransactionModal } = useTwapContext();
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
   const srcAmountUsd = useUsdAmount(srcAmount, srcUsd1Token);
   const dstAmountUsd = useUsdAmount(acceptedDstAmount, dstUsd1Token);
+  const orderType = useOrderType();
+  const fee = useFee();
+  const chunks = useChunks().chunks;
+  const { fillDelay } = useFillDelay();
+  const dstMinAmountOut = useDestTokenMinAmount().amountUI;
+  const deadline = useOrderDeadline();
+  const tradePrice = useTradePrice();
+  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
 
   const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });
+  if (TransactionModal?.CreateOrder?.ReviewOrderContent && srcToken && dstToken) {
+    return (
+      <TransactionModal.CreateOrder.ReviewOrderContent
+        srcToken={srcToken}
+        dstToken={dstToken}
+        orderType={orderType}
+        srcAmount={srcAmount || ""}
+        dstAmount={acceptedDstAmount || ""}
+        srcUsdAmount={srcAmountUsd}
+        dstUsdAmount={dstAmountUsd}
+        fee={fee.amountUI}
+        chunks={chunks}
+        fillDelay={fillDelay.value}
+        destMinAmountOut={dstMinAmountOut}
+        orderDeadline={deadline}
+        tradePrice={tradePrice}
+        recipient={account || ""}
+        srcChunkAmount={srcChunkAmount}
+      />
+    );
+  }
 
   return (
     <>
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
-        inUsd={components.TransactionModal?.USD ? <components.TransactionModal.USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
-        outUsd={components.TransactionModal?.USD ? <components.TransactionModal.USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
+        inUsd={TransactionModal?.USD ? <TransactionModal.USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
+        outUsd={TransactionModal?.USD ? <TransactionModal.USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
       />
       {!swapStatus && (
         <div className="twap-create-order-bottom">

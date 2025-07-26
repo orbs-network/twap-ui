@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Steps, Token } from "../types";
 import BN from "bignumber.js";
-import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
+import { Abi, erc20Abi, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
 import {
   useDestTokenAmount,
@@ -50,7 +50,7 @@ const useGetTransactionReceipt = () => {
   }).mutateAsync;
 };
 export const useApproveToken = () => {
-  const { account, config, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
+  const { account, config, walletClient, publicClient, callbacks, twapSDK, transactions } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const getTransactionReceipt = useGetTransactionReceipt();
   return useMutation(
@@ -60,14 +60,20 @@ export const useApproveToken = () => {
       if (!publicClient) throw new Error("publicClient is not defined");
 
       callbacks?.approve?.onRequest?.(token, amountUi(token?.decimals, amount));
-      const hash = await walletClient.writeContract({
-        abi: erc20Abi,
-        functionName: "approve",
-        account: account as `0x${string}`,
-        address: token.address as `0x${string}`,
-        args: [config.twapAddress as `0x${string}`, BigInt(BN(amount).decimalPlaces(0).toFixed())],
-        chain: walletClient.chain,
-      });
+      let hash: `0x${string}` | undefined;
+      const amountWei = BigInt(BN(amount).decimalPlaces(0).toFixed());
+      if (transactions?.approveOrder) {
+        hash = await transactions.approveOrder({ tokenAddress: token.address, spenderAddress: config.twapAddress, amount: amountWei });
+      } else {
+        hash = await walletClient.writeContract({
+          abi: erc20Abi,
+          functionName: "approve",
+          account: account as `0x${string}`,
+          address: token.address as `0x${string}`,
+          args: [config.twapAddress as `0x${string}`, amountWei],
+          chain: walletClient.chain,
+        });
+      }
       updateState({ approveTxHash: hash });
       const receipt = await getTransactionReceipt(hash);
 
@@ -91,7 +97,7 @@ export const useApproveToken = () => {
 };
 
 export const useCancelOrder = () => {
-  const { account, callbacks, walletClient, publicClient, twapSDK } = useTwapContext();
+  const { account, callbacks, walletClient, publicClient, twapSDK, transactions } = useTwapContext();
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [swapStatus, setSwapStatus] = useState<SwapStatus | undefined>(undefined);
   const getTransactionReceipt = useGetTransactionReceipt();
@@ -106,14 +112,20 @@ export const useCancelOrder = () => {
       setSwapStatus(SwapStatus.LOADING);
       twapSDK.analytics.onCancelOrderRequest(order.id);
       callbacks?.cancelOrder?.onRequest?.(order.id);
-      const hash = await walletClient.writeContract({
-        account: account as `0x${string}`,
-        address: order.twapAddress as `0x${string}`,
-        abi: TwapAbi,
-        functionName: "cancel",
-        args: [order.id],
-        chain: walletClient.chain,
-      });
+
+      let hash: `0x${string}` | undefined;
+      if (transactions?.cancelOrder) {
+        hash = await transactions.cancelOrder({ contractAddress: order.twapAddress, abi: TwapAbi as Abi, functionName: "cancel", args: [order.id], orderId: order.id });
+      } else {
+        hash = await walletClient.writeContract({
+          account: account as `0x${string}`,
+          address: order.twapAddress as `0x${string}`,
+          abi: TwapAbi,
+          functionName: "cancel",
+          args: [order.id],
+          chain: walletClient.chain,
+        });
+      }
       setTxHash(hash);
       const receipt = await getTransactionReceipt(hash);
 
@@ -229,7 +241,7 @@ export const useOrderSubmissionArgs = () => {
 };
 
 export const useCreateOrder = () => {
-  const { account, walletClient, publicClient, chainId, dstToken } = useTwapContext();
+  const { account, walletClient, publicClient, chainId, dstToken, transactions } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
   const orderSubmissionArgs = useOrderSubmissionArgs();
@@ -247,14 +259,24 @@ export const useCreateOrder = () => {
 
       callbacks.onRequest(orderSubmissionArgs.params);
 
-      const txHash = await walletClient.writeContract({
-        account: account.toLowerCase() as `0x${string}`,
-        address: orderSubmissionArgs.contractAddress.toLowerCase() as `0x${string}`,
-        abi: orderSubmissionArgs.abi,
-        functionName: orderSubmissionArgs.functionName,
-        args: [orderSubmissionArgs.params],
-        chain: walletClient.chain,
-      });
+      let txHash: `0x${string}` | undefined;
+      if (transactions?.createOrder) {
+        txHash = await transactions.createOrder({
+          contractAddress: orderSubmissionArgs.contractAddress,
+          abi: orderSubmissionArgs.abi as Abi,
+          functionName: orderSubmissionArgs.functionName,
+          args: [orderSubmissionArgs.params],
+        });
+      } else {
+        txHash = await walletClient.writeContract({
+          account: account.toLowerCase() as `0x${string}`,
+          address: orderSubmissionArgs.contractAddress.toLowerCase() as `0x${string}`,
+          abi: orderSubmissionArgs.abi,
+          functionName: orderSubmissionArgs.functionName,
+          args: [orderSubmissionArgs.params],
+          chain: walletClient.chain,
+        });
+      }
       updateState({ createOrderTxHash: txHash });
 
       const receipt = await getTransactionReceipt(txHash);
@@ -284,7 +306,7 @@ export const useCreateOrder = () => {
 };
 
 export const useWrapToken = () => {
-  const { account, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
+  const { account, walletClient, publicClient, callbacks, twapSDK, transactions } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount || "");
   const tokenAddress = useNetwork()?.wToken.address;
@@ -296,15 +318,21 @@ export const useWrapToken = () => {
       if (!tokenAddress) throw new Error("tokenAddress is not defined");
       if (!walletClient) throw new Error("walletClient is not defined");
       if (!publicClient) throw new Error("publicClient is not defined");
+      const amountWei = BigInt(BN(amount).decimalPlaces(0).toFixed());
 
-      const hash = await walletClient.writeContract({
-        abi: iwethabi,
-        functionName: "deposit",
-        account,
-        address: tokenAddress as `0x${string}`,
-        value: BigInt(BN(amount).decimalPlaces(0).toFixed()),
-        chain: walletClient.chain,
-      });
+      let hash: `0x${string}` | undefined;
+      if (transactions?.wrap) {
+        hash = await transactions.wrap(amountWei);
+      } else {
+        hash = await walletClient.writeContract({
+          abi: iwethabi,
+          functionName: "deposit",
+          account,
+          address: tokenAddress as `0x${string}`,
+          value: amountWei,
+          chain: walletClient.chain,
+        });
+      }
       updateState({ wrapTxHash: hash });
 
       const receipt = await getTransactionReceipt(hash);
@@ -342,7 +370,7 @@ export const useWrapOnly = () => {
 };
 
 export const useUnwrapToken = () => {
-  const { account, walletClient, publicClient } = useTwapContext();
+  const { account, walletClient, publicClient, transactions } = useTwapContext();
   const resetState = useTwapStore((s) => s.resetState);
   const updateState = useTwapStore((s) => s.updateState);
   const wTokenAddress = useNetwork()?.wToken.address;
@@ -355,15 +383,21 @@ export const useUnwrapToken = () => {
       if (!account) throw new Error("account is not defined");
       if (!walletClient) throw new Error("walletClient is not defined");
       if (!publicClient) throw new Error("publicClient is not defined");
+      const value = BigInt(BN(amountWei).decimalPlaces(0).toFixed());
 
-      const hash = await walletClient.writeContract({
-        abi: iwethabi,
-        functionName: "withdraw",
-        account: account,
-        address: wTokenAddress as `0x${string}`,
-        args: [BigInt(BN(amountWei).decimalPlaces(0).toFixed())],
-        chain: walletClient.chain,
-      });
+      let hash: `0x${string}` | undefined;
+      if (transactions?.unwrap) {
+        hash = await transactions.unwrap(value);
+      } else {
+        hash = await walletClient.writeContract({
+          abi: iwethabi,
+          functionName: "withdraw",
+          account: account,
+          address: wTokenAddress as `0x${string}`,
+          args: [value],
+          chain: walletClient.chain,
+        });
+      }
       updateState({ unwrapTxHash: hash });
       const receipt = await getTransactionReceipt(hash);
       if (!receipt) {

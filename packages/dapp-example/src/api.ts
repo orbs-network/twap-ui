@@ -1,20 +1,10 @@
 import { getNetwork, networks } from "@orbs-network/twap-sdk";
-import dragonswapTokens from "./tokens/dragonswap.json";
 import { Token } from "@orbs-network/twap-ui";
 import _ from "lodash";
 
 const BASE_TOKENS = _.uniq(["USDT", "USDC", "DAI", "WBTC", "BUSD", ...Object.values(networks).map((it) => it.wToken.symbol)]);
 
-const getSeiTokens = (): Token[] => {
-  return dragonswapTokens.tokens.map((it) => {
-    return {
-      address: it.address,
-      symbol: it.symbol,
-      decimals: it.decimals,
-      logoUrl: `https://dzyb4dm7r8k8w.cloudfront.net/prod/logos/${it.address}/logo.png`,
-    };
-  });
-};
+
 
 const coingekoChainToName = {
   [networks.flare.id]: "flare-network",
@@ -28,6 +18,7 @@ const coingekoChainToName = {
   [networks.sonic.id]: "sonic",
   [networks.cronosZkEvm.id]: "cronos-zkevm",
   [networks.katana.id]: "katana",
+  [networks.sei.id]: "sei-v2",
 };
 
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
@@ -64,17 +55,8 @@ const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<
   return [native, ...result];
 };
 
-const customLists = {
-  [networks.sei.id]: getSeiTokens,
-};
-
 const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
-  let tokens: Token[] = [];
-  if (customLists[chainId]) {
-    tokens = customLists[chainId]();
-  } else {
-    tokens = await getDefaultTokens(chainId, signal);
-  }
+  const tokens = await getDefaultTokens(chainId, signal);
 
   const result = _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol)).reverse();
   const native = getNetwork(chainId)?.native as Token;

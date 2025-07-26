@@ -1,7 +1,7 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
+import { Config, Order, OrderType, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
+import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
 export { OrderStatus, type TwapFill, OrderType } from "@orbs-network/twap-sdk";
 
@@ -197,13 +197,13 @@ export type OrdersHistoryProps = {
   onClose: () => void;
 };
 
-export type CancelOrderProps = {
-  status?: SwapStatus;
-  explorerUrl?: string;
-  srcToken?: Token;
-  dstToken?: Token;
-  orderId?: number;
-};
+// export type CancelOrderProps = {
+//   status?: SwapStatus;
+//   explorerUrl?: string;
+//   srcToken?: Token;
+//   dstToken?: Token;
+//   orderId?: number;
+// };
 
 export type LinkProps = {
   href: string;
@@ -222,22 +222,78 @@ export type CancelOrderButtonProps = {
   className?: string;
 };
 
+export type TransactionModalCreateOrderSuccessProps = {
+  orderType: OrderType;
+  explorerUrl: string;
+  srcToken: Token;
+  dstToken: Token;
+  srcAmount: string;
+  dstAmount: string;
+};
+
+export type TransactionModalCreateOrderErrorProps = {
+  error: string;
+  srcToken: Token;
+  dstToken: Token;
+  srcAmount: string;
+  dstAmount: string;
+  orderType: OrderType;
+};
+
+export type TransactionModalCreateOrderLoadingViewProps = {
+  srcToken: Token;
+  dstToken: Token;
+  orderType: OrderType;
+  srcAmount: string;
+  dstAmount: string;
+  step: Steps;
+};
+
+export type CreateOrderReviewOrderContentProps = {
+  srcToken: Token;
+  dstToken: Token;
+  orderType: OrderType;
+  srcAmount: string;
+  dstAmount: string;
+  srcUsdAmount: string;
+  dstUsdAmount: string;
+  transactionHash?: string;
+  fee: string;
+  chunks: number;
+  fillDelay: number;
+  destMinAmountOut: string;
+  orderDeadline: number;
+  tradePrice: string;
+  recipient: string;
+  srcChunkAmount: string;
+};
+
+export type TransactionModalCancelOrderSuccessProps = {
+  explorerUrl: string;
+  srcToken: Token;
+  dstToken: Token;
+  orderId: number;
+};
+
+export type TransactionModalCancelOrderErrorProps = {
+  error: string;
+  srcToken: Token;
+  dstToken: Token;
+  orderId: number;
+};
+
+export type TransactionModalCancelOrderLoadingViewProps = {
+  srcToken: Token;
+  dstToken: Token;
+  orderId: number;
+};
+
 export interface Components {
   // shared
   Tooltip?: FC<TooltipProps>;
-
   Label?: FC<LabelProps>;
   TokenLogo?: FC<TokenLogoProps>;
-  CancelOrderPanel?: FC<CancelOrderProps>;
   Button?: FC<ButtonProps>;
-
-  TransactionModal?: {
-    Spinner?: ReactNode;
-    SuccessIcon?: ReactNode;
-    ErrorIcon?: ReactNode;
-    Link?: FC<LinkProps>;
-    USD?: FC<USDProps>;
-  };
 }
 
 interface CreateOrderCallbackArgs {
@@ -323,6 +379,33 @@ export interface BaseTwapProps {
   provider?: Provider;
 }
 
+export type ApproveProps = {
+  tokenAddress: string;
+  amount: bigint;
+  spenderAddress: string;
+};
+
+export type CreateOrderProps = {
+  contractAddress: string;
+  abi: Abi;
+  functionName: string;
+  args: [string[]];
+};
+
+export type CancelOrderProps = {
+  contractAddress: string;
+  abi: Abi;
+  functionName: string;
+  args: number[];
+  orderId: number;
+};
+
+export type HasApprovalCallbackProps = {
+  tokenAddress: string;
+  amount: string;
+  spenderAddress: string;
+};
+
 export interface TwapProps {
   provider?: Provider;
   isLimitPanel?: boolean;
@@ -340,6 +423,24 @@ export interface TwapProps {
   children?: React.ReactNode;
   components?: Components;
   SubmitOrderPanel: FC<SubmitOrderPanelProps>;
+  TransactionModal?: {
+    Spinner?: ReactNode;
+    SuccessIcon?: ReactNode;
+    ErrorIcon?: ReactNode;
+    Link?: FC<LinkProps>;
+    USD?: FC<USDProps>;
+    CreateOrder?: {
+      SuccessContent?: FC<TransactionModalCreateOrderSuccessProps>;
+      ErrorContent?: FC<TransactionModalCreateOrderErrorProps>;
+      ReviewOrderContent?: FC<CreateOrderReviewOrderContentProps>;
+      LoadingView?: FC<TransactionModalCreateOrderLoadingViewProps>;
+    };
+    CancelOrder?: {
+      SuccessContent?: FC<TransactionModalCancelOrderSuccessProps>;
+      ErrorContent?: FC<TransactionModalCancelOrderErrorProps>;
+      LoadingView?: FC<TransactionModalCancelOrderLoadingViewProps>;
+    };
+  };
   OrderHistory: {
     SelectMenu?: FC<SelectMenuProps>;
     ListOrder?: FC<OrderHistoryListOrderProps>;
@@ -361,6 +462,14 @@ export interface TwapProps {
   orderDisclaimerAcceptedByDefault?: boolean;
   isTwapMarketByDefault?: boolean;
   onInputAmountChange?: (amountWei: string, amountUI: string) => void;
+  transactions?: {
+    wrap?: (amount: bigint) => Promise<`0x${string}`>;
+    unwrap?: (amount: bigint) => Promise<`0x${string}`>;
+    approveOrder?: (props: ApproveProps) => Promise<`0x${string}`>;
+    createOrder?: (props: CreateOrderProps) => Promise<`0x${string}`>;
+    cancelOrder?: (props: CancelOrderProps) => Promise<`0x${string}`>;
+    hasApprovalCallback?: (props: HasApprovalCallbackProps) => Promise<boolean>;
+  };
 }
 
 export interface TwapContextType extends TwapProps {
@@ -416,7 +525,7 @@ export enum Steps {
   CREATE = "create",
 }
 
-export interface SwapState {
+export interface State {
   swapStatus?: SwapStatus;
   activeStep?: Steps;
   currentStepIndex?: number;
@@ -426,10 +535,6 @@ export interface SwapState {
   wrapTxHash?: string;
   unwrapTxHash?: string;
   totalSteps?: number;
-}
-
-export interface State {
-  swap?: { [key: number]: SwapState };
   swapIndex: number;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;

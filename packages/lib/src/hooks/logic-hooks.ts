@@ -1,7 +1,7 @@
 import { amountBN, amountUi, getNetwork, isNativeAddress, networks, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
-import { getMinNativeBalance, millisToDays, millisToMinutes, removeCommas, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
+import { getMinNativeBalance, getOrderType, millisToDays, millisToMinutes, removeCommas, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import BN from "bignumber.js";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
@@ -540,4 +540,10 @@ export const useResetState = (partialState?: Partial<State>) => {
       ...(partialState || {}),
     });
   }, [updateState, partialState]);
+};
+
+export const useOrderType = () => {
+  const { chunks } = useChunks();
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  return useMemo(() => getOrderType(isMarketOrder || false, chunks), [chunks, isMarketOrder]);
 };
