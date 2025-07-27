@@ -16,6 +16,7 @@ import {
   useChunksPanel,
   useDisclaimerMessage,
   useOrderHistoryPanel,
+  useStopLossPanel,
 } from "../hooks/ui-hooks";
 import { DISCLAIMER_URL, ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
 import { useOrders } from "../hooks/order-hooks";
@@ -57,6 +58,7 @@ export {
   useDisclaimerMessage,
   useOrderHistoryPanel,
   useResetState,
+  useStopLossPanel,
   ORBS_WEBSITE_URL,
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,

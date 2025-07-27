@@ -137,7 +137,7 @@ export const useChunks = () => {
         typedChunks,
       });
     },
-    [updateState],
+    [updateState]
   );
 
   return {
@@ -185,6 +185,19 @@ export const useChunksError = () => {
       };
     }
   }, [chunks, twapSDK, maxChunks, isLimitPanel]);
+};
+export const useStopLoss = () => {
+  const { dstToken, marketPrice } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
+  const typedStopLoss = useTwapStore((s) => s.state.typedStopLoss);
+  return useMemo(() => {
+    const amountWei = amountBN(dstToken?.decimals, typedStopLoss) || marketPrice;
+    return {
+      amountWei,
+      amountUI: amountUi(dstToken?.decimals, amountWei),
+      setStopLoss: (typedStopLoss: string) => updateState({ typedStopLoss }),
+    };
+  }, [typedStopLoss, dstToken?.decimals, marketPrice, updateState]);
 };
 
 export const useFillDelayError = () => {
@@ -277,7 +290,7 @@ export const useDestTokenAmount = () => {
   const limitPrice = useLimitPrice().amountWei;
   const amountWei = useMemo(
     () => twapSDK.getDestTokenAmount(srcAmountWei || "", limitPrice || "", srcToken?.decimals || 0),
-    [twapSDK, srcAmountWei, limitPrice, srcToken?.decimals],
+    [twapSDK, srcAmountWei, limitPrice, srcToken?.decimals]
   );
   return {
     amountWei,
@@ -292,7 +305,7 @@ export const useDestTokenMinAmount = () => {
   const srcTokenChunkAmount = useSrcTokenChunkAmount().amountWei;
   const amountWei = useMemo(
     () => twapSDK.getDestTokenMinAmount(srcTokenChunkAmount, limitPrice || "", Boolean(isMarketOrder), srcToken?.decimals || 0),
-    [twapSDK, srcTokenChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals],
+    [twapSDK, srcTokenChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals]
   );
 
   return {
@@ -505,13 +518,13 @@ export const useOnSrcInputPercentClick = () => {
       const value = amountUi(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ typedSrcAmount: value });
     },
-    [maxAmount, srcBalance, updateState, srcToken],
+    [maxAmount, srcBalance, updateState, srcToken]
   );
 };
 
 export const useInitiateWallet = (
   chainId?: number,
-  provider?: Provider,
+  provider?: Provider
 ): {
   walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: ReturnType<typeof createPublicClient>;

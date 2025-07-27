@@ -29,6 +29,8 @@ import {
   DISCLAIMER_URL,
   useChunksPanel,
   useOrderHistoryPanel,
+  Token,
+  useStopLossPanel,
 } from "@orbs-network/twap-ui";
 import { Config } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -89,7 +91,7 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
 
 const StyledButton = styled(Button)`
   width: 100%;
-  background: black !important;
+  background: #141414 !important;
   margin-top: 20px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -250,13 +252,13 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const LimitPanel = () => {
-  const { input, usd, isInverted, percent, onInvert, isLimitOrder } = useLimitPricePanel();
+  const { input, usd, isInverted, percent, onInvert, hide } = useLimitPricePanel();
   const { setSrcToken, setDstToken, srcToken, dstToken } = useDappStore();
   const onSelect = isInverted ? setSrcToken : setDstToken;
   const topToken = isInverted ? dstToken : srcToken;
   const bottomToken = isInverted ? srcToken : dstToken;
 
-  if (!isLimitOrder) return null;
+  if (hide) return null;
   return (
     <Section>
       <Flex vertical gap={10} align="center" style={{ width: "100%" }}>
@@ -293,6 +295,15 @@ const LimitPanel = () => {
         })}
       </Flex>
     </Section>
+  );
+};
+
+const TokenDisplay = ({ token }: { token?: Token }) => {
+  return (
+    <div style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center" }}>
+      <img src={token?.logoUrl} alt={token?.symbol} style={{ width: 25, height: 25, borderRadius: 999 }} />
+      <p style={{ fontSize: 14, color: "white", opacity: 0.5 }}>{token?.symbol}</p>
+    </div>
   );
 };
 
@@ -353,6 +364,36 @@ const FillDelay = () => {
   );
 };
 
+const StopLoss = () => {
+  const { value, token, onChange } = useStopLossPanel();
+
+  return (
+    <Section className="fill-duration twap-input-panel">
+      <Label label="Stop Loss" tooltip="Stop Loss" />
+      <div style={{ display: "flex", flexDirection: "row", gap: 10, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
+        <NumberInput onChange={onChange} value={value} />
+        <TokenDisplay token={token} />
+      </div>
+    </Section>
+  );
+};
+
+const StopLossLimit = () => {
+  const { input, isLimitOrder } = useLimitPricePanel();
+  const { dstToken } = useDappStore();
+
+  if (!isLimitOrder) return null;
+  return (
+    <Section className="stop-loss-limit twap-input-panel">
+      <Label label="Limit Price" tooltip="Limit Price" />
+      <div style={{ display: "flex", flexDirection: "row", gap: 10, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
+        <NumberInput onChange={input.onChange} value={input.value} />
+        <TokenDisplay token={dstToken} />
+      </div>
+    </Section>
+  );
+};
+
 const TradeAmount = () => {
   const { onChange, trades, tooltip, label } = useChunksPanel();
 
@@ -407,6 +448,38 @@ const PoweredByOrbs = () => {
   );
 };
 
+const PanelInputs = () => {
+  const { panel } = useDappContext();
+
+  const limit = panel === Panels.LIMIT;
+  const stopLoss = panel === Panels.STOP_LOSS;
+  const twap = panel === Panels.TWAP;
+
+  if (twap) {
+    return (
+      <Flex gap={10} align="stretch" justify="space-between" style={{ width: "100%" }}>
+        <FillDelay />
+        <TradeAmount />
+      </Flex>
+    );
+  }
+
+  if (limit) {
+    return <OrderDuration />;
+  }
+
+  if (stopLoss) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+        <StopLoss />
+        <StopLossLimit />
+      </div>
+    );
+  }
+
+  return null;
+};
+
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
   const { config, panel } = useDappContext();
@@ -418,6 +491,7 @@ export const Dapp = () => {
   const srcBalance = useTokenBalance(srcToken).data?.wei;
   const dstBalance = useTokenBalance(dstToken).data?.wei;
   const limit = panel === Panels.LIMIT;
+  const twap = panel === Panels.TWAP;
 
   return (
     <>
@@ -429,7 +503,7 @@ export const Dapp = () => {
         provider={client.data?.transport}
         srcToken={srcToken}
         dstToken={dstToken}
-        isLimitPanel={limit}
+        panel={panel === Panels.LIMIT ? "LIMIT" : panel === Panels.STOP_LOSS ? "STOP_LOSS" : "TWAP"}
         srcUsd1Token={srcUsd}
         dstUsd1Token={dstUsd}
         srcBalance={srcBalance}
@@ -463,15 +537,8 @@ export const Dapp = () => {
               <SwitchTokensButton />
               <TokenPanel />
             </Flex>
-            {limit ? (
-              <OrderDuration />
-            ) : (
-              <Flex gap={10} align="stretch" justify="space-between" style={{ width: "100%" }}>
-                <FillDelay />
-                <TradeAmount />
-              </Flex>
-            )}
-            <TradeAmountMessage />
+            <PanelInputs />
+            {twap && <TradeAmountMessage />}
             <InputsError />
             <ConfirmationButton />
 

@@ -421,6 +421,7 @@ export interface TwapProps {
   children?: React.ReactNode;
   components?: Components;
   SubmitOrderPanel: FC<SubmitOrderPanelProps>;
+  panel: "TWAP" | "LIMIT" | "STOP_LOSS";
   TransactionModal?: {
     Spinner?: ReactNode;
     SuccessIcon?: ReactNode;
@@ -543,6 +544,7 @@ export interface State {
   typedFillDelay: TimeDuration;
   typedDuration?: TimeDuration;
   typedPrice?: string;
+  typedStopLoss?: string;
   isInvertedPrice?: boolean;
   selectedPricePercent?: string;
   isMarketOrder?: boolean;

@@ -78,8 +78,8 @@ export const SubmitOrderPanel = () => {
   const totalSteps = useTwapStore((s) => s.state.totalSteps);
   const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
   const srcAmount = useSrcAmount().amountUI || "";
-  const dstAmount = useDestTokenAmount().amountUI;
   const { srcToken, dstToken, TransactionModal } = useTwapContext();
+  const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
 
   return (
     <Modal>
@@ -93,7 +93,7 @@ export const SubmitOrderPanel = () => {
         mainContent={<Main />}
         loadingViewContent={TransactionModal?.CreateOrder?.LoadingView && srcToken && dstToken ? <LoadingView /> : null}
         srcAmount={srcAmount}
-        dstAmount={dstAmount}
+        dstAmount={acceptedDstAmount}
         inToken={srcToken}
         outToken={dstToken}
       />

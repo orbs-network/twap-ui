@@ -6,6 +6,7 @@ import { useAppParams } from "./dapp/hooks";
 export enum Panels {
   TWAP = "TWAP",
   LIMIT = "LIMIT",
+  STOP_LOSS = "STOP LOSS",
 }
 
 interface ContextProps {
@@ -63,7 +64,7 @@ const useConfig = () => {
 
 export const DappProvider = ({ children }: { children: React.ReactNode }) => {
   const { config, setConfig } = useConfig();
-  const [panel, setPanel] = useState(Panels.TWAP);
+  const [panel, setPanel] = useState(Panels.STOP_LOSS);
   const [theme, _setTheme] = useState<ThemeMode>((localStorage.getItem("theme") as ThemeMode) || "dark");
 
   const setTheme = useCallback(

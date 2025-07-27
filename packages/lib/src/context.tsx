@@ -21,7 +21,7 @@ const Listeners = () => {
   const updateStore = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
-  const { isLimitPanel, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
+  const { isLimitPanel, panel, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
 
   useEffect(() => {
     updateStore({ disclaimerAccepted: orderDisclaimerAcceptedByDefault });
@@ -38,12 +38,12 @@ const Listeners = () => {
   }, [typedSrcAmount, srcToken?.decimals, onInputAmountChange]);
 
   useEffect(() => {
-    if (isLimitPanel) {
+    if (isLimitPanel || panel === "LIMIT" || panel === "STOP_LOSS") {
       updateStore({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: false });
     } else {
       updateStore({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault ? true : false });
     }
-  }, [isLimitPanel, updateStore, isTwapMarketByDefault]);
+  }, [isLimitPanel, updateStore, isTwapMarketByDefault, panel]);
 
   useEffect(() => {
     setInterval(() => {

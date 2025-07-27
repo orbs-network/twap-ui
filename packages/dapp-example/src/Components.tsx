@@ -74,6 +74,7 @@ export const Popup = ({ isOpen, onClose, children, className = "", title }: { is
         content: `popup-main ${className}`,
       }}
       styles={{
+
         content: {
           borderRadius: 16,
         },
