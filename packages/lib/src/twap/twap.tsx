@@ -30,7 +30,7 @@ const TWAP = (props: TwapProps) => {
   }, [props.srcToken, props.dstToken, props.chainId]);
   return (
     <TwapProvider {...props}>
-      <div className={`twap-widget ${shouldWrapOrUnwrap ? "twap-widget-wrap-only" : ""}`}>
+      <div className={`twap-container ${shouldWrapOrUnwrap ? "twap-container-wrap-only" : ""}`}>
         <Orders />
         <SubmitOrderPanel />
         {props.children}

@@ -1,8 +1,7 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useCancelOrder } from "../../hooks/send-transactions-hooks";
-import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOrders } from "../../hooks/order-hooks";
 import { OrderStatus, Order } from "@orbs-network/twap-sdk";
+import { useTwapStore } from "../../useTwapStore";
 
 export type OrdersMenuTab = {
   name: string;
@@ -21,10 +20,6 @@ interface OrderHistoryContextType {
   onOpen: () => void;
   setStatus: (status?: OrderStatus) => void;
   status?: OrderStatus;
-  cancelOrder: (order: Order) => Promise<string>;
-  cancelOrderTxHash: string | undefined;
-  cancelOrderStatus?: SwapStatus;
-  cancelOrderError?: string;
 }
 
 export const useSelectedOrder = () => {
@@ -41,13 +36,12 @@ export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
   const { orders, isLoading } = useOrders();
+  const updateState = useTwapStore((s) => s.updateState);
 
   const [status, setStatus] = useState<OrderStatus | undefined>(undefined);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const selectedOrders = !orders ? [] : !status ? orders.all : orders[status.toUpperCase() as keyof typeof orders];
-
-  const { mutateAsync: cancelOrder, swapStatus: cancelOrderStatus, error: cancelOrderError, txHash: cancelOrderTxHash, resetSwapStatus: resetCancelOrderStatus } = useCancelOrder();
 
   useEffect(() => {
     if (!isOpen) {
@@ -63,21 +57,20 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   }, [setSelectedOrderId]);
 
   const onClose = useCallback(() => {
-    if (cancelOrderStatus) {
-      resetCancelOrderStatus();
-    } else {
-      setIsOpen(false);
-    }
-  }, [cancelOrderStatus, resetCancelOrderStatus]);
+    setIsOpen(false);
+    updateState({
+      cancelOrderStatus: undefined,
+      cancelOrderTxHash: undefined,
+      cancelOrderError: undefined,
+      cancelOrderId: undefined,
+    });
+  }, [updateState]);
   const onOpen = useCallback(() => setIsOpen(true), []);
 
   return (
     <OrderHistoryContext.Provider
       value={{
         selectedOrderId,
-        cancelOrder,
-        cancelOrderTxHash,
-        cancelOrderStatus,
         selectOrder: setSelectedOrderId,
         selectedOrders: selectedOrders || [],
         setStatus,
@@ -87,7 +80,6 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
         isOpen,
         onClose,
         onOpen,
-        cancelOrderError: cancelOrderError?.message || undefined,
       }}
     >
       {children}

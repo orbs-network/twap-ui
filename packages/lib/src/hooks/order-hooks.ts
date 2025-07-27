@@ -1,11 +1,11 @@
-import { buildOrder, getOrderFillDelayMillis, isSupportedByTheGraph, LensAbi, Order, OrderStatus, parseLensOrder } from "@orbs-network/twap-sdk";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { buildOrder, getOrderFillDelayMillis, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
 import { Token } from "../types";
-import { useCancelOrder } from "./send-transactions-hooks";
+import { useCancelOrder } from "./use-cancel-order";
 
 const useOrdersQueryKey = () => {
   const { account, config } = useTwapContext();
@@ -167,41 +167,15 @@ const useHandlePersistedOrders = () => {
   );
 };
 
-const useGetOrderFromLens = () => {
-  const { publicClient, account, config } = useTwapContext();
-  return useMutation({
-    mutationFn: async () => {
-      const result = await publicClient?.readContract({
-        address: config.lensAddress as `0x${string}`,
-        abi: LensAbi,
-        functionName: "makerOrders",
-        args: [account],
-      });
-      return (result as any[])
-        .map((o) => {
-          return parseLensOrder(o, account!, config);
-        })
-        .sort((a, b) => b.createdAt - a.createdAt);
-    },
-  });
-};
-
 const useOrdersQuery = () => {
   const { account, twapSDK, publicClient, config } = useTwapContext();
-  const { mutateAsync: getOrderFromLens } = useGetOrderFromLens();
   const queryKey = useOrdersQueryKey();
   const handlePersistedOrders = useHandlePersistedOrders();
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
       if (!publicClient) throw new Error("publicClient is not defined");
-      let orders: Order[] = [];
-
-      if (isSupportedByTheGraph(config.chainId)) {
-        orders = await twapSDK.getOrders(account!, signal);
-      } else {
-        orders = await getOrderFromLens();
-      }
+      const orders: Order[] = await twapSDK.getOrders(account!, signal);
 
       handlePersistedOrders(orders);
 
@@ -226,7 +200,7 @@ const useOrdersQuery = () => {
 
 export const useOrders = () => {
   const { data: orders, isLoading, error, refetch, isRefetching } = useOrdersQuery();
-  const { mutateAsync: cancelOrder } = useCancelOrder();
+  const { callback: cancelOrder } = useCancelOrder();
 
   return useMemo(() => {
     return {

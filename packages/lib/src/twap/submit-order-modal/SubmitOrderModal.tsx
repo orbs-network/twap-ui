@@ -3,7 +3,16 @@ import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { Failed } from "./Failed";
 import { ReactNode, useMemo } from "react";
 import { useTwapContext } from "../../context";
-import { useChunks, useDestTokenAmount, useNetwork, useOrderName, useOrderType, useSrcAmount, useTransactionExplorerLink } from "../../hooks/logic-hooks";
+import {
+  useChunks,
+  useDestTokenAmount,
+  useNetwork,
+  useOnCloseConfirmationModal,
+  useOrderName,
+  useOrderType,
+  useSrcAmount,
+  useTransactionExplorerLink,
+} from "../../hooks/logic-hooks";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Steps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
@@ -99,9 +108,20 @@ const LoadingView = () => {
   const orderType = useOrderType();
   const step = useTwapStore((s) => s.state.activeStep);
   const { srcToken, dstToken } = useTwapContext();
+  const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
 
   if (TransactionModal?.CreateOrder?.LoadingView && srcToken && dstToken) {
-    return <TransactionModal.CreateOrder.LoadingView srcToken={srcToken} dstToken={dstToken} orderType={orderType} srcAmount={srcAmount} dstAmount={dstAmount} step={step!} />;
+    return (
+      <TransactionModal.CreateOrder.LoadingView
+        fetchingAllowance={fetchingAllowance}
+        srcToken={srcToken}
+        dstToken={dstToken}
+        orderType={orderType}
+        srcAmount={srcAmount}
+        dstAmount={dstAmount}
+        step={step!}
+      />
+    );
   }
   return null;
 };
@@ -114,6 +134,7 @@ const SuccessContent = () => {
   const orderType = useOrderType();
   const srcAmount = useSrcAmount().amountUI || "";
   const dstAmount = useDestTokenAmount().amountUI;
+  const onClose = useOnCloseConfirmationModal();
 
   if (TransactionModal?.CreateOrder?.SuccessContent && srcToken && dstToken) {
     return (
@@ -124,6 +145,8 @@ const SuccessContent = () => {
         dstAmount={dstAmount}
         orderType={orderType}
         explorerUrl={explorerUrl || ""}
+        txHash={createOrderTxHash}
+        onClose={onClose}
       />
     );
   }

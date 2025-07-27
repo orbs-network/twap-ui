@@ -27,13 +27,15 @@ import {
 } from "./logic-hooks";
 import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
-import { useCancelOrder, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
 import { useOrderHistoryContext } from "../twap/orders/context";
 import { useOrders } from "./order-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "../twap/consts";
+import { useWrapOnly } from "./use-wrap-only";
+import { useUnwrapToken } from "./use-unwrap";
+import { useCancelOrder } from "./use-cancel-order";
 
 const defaultPercent = [1, 5, 10];
 
@@ -409,7 +411,7 @@ export const useChunkSizeMessage = () => {
   const { srcToken, isLimitPanel } = useTwapContext();
   const isZero = isLimitPanel || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0) || !chunks;
   return {
-    hide: isLimitPanel,
+    hide: isLimitPanel || !srcToken,
     tokenAmount: isZero ? "0" : amountUIF,
     usdAmount: isZero ? "0" : chunkSizeF,
     error,
@@ -531,7 +533,7 @@ export const useShowOrderConfirmationModalButton = () => {
 
 export const useOrderHistoryPanel = () => {
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
-  const { mutateAsync: cancelOrder } = useCancelOrder();
+  const cancelOrder = useCancelOrder();
   const { isOpen, onClose, onOpen } = useOrderHistoryContext();
 
   return {
@@ -539,10 +541,14 @@ export const useOrderHistoryPanel = () => {
     isLoading: orderLoading,
     refetch,
     isRefetching,
-    cancelOrder,
     isOpen,
     onClose,
     onOpen,
+    cancelOrder: cancelOrder.callback,
     openOrdersCount: orders?.OPEN?.length || 0,
+    cancelOrderStatus: cancelOrder.status,
+    cancelOrderTxHash: cancelOrder.txHash,
+    cancelOrderError: cancelOrder.error,
+    cancelOrderId: cancelOrder.orderId,
   };
 };

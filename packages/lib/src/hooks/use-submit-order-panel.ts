@@ -4,9 +4,10 @@ import { useTwapContext } from "../context";
 import { useTradePrice } from "../twap/submit-order-modal/usePrice";
 import { useTwapStore } from "../useTwapStore";
 import { useOnCloseConfirmationModal, useOrderDeadline, useSrcTokenChunkAmount, useChunks, useFillDelay, useDestTokenMinAmount, useUsdAmount } from "./logic-hooks";
-import { useOrderSubmissionArgs, useSubmitOrderCallback } from "./send-transactions-hooks";
 import { useFee } from "./ui-hooks";
 import { getOrderType } from "../utils";
+import { useSubmitOrderCallback } from "./use-submit-order";
+import { useOrderSubmissionArgs } from "./use-order-submission-args";
 
 export const useSubmitOrderPanel = () => {
   const { dstUsd1Token, srcUsd1Token, account, srcToken, dstToken } = useTwapContext();
@@ -19,9 +20,10 @@ export const useSubmitOrderPanel = () => {
   const destMinAmountOut = useDestTokenMinAmount().amountUI;
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const fee = useFee();
-  const { mutateAsync, checkingApproval: loadingApproval, isLoading: mutationLoading } = useSubmitOrderCallback();
+  const { mutateAsync, isLoading: mutationLoading } = useSubmitOrderCallback();
   const srcUsdAmount = useUsdAmount(srcAmount, srcUsd1Token);
   const dstUsdAmount = useUsdAmount(acceptedDstAmount, dstUsd1Token);
+  const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
   const currentStep = useTwapStore((s) => s.state.activeStep);
   const swapError = useTwapStore((s) => s.state.swapError);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
@@ -35,7 +37,7 @@ export const useSubmitOrderPanel = () => {
   const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
   const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
   const updateState = useTwapStore((s) => s.updateState);
-  const isLoading = mutationLoading || swapStatus === SwapStatus.LOADING || loadingApproval;
+  const isLoading = mutationLoading || swapStatus === SwapStatus.LOADING || fetchingAllowance;
   const tradePrice = useTradePrice();
   const orderSubmissionArgs = useOrderSubmissionArgs();
 

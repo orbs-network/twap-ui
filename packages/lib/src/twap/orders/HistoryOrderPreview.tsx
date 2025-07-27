@@ -9,8 +9,9 @@ import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 import { useAmountUi, useOrderName } from "../../hooks/logic-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
-import { TokensDisplay } from "@orbs-network/swap-ui";
+import { SwapStatus, TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../components/order-details";
+import { useCancelOrder } from "../../hooks/use-cancel-order";
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
@@ -132,16 +133,26 @@ const ExcecutionSummary = ({ order }: { order: Order }) => {
 };
 
 export const CancelOrderButton = ({ order }: { order: Order }) => {
-  const { cancelOrder } = useOrderHistoryContext();
   const context = useTwapContext();
+  const cancelOrder = useCancelOrder();
 
   const onCancelOrder = useCallback(async () => {
-    return cancelOrder(order);
+    return cancelOrder.callback(order);
   }, [cancelOrder, order]);
 
   if (!order || order.status !== OrderStatus.Open) return null;
 
-  return <context.OrderHistory.CancelOrderButton order={order} isLoading={false} onClick={onCancelOrder} className="twap-cancel-order" />;
+  return (
+    <context.OrderHistory.CancelOrderButton
+      order={order}
+      isLoading={cancelOrder.status === SwapStatus.LOADING}
+      error={cancelOrder.error}
+      txHash={cancelOrder.txHash}
+      status={cancelOrder.status}
+      onClick={onCancelOrder}
+      className="twap-cancel-order"
+    />
+  );
 };
 
 const CreatedAt = ({ order }: { order: Order }) => {

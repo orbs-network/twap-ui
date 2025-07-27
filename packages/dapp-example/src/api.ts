@@ -4,8 +4,6 @@ import _ from "lodash";
 
 const BASE_TOKENS = _.uniq(["USDT", "USDC", "DAI", "WBTC", "BUSD", ...Object.values(networks).map((it) => it.wToken.symbol)]);
 
-
-
 const coingekoChainToName = {
   [networks.flare.id]: "flare-network",
   [networks.ftm.id]: "fantom",

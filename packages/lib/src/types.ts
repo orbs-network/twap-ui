@@ -197,14 +197,6 @@ export type OrdersHistoryProps = {
   onClose: () => void;
 };
 
-// export type CancelOrderProps = {
-//   status?: SwapStatus;
-//   explorerUrl?: string;
-//   srcToken?: Token;
-//   dstToken?: Token;
-//   orderId?: number;
-// };
-
 export type LinkProps = {
   href: string;
   children: ReactNode;
@@ -220,6 +212,9 @@ export type CancelOrderButtonProps = {
   isLoading: boolean;
   onClick: () => void;
   className?: string;
+  error?: string;
+  txHash?: string;
+  status?: SwapStatus;
 };
 
 export type TransactionModalCreateOrderSuccessProps = {
@@ -229,6 +224,8 @@ export type TransactionModalCreateOrderSuccessProps = {
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
+  txHash?: string;
+  onClose: () => void;
 };
 
 export type TransactionModalCreateOrderErrorProps = {
@@ -247,6 +244,7 @@ export type TransactionModalCreateOrderLoadingViewProps = {
   srcAmount: string;
   dstAmount: string;
   step: Steps;
+  fetchingAllowance?: boolean;
 };
 
 export type CreateOrderReviewOrderContentProps = {
@@ -527,6 +525,7 @@ export enum Steps {
 
 export interface State {
   swapStatus?: SwapStatus;
+  fetchingAllowance?: boolean;
   activeStep?: Steps;
   currentStepIndex?: number;
   swapError?: string;
@@ -549,6 +548,10 @@ export interface State {
   isMarketOrder?: boolean;
 
   currentTime: number;
+  cancelOrderStatus?: SwapStatus;
+  cancelOrderTxHash?: string;
+  cancelOrderError?: string;
+  cancelOrderId?: number;
 }
 
 export { SwapStatus };

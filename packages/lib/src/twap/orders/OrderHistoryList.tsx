@@ -8,6 +8,7 @@ import { useOrderName } from "../../hooks/logic-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
 import TokenLogo from "../../components/TokenLogo";
+import { useCancelOrder } from "../../hooks/use-cancel-order";
 
 const ListLoader = () => {
   const context = useTwapContext();
@@ -37,7 +38,7 @@ export const OrderHistoryList = () => {
 
 const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
   const context = useTwapContext();
-  const { cancelOrder } = useOrderHistoryContext();
+  const { callback: cancelOrder } = useCancelOrder();
 
   const handleCancelOrder = React.useCallback(() => {
     return cancelOrder(order);

@@ -9,6 +9,8 @@ import { useTransactionExplorerLink } from "../../hooks/logic-hooks";
 import { Portal } from "../../components/Portal";
 import { useOrderHistoryPanel } from "../twap";
 import { SwapFlowComponent } from "../swap-flow";
+import { useTwapStore } from "../../useTwapStore";
+import { useCancelOrder } from "../../hooks/use-cancel-order";
 
 const PORTAL_ID = "twap-orders-portal";
 
@@ -38,7 +40,9 @@ export const OrdersPortal = ({ children }: { children?: ReactNode }) => {
 };
 
 const CancelOrderFlow = () => {
-  const { cancelOrderTxHash, cancelOrderStatus, cancelOrderError } = useOrderHistoryContext();
+  const cancelOrderTxHash = useTwapStore((s) => s.state.cancelOrderTxHash);
+  const cancelOrderStatus = useTwapStore((s) => s.state.cancelOrderStatus);
+  const cancelOrderError = useTwapStore((s) => s.state.cancelOrderError);
   const { translations: t, useToken, TransactionModal } = useTwapContext();
   const order = useSelectedOrder();
   const inToken = useToken?.(order?.srcTokenAddress);
@@ -98,11 +102,12 @@ const FailedContent = ({ error, orderId }: { error: string; orderId: number }) =
 };
 
 const OrderHistory = ({ className = "" }: { className?: string }) => {
-  const { selectedOrderId, cancelOrderStatus } = useOrderHistoryContext();
+  const { selectedOrderId } = useOrderHistoryContext();
+  const cancelOrder = useCancelOrder();
 
   return (
     <>
-      {cancelOrderStatus ? (
+      {cancelOrder.status ? (
         <CancelOrderFlow />
       ) : (
         <div className={`twap-orders ${selectedOrderId !== undefined ? "twap-orders__show-selected" : ""} ${className}`}>

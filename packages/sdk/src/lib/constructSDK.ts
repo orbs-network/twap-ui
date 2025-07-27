@@ -11,6 +11,7 @@ import {
   getDestTokenMinAmount,
   getDestTokenAmount,
   getAskParams,
+  DEFAULT_FILL_DELAY,
 } from "./lib";
 import { getOrders } from "./orders";
 import { Config, getAskParamsProps, TimeDuration } from "./types";
@@ -78,8 +79,9 @@ export class TwapSDK {
 
   // errors
   getMaxFillDelayError(fillDelay: TimeDuration, chunks: number) {
+    const isDefault = fillDelay.unit === DEFAULT_FILL_DELAY.unit && fillDelay.value === DEFAULT_FILL_DELAY.value;
     return {
-      isError: getTimeDurationMillis(fillDelay) * chunks > MAX_ORDER_DURATION_MILLIS,
+      isError: !isDefault && getTimeDurationMillis(fillDelay) * chunks > MAX_ORDER_DURATION_MILLIS,
       value: Math.floor(MAX_ORDER_DURATION_MILLIS / chunks),
     };
   }

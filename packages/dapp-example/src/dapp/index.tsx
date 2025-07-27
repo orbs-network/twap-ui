@@ -60,7 +60,7 @@ const OrderHistoryModal = (props: OrdersHistoryProps) => {
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const {
-    swap: { onSubmit, submitted, disabled },
+    swap: { onSubmit, submitted, disabled, isLoading },
     setDisclaimerAccepted,
     disclaimerAccepted,
   } = useSubmitOrderPanel();
@@ -79,7 +79,7 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
             <Switch checked={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
           </Flex>
           <StyledButton onClick={onSubmit} disabled={disabled}>
-            Confirm
+            <p>{isLoading ? "Loading..." : "Confirm"}</p>
           </StyledButton>
         </>
       )}
