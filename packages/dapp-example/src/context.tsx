@@ -2,20 +2,15 @@ import { Config, Configs } from "@orbs-network/twap-sdk";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { useAppParams } from "./dapp/hooks";
-
-export enum Panels {
-  TWAP = "TWAP",
-  LIMIT = "LIMIT",
-  STOP_LOSS = "STOP LOSS",
-}
+import { Module } from "@orbs-network/twap-ui";
 
 interface ContextProps {
   config: Config;
   setConfig: (config: Config) => void;
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
-  panel: Panels;
-  setPanel: (panel: Panels) => void;
+  panel: Module;
+  setPanel: (panel: Module) => void;
 }
 type ThemeMode = "light" | "dark";
 const Context = createContext({} as ContextProps);
@@ -31,7 +26,7 @@ const useConfig = () => {
   const initialConfig = useMemo(() => {
     const configKey = localStorage.getItem("config-name");
     const config = Object.values(Configs).find((it) => getConfigKey(it as Config) === configKey);
-    return config || Object.values(Configs).find((it) => it.chainId === chainId) || Configs.Lynex;
+    return config || Object.values(Configs).find((it) => it.chainId === chainId) || Configs.Thena;
   }, [chainId]);
 
   const initialPartner = useMemo(() => {
@@ -64,7 +59,7 @@ const useConfig = () => {
 
 export const DappProvider = ({ children }: { children: React.ReactNode }) => {
   const { config, setConfig } = useConfig();
-  const [panel, setPanel] = useState(Panels.STOP_LOSS);
+  const [panel, setPanel] = useState(Module.STOP_LOSS);
   const [theme, _setTheme] = useState<ThemeMode>((localStorage.getItem("theme") as ThemeMode) || "dark");
 
   const setTheme = useCallback(

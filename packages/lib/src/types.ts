@@ -17,6 +17,7 @@ export interface Translations {
   confirmationTotalTradesTooltip: string;
   confirmationMinDstAmountTooltipLimit: string;
   marketPriceTooltip: string;
+  stopLoss: string;
   limitPriceTooltip: string;
   tradeSizeTooltip: string;
   maxDurationTooltip: string;
@@ -421,7 +422,7 @@ export interface TwapProps {
   children?: React.ReactNode;
   components?: Components;
   SubmitOrderPanel: FC<SubmitOrderPanelProps>;
-  panel: "TWAP" | "LIMIT" | "STOP_LOSS";
+  module: Module;
   TransactionModal?: {
     Spinner?: ReactNode;
     SuccessIcon?: ReactNode;
@@ -482,6 +483,10 @@ export interface TwapContextType extends TwapProps {
   account?: `0x${string}`;
   noLiquidity?: boolean;
   components: Components;
+  isStopLossModule?: boolean;
+  isLimitModule?: boolean;
+  isTakeProfitModule?: boolean;
+  isTwapModule?: boolean;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -524,6 +529,13 @@ export enum Steps {
   CREATE = "create",
 }
 
+export enum Module {
+  TWAP = "TWAP",
+  LIMIT = "LIMIT",
+  STOP_LOSS = "STOP_LOSS",
+  TAKE_PROFIT = "TAKE_PROFIT",
+}
+
 export interface State {
   swapStatus?: SwapStatus;
   fetchingAllowance?: boolean;
@@ -544,7 +556,8 @@ export interface State {
   typedFillDelay: TimeDuration;
   typedDuration?: TimeDuration;
   typedPrice?: string;
-  typedStopLoss?: string;
+  typedTriggerPrice?: string;
+  triggerPricePercent?: number;
   isInvertedPrice?: boolean;
   selectedPricePercent?: string;
   isMarketOrder?: boolean;

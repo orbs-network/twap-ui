@@ -7,7 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
-import { InputError, InputErrors, Provider, State, Token } from "../types";
+import { InputError, InputErrors, Module, Provider, State, Token } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import * as chains from "viem/chains";
 import { getAllowance } from "../lib";
@@ -103,7 +103,10 @@ export const useLimitPrice = () => {
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   const updateState = useTwapStore((s) => s.updateState);
   const amountWei = useMemo(() => {
-    if (typedPrice === undefined || isMarketOrder || !marketPrice) return marketPrice;
+    const defaultMarketPrice = marketPrice;
+    if (typedPrice === undefined || isMarketOrder || !marketPrice) {
+      return defaultMarketPrice;
+    }
     const result = isInvertedPrice ? BN(1).div(typedPrice).toFixed() : typedPrice;
     return amountBN(dstToken?.decimals, result);
   }, [typedPrice, isMarketOrder, marketPrice, isInvertedPrice, dstToken?.decimals]);
@@ -124,12 +127,12 @@ export const useMaxChunks = () => {
 };
 
 export const useChunks = () => {
-  const { twapSDK, isLimitPanel } = useTwapContext();
+  const { twapSDK, isLimitPanel, module } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const updateState = useTwapStore((s) => s.updateState);
   const maxChunks = useMaxChunks();
 
-  const chunks = useMemo(() => twapSDK.getChunks(maxChunks, Boolean(isLimitPanel), typedChunks), [maxChunks, typedChunks, isLimitPanel, twapSDK]);
+  const chunks = useMemo(() => twapSDK.getChunks(maxChunks, Boolean(isLimitPanel || module === Module.STOP_LOSS), typedChunks), [maxChunks, typedChunks, isLimitPanel, twapSDK]);
 
   const setChunks = useCallback(
     (typedChunks: number) => {
@@ -186,18 +189,117 @@ export const useChunksError = () => {
     }
   }, [chunks, twapSDK, maxChunks, isLimitPanel]);
 };
-export const useStopLoss = () => {
+export const useTriggerPrice = () => {
   const { dstToken, marketPrice } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
-  const typedStopLoss = useTwapStore((s) => s.state.typedStopLoss);
+
+
+  return useInputWithPercentage({
+    typedValue: useTwapStore((s) => s.state.typedTriggerPrice),
+    percentage: useTwapStore((s) => s.state.triggerPricePercent),
+    tokenDecimals: dstToken?.decimals,
+    price: marketPrice,
+    setValue: useCallback((typedTriggerPrice?: string) => updateState({ typedTriggerPrice }), [updateState]),
+    setPercentage: useCallback((triggerPricePercent?: number) => updateState({ triggerPricePercent }), [updateState]),
+  });
+};
+
+export const useTriggerLimitPrice = () => {
+  const { dstToken, marketPrice } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
+
+  return useInputWithPercentage({
+    typedValue: useTwapStore((s) => s.state.typedPrice),
+    percentage: useTwapStore((s) => s.state.selectedPricePercent  ?Number(s.state.selectedPricePercent) : undefined),
+    tokenDecimals: dstToken?.decimals,
+    price: marketPrice,
+    setValue: useCallback((typedPrice?: string) => updateState({ typedPrice }), [updateState]),
+    setPercentage: useCallback((selectedPricePercent?: number) => updateState({ selectedPricePercent: selectedPricePercent?.toString() || undefined }), [updateState]),
+  });
+}
+
+export const useInputWithPercentage = ({
+  typedValue,
+  tokenDecimals,
+  price,
+  percentage,
+  setValue,
+  setPercentage,
+}: {
+  typedValue?: string;
+  tokenDecimals?: number;
+  price?: string;
+  percentage?: number;
+  setValue: (value?: string) => void;
+  setPercentage: (percentage?: number) => void;
+}) => {
+  const priceWei = useMemo(() => {
+    if (typedValue !== undefined) {
+      return amountBN(tokenDecimals, typedValue);
+    }
+    if (percentage !== undefined) {
+      const percent = BN(percentage || 0).div(100);
+      const market = BN(price || 0);
+      return market.plus(market.multipliedBy(percent)).toFixed();
+    }
+
+    return price || "";
+  }, [percentage, typedValue, tokenDecimals, price]);
+
+  const onValueChange = useCallback(
+    (typedValue?: string) => {
+      setValue(typedValue);
+      setPercentage(undefined);
+    },
+    [setValue, setPercentage]
+  );
+
+  const onPercentageChange = useCallback(
+    (percentage?: number) => {
+      setPercentage(percentage);
+      setValue(undefined);
+    },
+    [setPercentage, setValue]
+  );
+
+  const percentageDiff = useMemo(() => {
+    if (percentage !== undefined) {
+      return percentage;
+    }
+
+    if (!price || BN(price).isZero()) {
+      return 0; // or undefined or NaN depending on UX
+    }
+
+    if (priceWei !== undefined) {
+      const priceBN = BN(price || 0);
+
+      const diff = BN(priceWei)
+        .minus(priceBN)
+        .dividedBy(priceBN) // avoid division by zero
+        .multipliedBy(100)
+        .toNumber();
+      return diff;
+    }
+    return 0;
+  }, [priceWei, price, percentage]);
+
+  const priceUi = useMemo(() => {
+    if (typedValue !== undefined) {
+      return typedValue;
+    }
+    return amountUi(tokenDecimals, priceWei);
+  }, [typedValue, tokenDecimals, priceWei]);
+
   return useMemo(() => {
-    const amountWei = amountBN(dstToken?.decimals, typedStopLoss) || marketPrice;
     return {
-      amountWei,
-      amountUI: amountUi(dstToken?.decimals, amountWei),
-      setStopLoss: (typedStopLoss: string) => updateState({ typedStopLoss }),
+      amountWei: priceWei,
+      amountUI: priceUi,
+      percentageDiff,
+      onValueChange,
+      onPercentageChange,
     };
-  }, [typedStopLoss, dstToken?.decimals, marketPrice, updateState]);
+  }, [priceWei, priceUi, onValueChange, onPercentageChange, percentageDiff]);
 };
 
 export const useFillDelayError = () => {
@@ -283,15 +385,24 @@ export const useSrcTokenChunkAmount = () => {
   };
 };
 
+const useTradePrice = () => {
+  const { module, marketPrice } = useTwapContext();
+  const limitPrice = useLimitPrice().amountWei;
+
+  if (module === Module.STOP_LOSS) {
+    return marketPrice || "";
+  }
+
+  return limitPrice || "";
+};
+
 export const useDestTokenAmount = () => {
   const { twapSDK, srcToken, dstToken } = useTwapContext();
   const srcAmountWei = useSrcAmount().amountWei;
+  const price = useTradePrice();
 
-  const limitPrice = useLimitPrice().amountWei;
-  const amountWei = useMemo(
-    () => twapSDK.getDestTokenAmount(srcAmountWei || "", limitPrice || "", srcToken?.decimals || 0),
-    [twapSDK, srcAmountWei, limitPrice, srcToken?.decimals]
-  );
+  const amountWei = useMemo(() => twapSDK.getDestTokenAmount(srcAmountWei || "", price, srcToken?.decimals || 0), [twapSDK, srcAmountWei, price, srcToken?.decimals]);
+
   return {
     amountWei,
     amountUI: useAmountUi(dstToken?.decimals, amountWei),
@@ -301,11 +412,11 @@ export const useDestTokenAmount = () => {
 export const useDestTokenMinAmount = () => {
   const { twapSDK, srcToken, dstToken } = useTwapContext();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const limitPrice = useLimitPrice().amountWei;
   const srcTokenChunkAmount = useSrcTokenChunkAmount().amountWei;
+  const price = useTradePrice();
   const amountWei = useMemo(
-    () => twapSDK.getDestTokenMinAmount(srcTokenChunkAmount, limitPrice || "", Boolean(isMarketOrder), srcToken?.decimals || 0),
-    [twapSDK, srcTokenChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals]
+    () => twapSDK.getDestTokenMinAmount(srcTokenChunkAmount, price, Boolean(isMarketOrder), srcToken?.decimals || 0),
+    [twapSDK, srcTokenChunkAmount, price, isMarketOrder, srcToken?.decimals]
   );
 
   return {
@@ -434,8 +545,11 @@ export const useFillDelay = () => {
 };
 
 export const useOrderName = (isMarketOrder = false, chunks = 1) => {
-  const { translations: t } = useTwapContext();
+  const { translations: t, module } = useTwapContext();
   return useMemo(() => {
+    if (module === Module.STOP_LOSS) {
+      return t.stopLoss;
+    }
     if (isMarketOrder) {
       return t.twapMarket;
     }
@@ -443,7 +557,7 @@ export const useOrderName = (isMarketOrder = false, chunks = 1) => {
       return t.limit;
     }
     return t.twapLimit;
-  }, [t, isMarketOrder, chunks]);
+  }, [t, isMarketOrder, chunks, module]);
 };
 export const useOrderDuration = () => {
   const { twapSDK } = useTwapContext();

@@ -168,6 +168,13 @@ export function millisToMinutes(milliseconds?: number): number {
   return milliseconds / millisecondsInAMinute;
 }
 
+export const getTotalSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
+  let stepsCount = 1;
+  if (shouldWrap) stepsCount++;
+  if (shouldApprove) stepsCount++;
+  return stepsCount;
+};
+
 export const getOrderType = (isMarketOrder: boolean, chunks: number) => {
   if (isMarketOrder) {
     return OrderType.TWAP_MARKET;

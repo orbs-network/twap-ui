@@ -23,7 +23,8 @@ import {
   useShouldWrapOrUnwrapOnly,
   useSrcChunkAmountUSD,
   useSrcTokenChunkAmount,
-  useStopLoss,
+  useTriggerLimitPrice,
+  useTriggerPrice,
   useUsdAmount,
 } from "./logic-hooks";
 import BN from "bignumber.js";
@@ -69,13 +70,14 @@ export const useLimitPriceInput = () => {
       onLimitPriceChange(value);
       updateState({ selectedPricePercent: undefined });
     },
-    [onLimitPriceChange, updateState]
+    [onLimitPriceChange, updateState],
   );
 
   return {
     value: useDerivedLimitPrice(),
     onChange,
     isLoading: useLimitPriceLoading(),
+    reset: () => onLimitPriceChange(undefined),
   };
 };
 
@@ -109,11 +111,11 @@ export const useLimitPricePercentSelect = () => {
       const computedPrice = formatDecimals(
         BN(basePrice || 0)
           .times(multiplier)
-          .toFixed()
+          .toFixed(),
       );
       onPriceChange(computedPrice);
     },
-    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading]
+    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading],
   );
 
   const options = useMemo(() => {
@@ -191,7 +193,7 @@ export const useLimitPricePanel = () => {
   const tokens = useLimitPriceTokens();
   const error = useLimitPriceError();
   const input = useLimitPriceInput();
-  const { panel } = useTwapContext();
+  const { isStopLossModule } = useTwapContext();
   const percent = useLimitPricePercentSelect();
   const onInvert = useLimitPriceOnInvert();
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
@@ -207,21 +209,47 @@ export const useLimitPricePanel = () => {
     isInverted: isInvertedPrice,
     usd,
     isLimitOrder: !isMarketOrder,
-    hide: isMarketOrder || panel === "STOP_LOSS",
+    hide: isMarketOrder || isStopLossModule,
   };
 };
 
-export const useStopLossPanel = () => {
-  const { amountUI, setStopLoss } = useStopLoss();
+export const useTriggerPricePanel = () => {
+  const { amountUI, percentageDiff, onValueChange, onPercentageChange } = useTriggerPrice();
   const { dstToken } = useTwapContext();
   return useMemo(() => {
     return {
-      value: amountUI,
+      value: BN(formatDecimals(amountUI)).toFixed(),
       token: dstToken,
-      onChange: setStopLoss,
+      onChange: onValueChange,
+      onPercentChange: onPercentageChange,
+      reset: () => {
+        onValueChange(undefined);
+        onPercentageChange(undefined);
+      },
+      percentageDiff: parseFloat(percentageDiff.toFixed(2)),
     };
-  }, [amountUI, dstToken, setStopLoss]);
+  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff]);
 };
+
+export const useTriggerLimitPricePanel = () => {
+  const { amountUI, percentageDiff, onValueChange, onPercentageChange } = useTriggerLimitPrice();
+  const { dstToken } = useTwapContext();
+  return useMemo(() => {
+    return {
+      value: BN(formatDecimals(amountUI)).toFixed(),
+      token: dstToken,
+      onChange: onValueChange,
+      onPercentChange: onPercentageChange,
+      reset: () => {
+        onValueChange(undefined);
+        onPercentageChange(undefined);
+      },
+      percentageDiff: parseFloat(percentageDiff.toFixed(2)),
+    };
+  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff]);
+};
+
+
 
 export const usePriceToggle = () => {
   const updateState = useTwapStore((s) => s.updateState);
@@ -231,7 +259,7 @@ export const usePriceToggle = () => {
     (value: boolean) => {
       updateState({ isMarketOrder: value });
     },
-    [updateState]
+    [updateState],
   );
 
   return {
@@ -249,14 +277,14 @@ export const useFillDelayPanel = () => {
     (value: string) => {
       setFillDelay({ unit: fillDelay.unit, value: Number(value) });
     },
-    [setFillDelay, fillDelay]
+    [setFillDelay, fillDelay],
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setFillDelay({ unit, value: fillDelay.value });
     },
-    [setFillDelay, fillDelay]
+    [setFillDelay, fillDelay],
   );
 
   return {
@@ -347,7 +375,7 @@ export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken]
+    [updateState, isSrcToken],
   );
   return {
     value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(destTokenAmountUI, 8),
@@ -379,14 +407,14 @@ export const useDurationPanel = () => {
     (value: string) => {
       setDuration({ unit: duration.unit, value: Number(value) });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setDuration({ unit, value: duration.value });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
   return {
     duration,
@@ -539,7 +567,7 @@ export const useShowOrderConfirmationModalButton = () => {
     getSwapText(),
     onOpen,
     isButtonLoading,
-    Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount))
+    Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount)),
   );
 
   return swapButton;

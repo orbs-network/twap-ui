@@ -79,6 +79,7 @@
   "twapMarket": "TWAP-market",
   "twapMarketOrder": "TWAP-market",
   "twapLimit": "TWAP-limit",
+  "stopLoss": "Stop-loss",
   "All": "All",
   "minReceived": "Min. received",
   "wrap": "Wrap",

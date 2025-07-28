@@ -1,10 +1,10 @@
 import { Modal, Typography } from "antd";
 import { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import { Token, useFormatNumber } from "@orbs-network/twap-ui";
+import { Module, Token, useFormatNumber } from "@orbs-network/twap-ui";
 import { Config, Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
 import { useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
 import { Virtuoso } from "react-virtuoso";
-import { Panels, useDappContext } from "./context";
+import { useDappContext } from "./context";
 import { useSwitchChain } from "wagmi";
 import { NumericFormat } from "react-number-format";
 import BN from "bignumber.js";
@@ -32,8 +32,8 @@ export const NumberInput = (props: {
 
   return (
     <NumericFormat
-      className={`input ${props.className}`}
-      allowNegative={false}
+      className={`input ${props.className} ${disabled ? "input-disabled" : ""}`}
+      allowNegative={true}
       disabled={disabled}
       decimalScale={decimalScale}
       onBlur={onBlur}
@@ -74,7 +74,6 @@ export const Popup = ({ isOpen, onClose, children, className = "", title }: { is
         content: `popup-main ${className}`,
       }}
       styles={{
-
         content: {
           borderRadius: 16,
         },
@@ -245,10 +244,10 @@ export const PanelToggle = () => {
 
   return (
     <div className="panel-selector">
-      {Object.values(Panels).map((it) => {
+      {Object.values(Module).map((it) => {
         return (
           <button className={`${panel === it ? "panel-selector-btn-selected" : ""} panel-selector-btn`} key={it} onClick={() => setPanel(it)}>
-            {it}
+            {it.replace("_", " ")}
           </button>
         );
       })}

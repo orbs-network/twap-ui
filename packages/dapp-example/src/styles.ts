@@ -93,6 +93,10 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
       fontSize: 24,
       fontWeight: 500,
       width: "100%",
+      "&-disabled": {
+        background: "rgba(255, 255, 255, 0.05)",
+        color: "rgba(255, 255, 255, 0.5)",
+      },
     },
     ".popup-main": {
       maxHeight: "80vh",

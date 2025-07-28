@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { amountBN, constructSDK } from "@orbs-network/twap-sdk";
-import { TwapProps, TwapContextType, Translations, Components } from "./types";
+import { TwapProps, TwapContextType, Translations, Components, Module } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
@@ -21,7 +21,7 @@ const Listeners = () => {
   const updateStore = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
-  const { isLimitPanel, panel, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
+  const { isLimitPanel, isStopLossModule, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
 
   useEffect(() => {
     updateStore({ disclaimerAccepted: orderDisclaimerAcceptedByDefault });
@@ -38,12 +38,12 @@ const Listeners = () => {
   }, [typedSrcAmount, srcToken?.decimals, onInputAmountChange]);
 
   useEffect(() => {
-    if (isLimitPanel || panel === "LIMIT" || panel === "STOP_LOSS") {
-      updateStore({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: false });
+    if (isLimitPanel || isStopLossModule) {
+      updateStore({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: isLimitPanel ? false : isTwapMarketByDefault || false });
     } else {
-      updateStore({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault ? true : false });
+      updateStore({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault || false });
     }
-  }, [isLimitPanel, updateStore, isTwapMarketByDefault, panel]);
+  }, [isLimitPanel, updateStore, isTwapMarketByDefault, isStopLossModule]);
 
   useEffect(() => {
     setInterval(() => {
@@ -83,6 +83,10 @@ const Content = (props: TwapProps) => {
         noLiquidity: props.marketReferencePrice.noLiquidity,
         components: props.components || ({} as Components),
         numberFormat: props.numberFormat,
+        isLimitModule: props.isLimitPanel || props.module === Module.LIMIT,
+        isStopLossModule: props.module === Module.STOP_LOSS,
+        isTwapModule: props.module === Module.TWAP,
+        isTakeProfitModule: props.module === Module.TAKE_PROFIT,
       }}
     >
       <Listeners />

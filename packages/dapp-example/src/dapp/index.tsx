@@ -30,14 +30,15 @@ import {
   useChunksPanel,
   useOrderHistoryPanel,
   Token,
-  useStopLossPanel,
+  Module,
+  useTriggerPricePanel,
 } from "@orbs-network/twap-ui";
 import { Config } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { Panels, useDappContext } from "../context";
+import { useDappContext } from "../context";
 import { GlobalStyles, StyledLayout } from "./styles";
 import { CurrencyInputPanel, Section, SwitchTokensButton } from "./components";
 import { useDappStore } from "./store";
@@ -45,6 +46,7 @@ import { ChevronDown, Info, RefreshCcw } from "react-feather";
 import BN from "bignumber.js";
 import { useGetToken } from "./hooks";
 import styled from "styled-components";
+import { useTriggerLimitPricePanel } from "@orbs-network/twap-ui/dist/hooks/ui-hooks";
 
 const OrderHistoryModal = (props: OrdersHistoryProps) => {
   const { isOpen, onClose, onOpen, isLoading, openOrdersCount } = useOrderHistoryPanel();
@@ -231,10 +233,17 @@ const useTokens = () => {
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const { input, usd, balance, token } = useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
-
+  const { panel } = useDappContext();
   const { setSrcToken, setDstToken } = useDappStore();
 
   const onSelect = isSrcToken ? setSrcToken : setDstToken;
+
+  const toTitle = useMemo(() => {
+    if (panel === Module.STOP_LOSS) {
+      return "Current Price";
+    }
+    return "To";
+  }, [panel]);
 
   return (
     <Section>
@@ -245,7 +254,8 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         token={token}
         onInputChange={input.onChange}
         value={input.value}
-        title={isSrcToken ? "From" : "To"}
+        title={isSrcToken ? "From" : toTitle}
+        disabled={isSrcToken ? false : true}
       />
     </Section>
   );
@@ -301,7 +311,7 @@ const LimitPanel = () => {
 const TokenDisplay = ({ token }: { token?: Token }) => {
   return (
     <div style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center" }}>
-      <img src={token?.logoUrl} alt={token?.symbol} style={{ width: 25, height: 25, borderRadius: 999 }} />
+      {/* <img src={token?.logoUrl} alt={token?.symbol} style={{ width: 25, height: 25, borderRadius: 999 }} /> */}
       <p style={{ fontSize: 14, color: "white", opacity: 0.5 }}>{token?.symbol}</p>
     </div>
   );
@@ -322,7 +332,7 @@ const TradeAmountMessage = () => {
 const Label = ({ label, tooltip }: { label: string; tooltip?: string }) => {
   return (
     <Flex align="center" gap={4}>
-      <Typography style={{ fontSize: 14, color: "white", opacity: 0.5 }}>{label}</Typography>
+      <Typography style={{ fontSize: 14, color: "white" }}>{label}</Typography>
       {tooltip && (
         <Tooltip title={tooltip} arrow>
           <Info size={14} color="white" />
@@ -364,31 +374,41 @@ const FillDelay = () => {
   );
 };
 
-const StopLoss = () => {
-  const { value, token, onChange } = useStopLossPanel();
+const TriggerPrice = () => {
+  const { value, token, reset, percentageDiff, onChange, onPercentChange } = useTriggerPricePanel();
 
   return (
-    <Section className="fill-duration twap-input-panel">
-      <Label label="Stop Loss" tooltip="Stop Loss" />
+    <Section className="fill-duration">
       <div style={{ display: "flex", flexDirection: "row", gap: 10, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
-        <NumberInput onChange={onChange} value={value} />
-        <TokenDisplay token={token} />
+        <Label label="Trigger Price" tooltip="Trigger Price" />
+        <Button type="text" icon={<RefreshCcw size={18} />} onClick={reset} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "row", gap: 10, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "row", gap: 10, justifyContent: "space-between", alignItems: "center", flex: 1 }}>
+          <p>{token?.symbol}</p>
+          <NumberInput onChange={onChange} value={value} />
+        </div>
+        <NumberInput onChange={(value) => onPercentChange(Number(value))} value={percentageDiff} />%
       </div>
     </Section>
   );
 };
 
-const StopLossLimit = () => {
-  const { input, isLimitOrder } = useLimitPricePanel();
-  const { dstToken } = useDappStore();
+const TriggerLimitPrice = () => {
+  const { value, token, reset, percentageDiff, onChange, onPercentChange } = useTriggerLimitPricePanel();
 
-  if (!isLimitOrder) return null;
   return (
-    <Section className="stop-loss-limit twap-input-panel">
-      <Label label="Limit Price" tooltip="Limit Price" />
+    <Section className="fill-duration">
       <div style={{ display: "flex", flexDirection: "row", gap: 10, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
-        <NumberInput onChange={input.onChange} value={input.value} />
-        <TokenDisplay token={dstToken} />
+        <Label label="Limit Price" tooltip="Limit Price" />
+        <Button type="text" icon={<RefreshCcw size={18} />} onClick={reset} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "row", gap: 10, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "row", gap: 10, justifyContent: "space-between", alignItems: "center", flex: 1 }}>
+          <p>{token?.symbol}</p>
+          <NumberInput onChange={onChange} value={value} />
+        </div>
+        <NumberInput onChange={(value) => onPercentChange(Number(value))} value={percentageDiff} />%
       </div>
     </Section>
   );
@@ -412,8 +432,39 @@ const CancelOrderButton = (props: CancelOrderButtonProps) => {
   return <StyledButton onClick={props.onClick}>Cancel</StyledButton>;
 };
 
+const STOP_LOSS_ITEMS = [
+  {
+    value: "market",
+    text: "Stop Market",
+  },
+  {
+    value: "limit",
+    text: "Stop Limit",
+  },
+];
+
 const MarketPriceToggle = () => {
   const { isMarketOrder, setIsMarketOrder } = usePriceTogglePanel();
+  const { panel } = useDappContext();
+
+  if (panel === Module.STOP_LOSS) {
+    return (
+      <div
+        style={{
+          marginRight: "auto",
+          width: "fit-content",
+        }}
+      >
+        <SelectMenu
+          items={STOP_LOSS_ITEMS}
+          selected={isMarketOrder ? { value: "market", text: "Market Price" } : { value: "limit", text: "Limit Price" }}
+          onSelect={(item) => setIsMarketOrder(item.value === "market")}
+        />
+      </div>
+    );
+  }
+
+  if (panel === Module.LIMIT) return null;
   return (
     <Flex gap={10} align="center" justify="flex-end" style={{ width: "100%" }}>
       <Typography>Limit Price</Typography>
@@ -451,11 +502,7 @@ const PoweredByOrbs = () => {
 const PanelInputs = () => {
   const { panel } = useDappContext();
 
-  const limit = panel === Panels.LIMIT;
-  const stopLoss = panel === Panels.STOP_LOSS;
-  const twap = panel === Panels.TWAP;
-
-  if (twap) {
+  if (panel === Module.TWAP) {
     return (
       <Flex gap={10} align="stretch" justify="space-between" style={{ width: "100%" }}>
         <FillDelay />
@@ -464,15 +511,15 @@ const PanelInputs = () => {
     );
   }
 
-  if (limit) {
+  if (panel === Module.LIMIT) {
     return <OrderDuration />;
   }
 
-  if (stopLoss) {
+  if (panel === Module.STOP_LOSS) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-        <StopLoss />
-        <StopLossLimit />
+        <TriggerPrice />
+        <TriggerLimitPrice />
       </div>
     );
   }
@@ -490,8 +537,7 @@ export const Dapp = () => {
   const dstUsd = useUSD(dstToken?.address);
   const srcBalance = useTokenBalance(srcToken).data?.wei;
   const dstBalance = useTokenBalance(dstToken).data?.wei;
-  const limit = panel === Panels.LIMIT;
-  const twap = panel === Panels.TWAP;
+  const twap = panel === Module.TWAP;
 
   return (
     <>
@@ -503,12 +549,13 @@ export const Dapp = () => {
         provider={client.data?.transport}
         srcToken={srcToken}
         dstToken={dstToken}
-        panel={panel === Panels.LIMIT ? "LIMIT" : panel === Panels.STOP_LOSS ? "STOP_LOSS" : "TWAP"}
+        module={panel}
         srcUsd1Token={srcUsd}
         dstUsd1Token={dstUsd}
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         customMinChunkSizeUsd={5}
+        isTwapMarketByDefault={panel === Module.STOP_LOSS}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
         OrderHistory={{
           Panel: OrderHistoryModal,
@@ -530,7 +577,7 @@ export const Dapp = () => {
         <StyledLayout>
           <Flex vertical gap={10} align="center">
             <PanelToggle />
-            {!limit && <MarketPriceToggle />}
+            <MarketPriceToggle />
             <LimitPanel />
             <Flex vertical gap={0} align="center" style={{ width: "100%" }}>
               <TokenPanel isSrcToken />

@@ -50,7 +50,7 @@ const useStep = () => {
   const createOrderExplorerUrl = useTransactionExplorerLink(createOrderTxHash);
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
-  const successTitle = useTitle();
+  const swapTitle = useTitle();
 
   return useMemo((): Step | undefined => {
     if (activeStep === Steps.WRAP) {
@@ -66,10 +66,10 @@ const useStep = () => {
       };
     }
     return {
-      title: successTitle,
+      title: swapTitle,
       explorerUrl: createOrderExplorerUrl,
     };
-  }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, successTitle, t, wrapExplorerUrl]);
+  }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl]);
 };
 
 export const SubmitOrderPanel = () => {
