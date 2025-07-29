@@ -11,7 +11,11 @@ export interface Translations {
   orderHistory: string;
   orderCancelled: string;
   cancelOrderModalTitle: string;
+  stopLossTriggerPriceGreaterThanMarketPrice: string;
   perTrade: string;
+  stopLossTooltip: string;
+  stopLossLimitPriceGreaterThanTriggerPrice: string;
+  stopLossLabel: string;
   confirmationDeadlineTooltip: string;
   confirmationTradeSizeTooltip: string;
   confirmationTotalTradesTooltip: string;
@@ -327,6 +331,8 @@ export enum InputErrors {
   MAX_ORDER_DURATION,
   MIN_ORDER_DURATION,
   MISSING_LIMIT_PRICE,
+  STOP_LOSS_TRIGGER_PRICE_GREATER_THAN_MARKET_PRICE,
+  STOP_LOSS_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
 }
 
 export type Callbacks = {
@@ -559,7 +565,7 @@ export interface State {
   typedTriggerPrice?: string;
   triggerPricePercent?: number;
   isInvertedPrice?: boolean;
-  selectedPricePercent?: string;
+  selectedPricePercent?: number;
   isMarketOrder?: boolean;
 
   currentTime: number;

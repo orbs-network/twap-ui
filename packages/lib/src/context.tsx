@@ -28,7 +28,7 @@ const Listeners = () => {
   }, [orderDisclaimerAcceptedByDefault]);
 
   useEffect(() => {
-    updateStore({ typedPrice: undefined, selectedPricePercent: undefined });
+    updateStore({ typedPrice: undefined });
   }, [srcToken?.address, dstToken?.address]);
 
   useEffect(() => {

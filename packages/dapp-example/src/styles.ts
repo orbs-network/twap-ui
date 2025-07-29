@@ -83,21 +83,7 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
         transformOrigin: "center",
       },
     },
-    ".input": {
-      border: "none",
-      color: "white",
-      outline: "none",
-      background: "rgba(255, 255, 255, 0.05)",
-      borderRadius: 12,
-      padding: "10px 10px",
-      fontSize: 24,
-      fontWeight: 500,
-      width: "100%",
-      "&-disabled": {
-        background: "rgba(255, 255, 255, 0.05)",
-        color: "rgba(255, 255, 255, 0.5)",
-      },
-    },
+
     ".popup-main": {
       maxHeight: "80vh",
       maxWidth: 580,

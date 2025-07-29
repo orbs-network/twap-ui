@@ -1,5 +1,5 @@
 import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
   useAmountUi,
@@ -70,7 +70,7 @@ export const useLimitPriceInput = () => {
       onLimitPriceChange(value);
       updateState({ selectedPricePercent: undefined });
     },
-    [onLimitPriceChange, updateState],
+    [onLimitPriceChange, updateState]
   );
 
   return {
@@ -78,6 +78,27 @@ export const useLimitPriceInput = () => {
     onChange,
     isLoading: useLimitPriceLoading(),
     reset: () => onLimitPriceChange(undefined),
+  };
+};
+
+export const useMarketPricePanel = () => {
+  const { srcToken, dstToken, marketPrice } = useTwapContext();
+  const [invert, setInvert] = useState(false);
+
+  const price = useMemo(() => {
+    if (invert) {
+      return BN(1)
+        .div(marketPrice || 0)
+        .toFixed();
+    }
+    return marketPrice;
+  }, [invert, marketPrice]);
+
+  return {
+    leftToken: invert ? dstToken : srcToken,
+    rightToken: invert ? srcToken : dstToken,
+    price: useAmountUi(dstToken?.decimals, price),
+    onInvert: useCallback(() => setInvert(!invert), [invert]),
   };
 };
 
@@ -94,7 +115,7 @@ export const useLimitPricePercentSelect = () => {
   const onPercent = useCallback(
     (percent?: string) => {
       if (isLoading) return;
-      updateState({ selectedPricePercent: percent });
+      updateState({ selectedPricePercent: Number(percent) });
 
       if (!percent || BN(percent).isZero()) {
         onPriceChange(undefined);
@@ -111,11 +132,11 @@ export const useLimitPricePercentSelect = () => {
       const computedPrice = formatDecimals(
         BN(basePrice || 0)
           .times(multiplier)
-          .toFixed(),
+          .toFixed()
       );
       onPriceChange(computedPrice);
     },
-    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading],
+    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading]
   );
 
   const options = useMemo(() => {
@@ -215,7 +236,7 @@ export const useLimitPricePanel = () => {
 
 export const useTriggerPricePanel = () => {
   const { amountUI, percentageDiff, onValueChange, onPercentageChange, isInvertedPrice, onInvertPrice } = useTriggerPrice();
-  const { dstToken, srcToken } = useTwapContext();
+  const { dstToken, srcToken, translations: t, isStopLossModule } = useTwapContext();
   return useMemo(() => {
     return {
       value: BN(formatDecimals(amountUI)).toFixed(),
@@ -226,16 +247,18 @@ export const useTriggerPricePanel = () => {
         onValueChange(undefined);
         onPercentageChange(undefined);
       },
-      percentageDiff: parseFloat(percentageDiff.toFixed(2)),
+      percentageDiff: percentageDiff ? parseFloat(percentageDiff.toFixed(2)) : undefined,
       isInvertedPrice,
       onInvertPrice,
+      tooltip: isStopLossModule ? t.stopLossTooltip : t.limitPriceTooltip,
+      label: isStopLossModule ? t.stopLossLabel : t.stopLossLabel,
     };
-  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff, isInvertedPrice, onInvertPrice, srcToken]);
+  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff, isInvertedPrice, onInvertPrice, srcToken, isStopLossModule, t]);
 };
 
 export const useTriggerLimitPricePanel = () => {
   const { amountUI, percentageDiff, onValueChange, onPercentageChange, isInvertedPrice, onInvertPrice } = useTriggerLimitPrice();
-  const { dstToken, srcToken } = useTwapContext();
+  const { dstToken, srcToken, translations: t } = useTwapContext();
   return useMemo(() => {
     return {
       value: BN(formatDecimals(amountUI)).toFixed(),
@@ -246,11 +269,13 @@ export const useTriggerLimitPricePanel = () => {
         onValueChange(undefined);
         onPercentageChange(undefined);
       },
-      percentageDiff: parseFloat(percentageDiff.toFixed(2)),
+      percentageDiff: percentageDiff ? parseFloat(percentageDiff.toFixed(2)) : undefined,
       isInvertedPrice,
       onInvertPrice,
+      tooltip: t.limitPriceTooltip,
+      label: t.limitPrice,
     };
-  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff, isInvertedPrice, onInvertPrice, srcToken]);
+  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff, isInvertedPrice, onInvertPrice, srcToken, t]);
 };
 
 export const usePriceToggle = () => {
@@ -261,7 +286,7 @@ export const usePriceToggle = () => {
     (value: boolean) => {
       updateState({ isMarketOrder: value });
     },
-    [updateState],
+    [updateState]
   );
 
   return {
@@ -279,14 +304,14 @@ export const useFillDelayPanel = () => {
     (value: string) => {
       setFillDelay({ unit: fillDelay.unit, value: Number(value) });
     },
-    [setFillDelay, fillDelay],
+    [setFillDelay, fillDelay]
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setFillDelay({ unit, value: fillDelay.value });
     },
-    [setFillDelay, fillDelay],
+    [setFillDelay, fillDelay]
   );
 
   return {
@@ -377,7 +402,7 @@ export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken],
+    [updateState, isSrcToken]
   );
   return {
     value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(destTokenAmountUI, 8),
@@ -409,14 +434,14 @@ export const useDurationPanel = () => {
     (value: string) => {
       setDuration({ unit: duration.unit, value: Number(value) });
     },
-    [setDuration, duration],
+    [setDuration, duration]
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setDuration({ unit, value: duration.value });
     },
-    [setDuration, duration],
+    [setDuration, duration]
   );
   return {
     duration,
@@ -569,7 +594,7 @@ export const useShowOrderConfirmationModalButton = () => {
     getSwapText(),
     onOpen,
     isButtonLoading,
-    Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount)),
+    Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount))
   );
 
   return swapButton;

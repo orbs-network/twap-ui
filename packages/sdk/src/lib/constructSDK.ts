@@ -86,6 +86,20 @@ export class TwapSDK {
     };
   }
 
+  getStopLossError(marketPrice: string, triggerPrice: string) {
+    return {
+      isError: BN(triggerPrice || 0).isGreaterThan(BN(marketPrice || 0)),
+      value: marketPrice,
+    };
+  }
+
+  getStopLossLimitPriceError(triggerPrice: string, limitPrice: string, isMarketOrder: boolean) {
+    return {
+      isError: !isMarketOrder && BN(limitPrice || 0).isGreaterThan(BN(triggerPrice || 0)),
+      value: triggerPrice,
+    };
+  }
+
   getMaxOrderDurationError(duration: TimeDuration) {
     return {
       isError: getTimeDurationMillis(duration) > MAX_ORDER_DURATION_MILLIS,

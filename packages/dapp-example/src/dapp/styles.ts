@@ -1,4 +1,4 @@
-import styled, { createGlobalStyle } from "styled-components";
+import { createGlobalStyle } from "styled-components";
 
 const getColors = (isDarkMode?: boolean) => {
   return {
@@ -9,18 +9,6 @@ const getColors = (isDarkMode?: boolean) => {
     },
   };
 };
-
-export const StyledLayout = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  max-width: 500px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-`;
 
 export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDarkMode }) => {
   const colors = getColors(isDarkMode);

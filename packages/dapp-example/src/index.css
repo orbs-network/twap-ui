@@ -1,4 +1,9 @@
 
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -583,3 +588,16 @@ table {
     rgb(255, 255, 255);
 }
 
+
+
+.ant-switch {
+  background: rgba(255, 255, 255, 0.1);
+}
+.ant-switch:hover {
+  background: rgba(255, 255, 255, 0.1)!important;
+}
+
+
+.ant-switch-checked:hover {
+  background: #1677ff!important;
+}

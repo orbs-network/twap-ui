@@ -107,5 +107,9 @@
   "progress": "Progress",
   "tradeIntervalTitle": "Every",
   "tradesAmountTitle": "Over",
-  "tradesAmountSmallText": "trades"
+  "tradesAmountSmallText": "trades",
+  "stopLossTooltip": "The trigger price at which your stop-loss order will be activated.",
+  "stopLossLabel": "Trigger price",
+  "stopLossTriggerPriceGreaterThanMarketPrice": "Trigger price must be less than market price",
+  "stopLossLimitPriceGreaterThanTriggerPrice": "Limit price must be less than trigger price"
 }

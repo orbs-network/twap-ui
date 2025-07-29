@@ -11,6 +11,7 @@ import BN from "bignumber.js";
 import { isAddress, maxUint256 } from "viem";
 import { useAppParams } from "./dapp/hooks";
 import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
+import clsx from "clsx";
 
 export const NumberInput = (props: {
   onChange: (value: string) => void;
@@ -26,27 +27,26 @@ export const NumberInput = (props: {
   prefix?: string;
   decimalScale?: number;
   minAmount?: number;
+  suffix?: string;
 }) => {
-  const { onChange, value, placeholder, disabled, onFocus, onBlur, maxValue, prefix, decimalScale, minAmount } = props;
+  const { onChange, value, placeholder, disabled, onFocus, onBlur, maxValue, prefix, decimalScale, minAmount, suffix } = props;
   const inputValue = value || minAmount || "";
 
   return (
     <NumericFormat
-      className={`input ${props.className} ${disabled ? "input-disabled" : ""}`}
-      allowNegative={true}
+      className={clsx(`input text-white rounded-lg indent-2 text-[20px] outline-none py-2 bg-[rgba(255,255,255,0.05)] ${props.className} ${disabled ? "input-disabled" : ""}`)}
+      allowNegative={false}
       disabled={disabled}
       decimalScale={decimalScale}
       onBlur={onBlur}
       onFocus={onFocus}
-      style={{
-        flex: 1,
-      }}
       placeholder={placeholder || "0"}
       isAllowed={(values) => {
         const { floatValue = 0 } = values;
         return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
       }}
       prefix={prefix ? `${prefix} ` : ""}
+      suffix={suffix ? `${suffix} ` : ""}
       value={disabled && value === "0" ? "" : inputValue}
       thousandSeparator={","}
       decimalSeparator="."

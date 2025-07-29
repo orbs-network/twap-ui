@@ -101,14 +101,22 @@ export const useLimitPrice = () => {
   const typedPrice = useTwapStore((s) => s.state.typedPrice);
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
+  const selectedPricePercent = useTwapStore((s) => s.state.selectedPricePercent);
   const updateState = useTwapStore((s) => s.updateState);
   const amountWei = useMemo(() => {
-    const defaultMarketPrice = marketPrice;
-    if (typedPrice === undefined || isMarketOrder || !marketPrice) {
-      return defaultMarketPrice;
+    if (!marketPrice) return "";
+    if (isMarketOrder) return marketPrice;
+    if (selectedPricePercent !== undefined) {
+      const percent = BN(selectedPricePercent || 0).div(100);
+      const market = BN(marketPrice || 0);
+      return market.plus(market.multipliedBy(percent)).toFixed();
     }
-    const result = isInvertedPrice ? BN(1).div(typedPrice).toFixed() : typedPrice;
-    return amountBN(dstToken?.decimals, result);
+
+    if (typedPrice !== undefined) {
+      const result = isInvertedPrice ? BN(1).div(typedPrice).toFixed() : typedPrice;
+      return amountBN(dstToken?.decimals, result);
+    }
+    return marketPrice;
   }, [typedPrice, isMarketOrder, marketPrice, isInvertedPrice, dstToken?.decimals]);
 
   return {
@@ -140,7 +148,7 @@ export const useChunks = () => {
         typedChunks,
       });
     },
-    [updateState],
+    [updateState]
   );
 
   return {
@@ -199,7 +207,7 @@ export const useTriggerPrice = () => {
     tokenDecimals: dstToken?.decimals,
     price: marketPrice,
     setValue: useCallback((typedTriggerPrice?: string) => updateState({ typedTriggerPrice }), [updateState]),
-    setPercentage: useCallback((triggerPricePercent?: number) => updateState({ triggerPricePercent }), [updateState]),
+    setPercentage: useCallback((triggerPricePercent?: number) => updateState({ triggerPricePercent: Math.abs(triggerPricePercent || 0) }), [updateState]),
     setInvertedPrice: useCallback((isInvertedTriggerPrice?: boolean) => updateState({ isInvertedTriggerPrice }), [updateState]),
     isInvertedPrice: useTwapStore((s) => s.state.isInvertedTriggerPrice),
   });
@@ -211,13 +219,13 @@ export const useTriggerLimitPrice = () => {
 
   return useInputWithPercentage({
     typedValue: useTwapStore((s) => s.state.typedPrice),
-    percentage: useTwapStore((s) => (s.state.selectedPricePercent ? Number(s.state.selectedPricePercent) : undefined)),
+    percentage: useTwapStore((s) => s.state.selectedPricePercent),
     tokenDecimals: dstToken?.decimals,
     price: marketPrice,
     setValue: useCallback((typedPrice?: string) => updateState({ typedPrice }), [updateState]),
-    setPercentage: useCallback((selectedPricePercent?: number) => updateState({ selectedPricePercent: selectedPricePercent?.toString() || undefined }), [updateState]),
-    setInvertedPrice: useCallback((isInvertedTriggerPrice?: boolean) => updateState({ isInvertedTriggerPrice }), [updateState]),
-    isInvertedPrice: useTwapStore((s) => s.state.isInvertedTriggerPrice),
+    setPercentage: useCallback((selectedPricePercent?: number) => updateState({ selectedPricePercent }), [updateState]),
+    setInvertedPrice: useCallback((isInvertedPrice?: boolean) => updateState({ isInvertedPrice }), [updateState]),
+    isInvertedPrice: useTwapStore((s) => s.state.isInvertedPrice),
   });
 };
 
@@ -246,6 +254,7 @@ export const useInputWithPercentage = ({
 
       return amountBN(tokenDecimals, res);
     }
+
     if (percentage !== undefined) {
       const percent = BN(percentage || 0).div(100);
       const market = BN(price || 0);
@@ -260,7 +269,7 @@ export const useInputWithPercentage = ({
       setValue(typedValue);
       setPercentage(undefined);
     },
-    [setValue, setPercentage],
+    [setValue, setPercentage]
   );
 
   const onInvertPrice = useCallback(() => {
@@ -274,7 +283,7 @@ export const useInputWithPercentage = ({
       setPercentage(percentage);
       setValue(undefined);
     },
-    [setPercentage, setValue],
+    [setPercentage, setValue, price, tokenDecimals]
   );
 
   const percentageDiff = useMemo(() => {
@@ -283,12 +292,11 @@ export const useInputWithPercentage = ({
     }
 
     if (!price || BN(price).isZero()) {
-      return 0; // or undefined or NaN depending on UX
+      return undefined; // or undefined or NaN depending on UX
     }
 
     if (priceWei !== undefined) {
       const priceBN = BN(price || 0);
-      console.log(priceWei, priceBN.toString());
 
       const diff = BN(priceWei)
         .minus(priceBN)
@@ -297,7 +305,7 @@ export const useInputWithPercentage = ({
         .toNumber();
       return diff;
     }
-    return 0;
+    return undefined;
   }, [priceWei, price, percentage, isInvertedPrice]);
 
   const priceUi = useMemo(() => {
@@ -406,13 +414,19 @@ export const useSrcTokenChunkAmount = () => {
 
 const useTradePrice = () => {
   const { module, marketPrice } = useTwapContext();
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const limitPrice = useLimitPrice().amountWei;
+  const triggerPrice = useTriggerPrice().amountWei;
 
-  if (module === Module.STOP_LOSS) {
-    return marketPrice || "";
+  if (!isMarketOrder) {
+    return limitPrice || "";
   }
 
-  return limitPrice || "";
+  if (module === Module.STOP_LOSS) {
+    return triggerPrice || "";
+  }
+
+  return marketPrice || "";
 };
 
 export const useDestTokenAmount = () => {
@@ -435,7 +449,7 @@ export const useDestTokenMinAmount = () => {
   const price = useTradePrice();
   const amountWei = useMemo(
     () => twapSDK.getDestTokenMinAmount(srcTokenChunkAmount, price, Boolean(isMarketOrder), srcToken?.decimals || 0),
-    [twapSDK, srcTokenChunkAmount, price, isMarketOrder, srcToken?.decimals],
+    [twapSDK, srcTokenChunkAmount, price, isMarketOrder, srcToken?.decimals]
   );
 
   return {
@@ -523,16 +537,54 @@ export const useShouldWrapOrUnwrapOnly = () => {
   return wrap || unwrap;
 };
 
+export const useStopLossError = () => {
+  const { twapSDK, marketPrice, translations: t } = useTwapContext();
+  const triggerPrice = useTriggerPrice().amountWei;
+
+  return useMemo(() => {
+    const { isError, value } = twapSDK.getStopLossError(marketPrice || "", triggerPrice || "");
+    if (!isError) return undefined;
+    return {
+      type: InputErrors.STOP_LOSS_TRIGGER_PRICE_GREATER_THAN_MARKET_PRICE,
+      value: value,
+      message: t.stopLossTriggerPriceGreaterThanMarketPrice,
+    };
+  }, [twapSDK, marketPrice, triggerPrice]);
+};
+
+export const useStopLossLimitPriceError = () => {
+  const { twapSDK, translations: t } = useTwapContext();
+  const triggerPrice = useTriggerPrice().amountWei;
+  const limitPrice = useLimitPrice().amountWei;
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+
+  return useMemo(() => {
+    const { isError, value } = twapSDK.getStopLossLimitPriceError(triggerPrice || "", limitPrice || "", Boolean(isMarketOrder));
+
+    if (!isError) return undefined;
+    return {
+      type: InputErrors.STOP_LOSS_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
+      value: value,
+      message: t.stopLossLimitPriceGreaterThanTriggerPrice,
+    };
+  }, [twapSDK, triggerPrice, limitPrice, isMarketOrder, t]);
+};
+
 export const useInputsError = () => {
-  const { marketPrice } = useTwapContext();
+  const { marketPrice, isStopLossModule } = useTwapContext();
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const chunksError = useChunksError();
   const fillDelayError = useFillDelayError();
   const orderDurationError = useOrderDurationError();
   const tradeSizeError = useMinTradeSizeError();
   const limitPriceError = useLimitPriceError();
-
+  const stopLossError = useStopLossError();
+  const stopLossLimitPriceError = useStopLossLimitPriceError();
   if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()) return;
+
+  if (isStopLossModule) {
+    return stopLossError || stopLossLimitPriceError;
+  }
 
   return limitPriceError || chunksError || fillDelayError || tradeSizeError || orderDurationError;
 };
@@ -651,13 +703,13 @@ export const useOnSrcInputPercentClick = () => {
       const value = amountUi(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ typedSrcAmount: value });
     },
-    [maxAmount, srcBalance, updateState, srcToken],
+    [maxAmount, srcBalance, updateState, srcToken]
   );
 };
 
 export const useInitiateWallet = (
   chainId?: number,
-  provider?: Provider,
+  provider?: Provider
 ): {
   walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: ReturnType<typeof createPublicClient>;

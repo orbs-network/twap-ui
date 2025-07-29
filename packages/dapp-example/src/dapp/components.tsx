@@ -82,7 +82,7 @@ export const CurrencyInputPanel = ({
     <Flex vertical gap={10} style={{ width: "100%" }}>
       {title && <Typography className="token-panel-title">{title}</Typography>}
       <Flex gap={10}>
-        <NumberInput onChange={onInputChange} value={value} disabled={disabled} />
+        <NumberInput onChange={onInputChange} value={value} disabled={disabled} className="flex-1" />
         <TokenSelectButton onSelect={onSelect} token={token} />
       </Flex>
       <Flex justify="space-between">
