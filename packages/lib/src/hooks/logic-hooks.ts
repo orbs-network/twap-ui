@@ -148,7 +148,7 @@ export const useChunks = () => {
         typedChunks,
       });
     },
-    [updateState]
+    [updateState],
   );
 
   return {
@@ -269,7 +269,7 @@ export const useInputWithPercentage = ({
       setValue(typedValue);
       setPercentage(undefined);
     },
-    [setValue, setPercentage]
+    [setValue, setPercentage],
   );
 
   const onInvertPrice = useCallback(() => {
@@ -283,7 +283,7 @@ export const useInputWithPercentage = ({
       setPercentage(percentage);
       setValue(undefined);
     },
-    [setPercentage, setValue, price, tokenDecimals]
+    [setPercentage, setValue, price, tokenDecimals],
   );
 
   const percentageDiff = useMemo(() => {
@@ -449,7 +449,7 @@ export const useDestTokenMinAmount = () => {
   const price = useTradePrice();
   const amountWei = useMemo(
     () => twapSDK.getDestTokenMinAmount(srcTokenChunkAmount, price, Boolean(isMarketOrder), srcToken?.decimals || 0),
-    [twapSDK, srcTokenChunkAmount, price, isMarketOrder, srcToken?.decimals]
+    [twapSDK, srcTokenChunkAmount, price, isMarketOrder, srcToken?.decimals],
   );
 
   return {
@@ -703,13 +703,13 @@ export const useOnSrcInputPercentClick = () => {
       const value = amountUi(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ typedSrcAmount: value });
     },
-    [maxAmount, srcBalance, updateState, srcToken]
+    [maxAmount, srcBalance, updateState, srcToken],
   );
 };
 
 export const useInitiateWallet = (
   chainId?: number,
-  provider?: Provider
+  provider?: Provider,
 ): {
   walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: ReturnType<typeof createPublicClient>;

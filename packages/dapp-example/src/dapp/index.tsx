@@ -172,7 +172,7 @@ export const useSwitchChain = () => {
     (config: Config) => {
       (walletClient as any)?.switchChain({ id: config.chainId });
     },
-    [walletClient]
+    [walletClient],
   );
 };
 
@@ -381,11 +381,16 @@ const StopLossPriceToggle = () => {
 const MarketPriceDisplay = () => {
   const { onInvert, leftToken, rightToken, price } = useMarketPricePanel();
   const priceF = useFormatNumber({ value: price });
+
+  if (!leftToken || !rightToken) return null;
+
   return (
-    <div className="flex flex-row gap-2 items-center">
-      <p className="text-sm text-white">1 {leftToken?.symbol}</p>
-      <Repeat size={16} onClick={onInvert} className="cursor-pointer" />
-      <p className="text-sm text-white">{priceF} {rightToken?.symbol}</p>
+    <div className="flex gap-2 items-center justify-end flex-end flex-1 text-[13px] text-white">
+      <p>1 {leftToken?.symbol}</p>
+      <Repeat size={16} onClick={onInvert} className="cursor-pointer text-white" />
+      <p >
+        {priceF} {rightToken?.symbol}
+      </p>
     </div>
   );
 };
@@ -528,10 +533,7 @@ const PanelInputs = () => {
 
   if (panel === Module.STOP_LOSS) {
     return (
-      <div className="flex flex-col gap-4 w-full">
-        <TriggerPrice />
-        <TriggerLimitPrice />
-      </div>
+      <TriggerPrice />
     );
   }
 

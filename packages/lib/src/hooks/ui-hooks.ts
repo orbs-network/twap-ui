@@ -1,4 +1,4 @@
-import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountBN, amountUi, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
@@ -87,12 +87,12 @@ export const useMarketPricePanel = () => {
 
   const price = useMemo(() => {
     if (invert) {
-      return BN(1)
+      return BN(amountBN(srcToken?.decimals, "1"))
         .div(marketPrice || 0)
         .toFixed();
     }
     return marketPrice;
-  }, [invert, marketPrice]);
+  }, [invert, marketPrice, srcToken?.decimals, dstToken?.decimals]);
 
   return {
     leftToken: invert ? dstToken : srcToken,
