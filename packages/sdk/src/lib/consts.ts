@@ -29,6 +29,7 @@ export const THE_GRAPH_ORDERS_API = {
   [networks.ftm.id]: `${THE_GRAPH_API}/DdRo1pmJkrJC9fjsjEBWnNE1uqrbh7Diz4tVKd7rfupp`,
   [networks.katana.id]: `${THE_GRAPH_API}/CGi9sDFMQcnBwF3C3NoCFqnaE34sssbgwPLTwiskSXmW`,
   [networks.flare.id]: getGfURL("flare"),
+  [networks.cronosZkEvm.id]: getGfURL("cronos-zkevm"),
 };
 
 export const zeroAddress = "0x0000000000000000000000000000000000000000";

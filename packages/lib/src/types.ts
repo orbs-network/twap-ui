@@ -421,7 +421,7 @@ export interface TwapProps {
   children?: React.ReactNode;
   components?: Components;
   SubmitOrderPanel: FC<SubmitOrderPanelProps>;
-  panel: "TWAP" | "LIMIT" | "STOP_LOSS";
+  panel?: "TWAP" | "LIMIT" | "STOP_LOSS";
   TransactionModal?: {
     Spinner?: ReactNode;
     SuccessIcon?: ReactNode;

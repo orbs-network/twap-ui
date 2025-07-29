@@ -503,8 +503,8 @@ export const Dapp = () => {
         provider={client.data?.transport}
         srcToken={srcToken}
         dstToken={dstToken}
-        panel={panel === Panels.LIMIT ? "LIMIT" : panel === Panels.STOP_LOSS ? "STOP_LOSS" : "TWAP"}
         srcUsd1Token={srcUsd}
+        isLimitPanel={limit}
         dstUsd1Token={dstUsd}
         srcBalance={srcBalance}
         dstBalance={dstBalance}

@@ -69,7 +69,7 @@ export const useLimitPriceInput = () => {
       onLimitPriceChange(value);
       updateState({ selectedPricePercent: undefined });
     },
-    [onLimitPriceChange, updateState]
+    [onLimitPriceChange, updateState],
   );
 
   return {
@@ -109,11 +109,11 @@ export const useLimitPricePercentSelect = () => {
       const computedPrice = formatDecimals(
         BN(basePrice || 0)
           .times(multiplier)
-          .toFixed()
+          .toFixed(),
       );
       onPriceChange(computedPrice);
     },
-    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading]
+    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading],
   );
 
   const options = useMemo(() => {
@@ -231,7 +231,7 @@ export const usePriceToggle = () => {
     (value: boolean) => {
       updateState({ isMarketOrder: value });
     },
-    [updateState]
+    [updateState],
   );
 
   return {
@@ -249,14 +249,14 @@ export const useFillDelayPanel = () => {
     (value: string) => {
       setFillDelay({ unit: fillDelay.unit, value: Number(value) });
     },
-    [setFillDelay, fillDelay]
+    [setFillDelay, fillDelay],
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setFillDelay({ unit, value: fillDelay.value });
     },
-    [setFillDelay, fillDelay]
+    [setFillDelay, fillDelay],
   );
 
   return {
@@ -347,7 +347,7 @@ export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken]
+    [updateState, isSrcToken],
   );
   return {
     value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(destTokenAmountUI, 8),
@@ -379,14 +379,14 @@ export const useDurationPanel = () => {
     (value: string) => {
       setDuration({ unit: duration.unit, value: Number(value) });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setDuration({ unit, value: duration.value });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
   return {
     duration,
@@ -539,7 +539,7 @@ export const useShowOrderConfirmationModalButton = () => {
     getSwapText(),
     onOpen,
     isButtonLoading,
-    Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount))
+    Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount)),
   );
 
   return swapButton;
