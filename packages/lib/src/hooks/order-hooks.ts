@@ -202,7 +202,6 @@ const useGetOrderFromLens = () => {
         })
         .sort((a, b) => b.createdAt - a.createdAt);
     },
-
   });
 };
 
