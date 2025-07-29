@@ -140,7 +140,7 @@ export const useChunks = () => {
         typedChunks,
       });
     },
-    [updateState]
+    [updateState],
   );
 
   return {
@@ -193,7 +193,6 @@ export const useTriggerPrice = () => {
   const { dstToken, marketPrice } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
 
-
   return useInputWithPercentage({
     typedValue: useTwapStore((s) => s.state.typedTriggerPrice),
     percentage: useTwapStore((s) => s.state.triggerPricePercent),
@@ -201,6 +200,8 @@ export const useTriggerPrice = () => {
     price: marketPrice,
     setValue: useCallback((typedTriggerPrice?: string) => updateState({ typedTriggerPrice }), [updateState]),
     setPercentage: useCallback((triggerPricePercent?: number) => updateState({ triggerPricePercent }), [updateState]),
+    setInvertedPrice: useCallback((isInvertedTriggerPrice?: boolean) => updateState({ isInvertedTriggerPrice }), [updateState]),
+    isInvertedPrice: useTwapStore((s) => s.state.isInvertedTriggerPrice),
   });
 };
 
@@ -210,13 +211,15 @@ export const useTriggerLimitPrice = () => {
 
   return useInputWithPercentage({
     typedValue: useTwapStore((s) => s.state.typedPrice),
-    percentage: useTwapStore((s) => s.state.selectedPricePercent  ?Number(s.state.selectedPricePercent) : undefined),
+    percentage: useTwapStore((s) => (s.state.selectedPricePercent ? Number(s.state.selectedPricePercent) : undefined)),
     tokenDecimals: dstToken?.decimals,
     price: marketPrice,
     setValue: useCallback((typedPrice?: string) => updateState({ typedPrice }), [updateState]),
     setPercentage: useCallback((selectedPricePercent?: number) => updateState({ selectedPricePercent: selectedPricePercent?.toString() || undefined }), [updateState]),
+    setInvertedPrice: useCallback((isInvertedTriggerPrice?: boolean) => updateState({ isInvertedTriggerPrice }), [updateState]),
+    isInvertedPrice: useTwapStore((s) => s.state.isInvertedTriggerPrice),
   });
-}
+};
 
 export const useInputWithPercentage = ({
   typedValue,
@@ -225,6 +228,8 @@ export const useInputWithPercentage = ({
   percentage,
   setValue,
   setPercentage,
+  isInvertedPrice,
+  setInvertedPrice,
 }: {
   typedValue?: string;
   tokenDecimals?: number;
@@ -232,10 +237,14 @@ export const useInputWithPercentage = ({
   percentage?: number;
   setValue: (value?: string) => void;
   setPercentage: (percentage?: number) => void;
+  setInvertedPrice: (isInvertedPrice?: boolean) => void;
+  isInvertedPrice?: boolean;
 }) => {
   const priceWei = useMemo(() => {
     if (typedValue !== undefined) {
-      return amountBN(tokenDecimals, typedValue);
+      const res = isInvertedPrice ? BN(1).div(typedValue).toFixed() : typedValue;
+
+      return amountBN(tokenDecimals, res);
     }
     if (percentage !== undefined) {
       const percent = BN(percentage || 0).div(100);
@@ -244,22 +253,28 @@ export const useInputWithPercentage = ({
     }
 
     return price || "";
-  }, [percentage, typedValue, tokenDecimals, price]);
+  }, [percentage, typedValue, tokenDecimals, price, isInvertedPrice]);
 
   const onValueChange = useCallback(
     (typedValue?: string) => {
       setValue(typedValue);
       setPercentage(undefined);
     },
-    [setValue, setPercentage]
+    [setValue, setPercentage],
   );
+
+  const onInvertPrice = useCallback(() => {
+    setValue(undefined);
+    setPercentage(undefined);
+    setInvertedPrice(!isInvertedPrice);
+  }, [setValue, setPercentage, setInvertedPrice, isInvertedPrice]);
 
   const onPercentageChange = useCallback(
     (percentage?: number) => {
       setPercentage(percentage);
       setValue(undefined);
     },
-    [setPercentage, setValue]
+    [setPercentage, setValue],
   );
 
   const percentageDiff = useMemo(() => {
@@ -273,6 +288,7 @@ export const useInputWithPercentage = ({
 
     if (priceWei !== undefined) {
       const priceBN = BN(price || 0);
+      console.log(priceWei, priceBN.toString());
 
       const diff = BN(priceWei)
         .minus(priceBN)
@@ -282,14 +298,15 @@ export const useInputWithPercentage = ({
       return diff;
     }
     return 0;
-  }, [priceWei, price, percentage]);
+  }, [priceWei, price, percentage, isInvertedPrice]);
 
   const priceUi = useMemo(() => {
     if (typedValue !== undefined) {
       return typedValue;
     }
-    return amountUi(tokenDecimals, priceWei);
-  }, [typedValue, tokenDecimals, priceWei]);
+    const res = amountUi(tokenDecimals, priceWei);
+    return isInvertedPrice ? BN(1).div(res).toFixed() : res;
+  }, [typedValue, tokenDecimals, priceWei, isInvertedPrice]);
 
   return useMemo(() => {
     return {
@@ -298,8 +315,10 @@ export const useInputWithPercentage = ({
       percentageDiff,
       onValueChange,
       onPercentageChange,
+      onInvertPrice,
+      isInvertedPrice,
     };
-  }, [priceWei, priceUi, onValueChange, onPercentageChange, percentageDiff]);
+  }, [priceWei, priceUi, onValueChange, onPercentageChange, percentageDiff, isInvertedPrice, setInvertedPrice]);
 };
 
 export const useFillDelayError = () => {
@@ -416,7 +435,7 @@ export const useDestTokenMinAmount = () => {
   const price = useTradePrice();
   const amountWei = useMemo(
     () => twapSDK.getDestTokenMinAmount(srcTokenChunkAmount, price, Boolean(isMarketOrder), srcToken?.decimals || 0),
-    [twapSDK, srcTokenChunkAmount, price, isMarketOrder, srcToken?.decimals]
+    [twapSDK, srcTokenChunkAmount, price, isMarketOrder, srcToken?.decimals],
   );
 
   return {
@@ -632,13 +651,13 @@ export const useOnSrcInputPercentClick = () => {
       const value = amountUi(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ typedSrcAmount: value });
     },
-    [maxAmount, srcBalance, updateState, srcToken]
+    [maxAmount, srcBalance, updateState, srcToken],
   );
 };
 
 export const useInitiateWallet = (
   chainId?: number,
-  provider?: Provider
+  provider?: Provider,
 ): {
   walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: ReturnType<typeof createPublicClient>;

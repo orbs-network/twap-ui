@@ -214,12 +214,12 @@ export const useLimitPricePanel = () => {
 };
 
 export const useTriggerPricePanel = () => {
-  const { amountUI, percentageDiff, onValueChange, onPercentageChange } = useTriggerPrice();
-  const { dstToken } = useTwapContext();
+  const { amountUI, percentageDiff, onValueChange, onPercentageChange, isInvertedPrice, onInvertPrice } = useTriggerPrice();
+  const { dstToken, srcToken } = useTwapContext();
   return useMemo(() => {
     return {
       value: BN(formatDecimals(amountUI)).toFixed(),
-      token: dstToken,
+      token: isInvertedPrice ? srcToken : dstToken,
       onChange: onValueChange,
       onPercentChange: onPercentageChange,
       reset: () => {
@@ -227,17 +227,19 @@ export const useTriggerPricePanel = () => {
         onPercentageChange(undefined);
       },
       percentageDiff: parseFloat(percentageDiff.toFixed(2)),
+      isInvertedPrice,
+      onInvertPrice,
     };
-  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff]);
+  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff, isInvertedPrice, onInvertPrice, srcToken]);
 };
 
 export const useTriggerLimitPricePanel = () => {
-  const { amountUI, percentageDiff, onValueChange, onPercentageChange } = useTriggerLimitPrice();
-  const { dstToken } = useTwapContext();
+  const { amountUI, percentageDiff, onValueChange, onPercentageChange, isInvertedPrice, onInvertPrice } = useTriggerLimitPrice();
+  const { dstToken, srcToken } = useTwapContext();
   return useMemo(() => {
     return {
       value: BN(formatDecimals(amountUI)).toFixed(),
-      token: dstToken,
+      token: isInvertedPrice ? srcToken : dstToken,
       onChange: onValueChange,
       onPercentChange: onPercentageChange,
       reset: () => {
@@ -245,11 +247,11 @@ export const useTriggerLimitPricePanel = () => {
         onPercentageChange(undefined);
       },
       percentageDiff: parseFloat(percentageDiff.toFixed(2)),
+      isInvertedPrice,
+      onInvertPrice,
     };
-  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff]);
+  }, [amountUI, dstToken, onValueChange, onPercentageChange, percentageDiff, isInvertedPrice, onInvertPrice, srcToken]);
 };
-
-
 
 export const usePriceToggle = () => {
   const updateState = useTwapStore((s) => s.updateState);

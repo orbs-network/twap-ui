@@ -567,6 +567,7 @@ export interface State {
   cancelOrderTxHash?: string;
   cancelOrderError?: string;
   cancelOrderId?: number;
+  isInvertedTriggerPrice?: boolean;
 }
 
 export { SwapStatus };
