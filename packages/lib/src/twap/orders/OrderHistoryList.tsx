@@ -4,7 +4,7 @@ import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import { useTwapContext } from "../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
-import { useOrderName } from "../../hooks/logic-hooks";
+import { useOrderName } from "../../hooks/order-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
 import TokenLogo from "../../components/TokenLogo";

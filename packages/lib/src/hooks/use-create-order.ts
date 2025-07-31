@@ -6,15 +6,17 @@ import { getOrderIdFromCreateOrderEvent } from "../utils";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { useOrderSubmissionArgs } from "./use-order-submission-args";
 import { useCallback } from "react";
-import { useDestTokenAmount } from "./logic-hooks";
 import { useOptimisticAddOrder, useOrders } from "./order-hooks";
 import { Token } from "../types";
+import { useDstAmount } from "./use-dst-amount";
+import { usePermitData } from "./use-permit-data";
+import { _TypedDataEncoder } from "@ethersproject/hash";
 
 const useCallbacks = () => {
   const { twapSDK, account, callbacks, srcToken, dstToken } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const optimisticAddOrder = useOptimisticAddOrder();
-  const destTokenAmountUI = useDestTokenAmount().amountUI;
+  const destTokenAmountUI = useDstAmount().amountUI;
   const { refetch: refetchOrders } = useOrders();
   const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);
   const onSuccess = useCallback(
@@ -54,11 +56,12 @@ const useCallbacks = () => {
 };
 
 export const useCreateOrder = () => {
-  const { account, walletClient, publicClient, chainId, dstToken, transactions } = useTwapContext();
+  const { account, walletClient, publicClient, chainId, dstToken } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
   const orderSubmissionArgs = useOrderSubmissionArgs();
   const getTransactionReceipt = useGetTransactionReceipt();
+  const permitData = usePermitData();
 
   return useMutation(async (srcToken: Token) => {
     try {
@@ -67,45 +70,37 @@ export const useCreateOrder = () => {
       if (!publicClient) throw new Error("publicClient is not defined");
       if (!chainId) throw new Error("chainId is not defined");
       if (!dstToken) throw new Error("dstToken is not defined");
-
+      if (!permitData) throw new Error("permit is not defined");
       if (!orderSubmissionArgs?.params) throw new Error("failed to get params for ask method");
 
       callbacks.onRequest(orderSubmissionArgs.params);
-      let txHash: `0x${string}` | undefined;
-      if (transactions?.createOrder) {
-        txHash = await transactions.createOrder({
-          contractAddress: orderSubmissionArgs.contractAddress,
-          abi: orderSubmissionArgs.abi as Abi,
-          functionName: orderSubmissionArgs.functionName,
-          args: [orderSubmissionArgs.params],
-        });
-      } else {
-        txHash = await walletClient.writeContract({
-          account: account.toLowerCase() as `0x${string}`,
-          address: orderSubmissionArgs.contractAddress.toLowerCase() as `0x${string}`,
-          abi: orderSubmissionArgs.abi,
-          functionName: orderSubmissionArgs.functionName,
-          args: [orderSubmissionArgs.params],
-          chain: walletClient.chain,
-        });
-      }
-      updateState({ createOrderTxHash: txHash });
+      const typedDataMessage = _TypedDataEncoder.getPayload(permitData.domain, permitData.types, permitData.message);
 
-      const receipt = await getTransactionReceipt(txHash);
-      if (!receipt) {
-        throw new Error("failed to get transaction receipt");
-      }
+      const signature = await walletClient?.signTypedData({
+        account: account as `0x${string}`,
+        types: typedDataMessage.types,
+        primaryType: typedDataMessage.primaryType,
+        message: typedDataMessage.message,
+        domain: typedDataMessage.domain,
+      });
 
-      if (receipt.status === "reverted") {
-        throw new Error("failed to create order");
-      }
-      const orderId = getOrderIdFromCreateOrderEvent(receipt);
+      updateState({ createOrderTxHash: "" });
 
-      await callbacks.onSuccess(receipt, orderSubmissionArgs.params, srcToken, orderId);
+      // const receipt = await getTransactionReceipt("");
+      // if (!receipt) {
+      //   throw new Error("failed to get transaction receipt");
+      // }
+
+      // if (receipt.status === "reverted") {
+      //   throw new Error("failed to create order");
+      // }
+      // const orderId = getOrderIdFromCreateOrderEvent(receipt);
+
+      await callbacks.onSuccess({} as TransactionReceipt, orderSubmissionArgs.params, srcToken, 100);
 
       return {
-        orderId,
-        receipt,
+        orderId: 100,
+        receipt: undefined,
       };
     } catch (error) {
       console.error(error);

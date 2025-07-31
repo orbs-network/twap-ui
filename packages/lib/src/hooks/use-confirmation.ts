@@ -3,23 +3,60 @@ import { useCallback } from "react";
 import { useTwapContext } from "../context";
 import { useTradePrice } from "../twap/submit-order-modal/usePrice";
 import { useTwapStore } from "../useTwapStore";
-import { useOnCloseConfirmationModal, useOrderDeadline, useSrcTokenChunkAmount, useChunks, useFillDelay, useDestTokenMinAmount, useUsdAmount } from "./logic-hooks";
-import { useFee } from "./ui-hooks";
 import { getOrderType } from "../utils";
 import { useSubmitOrderCallback } from "./use-submit-order";
 import { useOrderSubmissionArgs } from "./use-order-submission-args";
+import { useDeadline } from "./use-deadline";
+import { useSrcChunkAmount } from "./use-src-chunk-amount";
+import { useFillDelay } from "./use-fill-delay";
+import { useChunks } from "./use-chunks";
+import { useUsdAmount } from "./helper-hooks";
+import { useDstAmount } from "./use-dst-amount";
+import { useDstMinAmount } from "./use-dst-min-amount-out";
+import { useFees } from "./use-fees";
 
-export const useSubmitOrderPanel = () => {
+export const useOnOpenConfirmationModal = () => {
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const updateState = useTwapStore((s) => s.updateState);
+  const dstAmount = useDstAmount().amountUI;
+  return useCallback(() => {
+    updateState({ showConfirmation: true });
+    if (swapStatus === SwapStatus.LOADING) return;
+    updateState({
+      swapStatus: undefined,
+      acceptedDstAmount: dstAmount,
+    });
+  }, [updateState, dstAmount, swapStatus]);
+};
+
+export const useOnCloseConfirmationModal = () => {
+  const updateState = useTwapStore((s) => s.updateState);
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const resetState = useTwapStore((s) => s.resetState);
+
+  return useCallback(() => {
+    updateState({ showConfirmation: false });
+    if (swapStatus === SwapStatus.SUCCESS) {
+      resetState();
+    }
+
+    if (swapStatus === SwapStatus.FAILED) {
+      updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
+    }
+  }, [resetState, updateState, swapStatus]);
+};
+
+export const useConfirmationPanel = () => {
   const { dstUsd1Token, srcUsd1Token, account, srcToken, dstToken } = useTwapContext();
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
   const onClose = useOnCloseConfirmationModal();
-  const deadline = useOrderDeadline();
-  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
+  const deadline = useDeadline();
+  const srcChunkAmount = useSrcChunkAmount().amountUI;
   const chunks = useChunks().chunks;
   const { fillDelay } = useFillDelay();
-  const destMinAmountOut = useDestTokenMinAmount().amountUI;
+  const destMinAmountOut = useDstMinAmount().amountUI;
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const fee = useFee();
+  const fee = useFees();
   const { mutateAsync, isLoading: mutationLoading } = useSubmitOrderCallback();
   const srcUsdAmount = useUsdAmount(srcAmount, srcUsd1Token);
   const dstUsdAmount = useUsdAmount(acceptedDstAmount, dstUsd1Token);

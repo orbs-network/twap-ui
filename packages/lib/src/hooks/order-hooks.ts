@@ -4,8 +4,34 @@ import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
-import { Token } from "../types";
+import { Module, Token } from "../types";
 import { useCancelOrder } from "./use-cancel-order";
+import { useTwapStore } from "../useTwapStore";
+import { getOrderType } from "../utils";
+import { useChunks } from "./use-chunks";
+import { useOrderHistoryContext } from "../twap/orders/context";
+
+export const useOrderType = () => {
+  const { chunks } = useChunks();
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  return useMemo(() => getOrderType(isMarketOrder || false, chunks), [chunks, isMarketOrder]);
+};
+
+export const useOrderName = (isMarketOrder = false, chunks = 1) => {
+  const { translations: t, module } = useTwapContext();
+  return useMemo(() => {
+    if (module === Module.STOP_LOSS) {
+      return t.stopLoss;
+    }
+    if (isMarketOrder) {
+      return t.twapMarket;
+    }
+    if (chunks === 1) {
+      return t.limit;
+    }
+    return t.twapLimit;
+  }, [t, isMarketOrder, chunks, module]);
+};
 
 const useOrdersQueryKey = () => {
   const { account, config } = useTwapContext();
@@ -222,4 +248,26 @@ export const useOrders = () => {
 
 const filterAndSortOrders = (orders: Order[], status: OrderStatus) => {
   return orders.filter((order) => order.status === status).sort((a, b) => b.createdAt - a.createdAt);
+};
+
+export const useOrderHistoryPanel = () => {
+  const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
+  const cancelOrder = useCancelOrder();
+  const { isOpen, onClose, onOpen } = useOrderHistoryContext();
+
+  return {
+    orders,
+    isLoading: orderLoading,
+    refetch,
+    isRefetching,
+    isOpen,
+    onClose,
+    onOpen,
+    cancelOrder: cancelOrder.callback,
+    openOrdersCount: orders?.OPEN?.length || 0,
+    cancelOrderStatus: cancelOrder.status,
+    cancelOrderTxHash: cancelOrder.txHash,
+    cancelOrderError: cancelOrder.error,
+    cancelOrderId: cancelOrder.orderId,
+  };
 };

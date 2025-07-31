@@ -5,14 +5,44 @@ import { Token } from "../types";
 import { useFormatNumber } from "../hooks/useFormatNumber";
 import { Label } from "./Label";
 import { useTwapContext } from "../context";
-import { useNetwork } from "../hooks/logic-hooks";
-
+import { useAmountBN, useNetwork } from "../hooks/helper-hooks";
+import BN from "bignumber.js";
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
   const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
   return (
     <DetailRow title={t.expiration} tooltip={t.confirmationDeadlineTooltip}>
       {res}
+    </DetailRow>
+  );
+};
+
+const TriggerPrice = ({ price, dstToken, percentage }: { price?: string; dstToken?: Token; percentage?: number }) => {
+  const t = useTwapContext()?.translations;
+  const priceF = useFormatNumber({ value: price });
+
+  return (
+    <DetailRow title={t.triggerPrice} tooltip={t.confirmationDeadlineTooltip}>
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        {`${priceF ? priceF : "-"} ${dstToken?.symbol}`}
+        {percentage && <small>{`(${percentage}%)`}</small>}
+      </div>
+    </DetailRow>
+  );
+};
+
+const LimitPrice = ({ price, dstToken, percentage, isMarketOrder }: { price?: string; dstToken?: Token; percentage?: number; isMarketOrder?: boolean }) => {
+  const t = useTwapContext()?.translations;
+  const priceF = useFormatNumber({ value: price });
+
+  if (isMarketOrder) return null;
+
+  return (
+    <DetailRow title={t.limitPrice} tooltip={t.confirmationDeadlineTooltip}>
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        {`${priceF ? priceF : "-"} ${dstToken?.symbol}`}
+        {percentage && <small>{`(${percentage}%)`}</small>}
+      </div>
     </DetailRow>
   );
 };
@@ -31,21 +61,13 @@ const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: stri
   );
 };
 
-const MinDestAmount = ({
-  dstToken,
-  isMarketOrder,
-  dstMinAmountOut,
-  totalChunks,
-}: {
-  dstToken?: Token;
-  isMarketOrder?: boolean;
-  dstMinAmountOut?: string;
-  totalChunks?: number;
-}) => {
+const MinDestAmount = ({ dstToken, dstMinAmountOut, totalChunks = 1 }: { dstToken?: Token; dstMinAmountOut?: string; totalChunks?: number }) => {
   const { translations: t } = useTwapContext();
   const formattedValue = useFormatNumber({ value: dstMinAmountOut });
 
-  if (isMarketOrder || !dstToken) return null;
+  const amountWei = useAmountBN(dstToken?.decimals, dstMinAmountOut);
+
+  if (BN(amountWei).lte(1)) return null;
 
   return (
     <DetailRow title={totalChunks === 1 ? t.minReceived : t.minReceivedPerTrade} tooltip={t.confirmationMinDstAmountTooltipLimit}>
@@ -151,3 +173,5 @@ OrderDetails.TradeInterval = TradeInterval;
 OrderDetails.DetailRow = DetailRow;
 OrderDetails.TxHash = TxHash;
 OrderDetails.FillDelaySummary = FillDelaySummary;
+OrderDetails.TriggerPrice = TriggerPrice;
+OrderDetails.LimitPrice = LimitPrice;

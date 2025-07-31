@@ -2,9 +2,9 @@ import { iwethabi } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
-import { useNetwork } from "./logic-hooks";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import BN from "bignumber.js";
+import { useNetwork } from "./helper-hooks";
 
 export const useWrapToken = () => {
   const { account, walletClient, publicClient, callbacks, twapSDK, transactions } = useTwapContext();

@@ -166,7 +166,6 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
       width: "fit-content",
       padding: 5,
       background: "rgba(255,255,255, 0.2)",
-      marginBottom: 20,
       "&-btn": {
         background: "transparent",
         padding: "5px 15px",

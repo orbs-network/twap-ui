@@ -7,7 +7,8 @@ import moment from "moment";
 import { Token } from "../../types";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
-import { useAmountUi, useOrderName } from "../../hooks/logic-hooks";
+import { useAmountUi } from "../../hooks/helper-hooks";
+import { useOrderName } from "../../hooks/order-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { SwapStatus, TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../components/order-details";
@@ -112,7 +113,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
       <AmountIn order={order} />
       <OrderDetails.ChunkSize chunks={order?.chunks} srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />
       <OrderDetails.ChunksAmount chunks={order?.chunks} />
-      <OrderDetails.MinDestAmount totalChunks={order?.chunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
+      <OrderDetails.MinDestAmount totalChunks={order?.chunks} dstToken={dstToken} dstMinAmountOut={dstMinAmountOutUi} />
       <OrderDetails.TradeInterval chunks={order.chunks} fillDelayMillis={fillDelayMillis} />
       <OrderDetails.Recipient />
       <OrderDetails.TxHash txHash={order?.txHash} />

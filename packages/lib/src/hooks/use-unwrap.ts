@@ -2,7 +2,8 @@ import { iwethabi } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
-import { useNetwork, useSrcAmount } from "./logic-hooks";
+import { useNetwork } from "./helper-hooks";
+import { useSrcAmount } from "./use-src-amount";
 import BN from "bignumber.js";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 

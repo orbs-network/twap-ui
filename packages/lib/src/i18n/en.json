@@ -111,5 +111,10 @@
   "stopLossTooltip": "The trigger price at which your stop-loss order will be activated.",
   "stopLossLabel": "Trigger price",
   "stopLossTriggerPriceGreaterThanMarketPrice": "Trigger price must be less than market price",
-  "stopLossLimitPriceGreaterThanTriggerPrice": "Limit price must be less than trigger price"
+  "stopLossLimitPriceGreaterThanTriggerPrice": "Limit price must be less than trigger price",
+  "triggerPrice": "Trigger price",
+  "tradePrice": "Trade price",
+  "triggerMarketPriceDisclaimer": " In extreme market movements, slippage may occur and the executed price of the market order may be worse than the specified trigger price.",
+  "stopLossLimitPriceTooltip": "The stop loss order will executed at the specified limit price or better, once the stop price is triggered.",
+  "stopLossDurationTooltip": "This is the time period during which the order will be active. Please note that orders may be completed earlier than this time, or remain unfilled based on the specified parameters."
 }

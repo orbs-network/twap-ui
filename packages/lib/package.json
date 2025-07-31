@@ -21,6 +21,7 @@
     "test:watch": "NETWORK=FTM DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors --watch"
   },
   "dependencies": {
+    "@ethersproject/hash": "^5.8.0",
     "@orbs-network/swap-ui": "^0.0.44",
     "@orbs-network/twap-sdk": "^4.0.50",
     "@react-icons/all-files": "^4.1.0",

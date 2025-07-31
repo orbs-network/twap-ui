@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NumberInput, Popup, TokensList } from "../Components";
 import { ArrowDown } from "react-feather";
 import { useDappStore } from "./store";
+import clsx from "clsx";
 
 const TokenSelectModal = ({ isOpen, onSelect, onClose }: { isOpen: boolean; onSelect: (token: Token) => void; onClose: () => void }) => {
   return (
@@ -98,9 +99,5 @@ export const CurrencyInputPanel = ({
 };
 
 export const Section = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
-  return (
-    <Flex vertical gap={10} style={{ width: "100%", borderRadius: 12, padding: 16, background: "#131313" }} className={className}>
-      {children}
-    </Flex>
-  );
+  return <div className={clsx(`flex flex-col w-full bg-[#131313] rounded-[12px] p-4 gap-4`, className)}>{children}</div>;
 };

@@ -1,0 +1,30 @@
+import { useMemo } from "react";
+import { useTwapContext } from "../context";
+import { useTwapStore } from "../useTwapStore";
+import { useAmountBN } from "./helper-hooks";
+import BN from "bignumber.js";
+import { amountBN, isNativeAddress } from "@orbs-network/twap-sdk";
+import { getMinNativeBalance } from "../utils";
+
+export const useMaxSrcAmount = () => {
+  const { srcToken, config, srcBalance } = useTwapContext();
+
+  return useMemo(() => {
+    if (srcBalance && isNativeAddress(srcToken?.address || "")) {
+      const srcTokenMinimum = amountBN(srcToken?.decimals, getMinNativeBalance(config.chainId).toString());
+      return BN.max(0, BN.min(BN(srcBalance).minus(srcTokenMinimum))).toString();
+    }
+  }, [srcToken, srcBalance, config.chainId]);
+};
+
+export const useSrcAmount = () => {
+  const { srcToken, translations: t } = useTwapContext();
+
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+
+  return {
+    amountWei: useAmountBN(srcToken?.decimals, typedSrcAmount),
+    amountUI: typedSrcAmount,
+    error: BN(typedSrcAmount || 0).isZero() ? t.enterAmount : undefined,
+  };
+};

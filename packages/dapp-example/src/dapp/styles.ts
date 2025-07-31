@@ -273,9 +273,6 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         },
       },
     },
-    ".trade-amount": {
-      maxWidth: "45%",
-    },
 
     ".order-delay": {
       flex: 1,

@@ -5,12 +5,12 @@ import { OrderHistoryList } from "./OrderHistoryList";
 import { useMemo } from "react";
 import { useTwapContext } from "../../context";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
-import { useTransactionExplorerLink } from "../../hooks/logic-hooks";
 import { Portal } from "../../components/Portal";
 import { useOrderHistoryPanel } from "../twap";
 import { SwapFlowComponent } from "../swap-flow";
 import { useTwapStore } from "../../useTwapStore";
 import { useCancelOrder } from "../../hooks/use-cancel-order";
+import { useExplorerLink } from "../../hooks/helper-hooks";
 
 const PORTAL_ID = "twap-orders-portal";
 
@@ -48,7 +48,7 @@ const CancelOrderFlow = () => {
   const inToken = useToken?.(order?.srcTokenAddress);
   const outToken = useToken?.(order?.dstTokenAddress);
 
-  const explorerUrl = useTransactionExplorerLink(cancelOrderTxHash);
+  const explorerUrl = useExplorerLink(cancelOrderTxHash);
   const currentStep = useMemo((): Step => {
     return {
       title: t.cancelOrderModalTitle.replace("{id}", order?.id?.toString() || ""),

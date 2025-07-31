@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useTwapStore } from "../useTwapStore";
-import { useSrcAmount } from "./logic-hooks";
+import { useSrcAmount } from "./use-src-amount";
 import { useWrapToken } from "./use-wrap";
 
 export const useWrapOnly = () => {

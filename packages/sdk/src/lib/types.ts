@@ -12,6 +12,12 @@ export type Config = {
   exchangeType: string;
   pathfinderKey: string;
 };
+export enum Module {
+  TWAP = "TWAP",
+  LIMIT = "LIMIT",
+  STOP_LOSS = "STOP_LOSS",
+  TAKE_PROFIT = "TAKE_PROFIT",
+}
 
 export enum OrderStatus {
   Open = "OPEN",

@@ -3,25 +3,21 @@ import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { Failed } from "./Failed";
 import { ReactNode, useMemo } from "react";
 import { useTwapContext } from "../../context";
-import {
-  useChunks,
-  useDestTokenAmount,
-  useNetwork,
-  useOnCloseConfirmationModal,
-  useOrderName,
-  useOrderType,
-  useSrcAmount,
-  useTransactionExplorerLink,
-} from "../../hooks/logic-hooks";
+
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Steps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
-import { useSubmitOrderPanel } from "../twap";
 import { SwapFlowComponent } from "../swap-flow";
+import { useChunks } from "../../hooks/use-chunks";
+import { useOrderName, useOrderType } from "../../hooks/order-hooks";
+import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
+import { useSrcAmount } from "../../hooks/use-src-amount";
+import { useDstAmount } from "../../hooks/use-dst-amount";
+import { useConfirmationPanel } from "../../hooks/use-confirmation";
 
 const Modal = ({ children }: { children: ReactNode }) => {
   const context = useTwapContext();
-  const { isOpen, onClose } = useSubmitOrderPanel();
+  const { isOpen, onClose } = useConfirmationPanel();
 
   return (
     <context.SubmitOrderPanel isOpen={Boolean(isOpen)} onClose={onClose} title="Create order">
@@ -45,9 +41,9 @@ const useStep = () => {
   const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
   const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
   const network = useNetwork();
-  const wrapExplorerUrl = useTransactionExplorerLink(wrapTxHash);
-  const approveExplorerUrl = useTransactionExplorerLink(approveTxHash);
-  const createOrderExplorerUrl = useTransactionExplorerLink(createOrderTxHash);
+  const wrapExplorerUrl = useExplorerLink(wrapTxHash);
+  const approveExplorerUrl = useExplorerLink(approveTxHash);
+  const createOrderExplorerUrl = useExplorerLink(createOrderTxHash);
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
   const swapTitle = useTitle();
@@ -103,7 +99,7 @@ export const SubmitOrderPanel = () => {
 
 const LoadingView = () => {
   const { TransactionModal } = useTwapContext();
-  const dstAmount = useDestTokenAmount().amountUI;
+  const dstAmount = useDstAmount().amountUI;
   const srcAmount = useSrcAmount().amountUI || "";
   const orderType = useOrderType();
   const step = useTwapStore((s) => s.state.activeStep);
@@ -128,13 +124,13 @@ const LoadingView = () => {
 
 const SuccessContent = () => {
   const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
-  const explorerUrl = useTransactionExplorerLink(createOrderTxHash);
+  const explorerUrl = useExplorerLink(createOrderTxHash);
   const { TransactionModal, srcToken, dstToken } = useTwapContext();
   const successTitle = useTitle();
   const orderType = useOrderType();
   const srcAmount = useSrcAmount().amountUI || "";
-  const dstAmount = useDestTokenAmount().amountUI;
-  const onClose = useOnCloseConfirmationModal();
+  const dstAmount = useDstAmount().amountUI;
+  const onClose = useConfirmationPanel().onClose;
 
   if (TransactionModal?.CreateOrder?.SuccessContent && srcToken && dstToken) {
     return (

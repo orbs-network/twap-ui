@@ -14,7 +14,7 @@ import {
   DEFAULT_FILL_DELAY,
 } from "./lib";
 import { getOrders } from "./orders";
-import { Config, getAskParamsProps, TimeDuration } from "./types";
+import { Config, getAskParamsProps, Module, TimeDuration } from "./types";
 import { getTimeDurationMillis } from "./utils";
 import BN from "bignumber.js";
 
@@ -55,14 +55,14 @@ export class TwapSDK {
   getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) {
     return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);
   }
-  getChunks(maxChunks: number, isLimitPanel: boolean, customChunks?: number) {
-    return getChunks(maxChunks, isLimitPanel, customChunks);
+  getChunks(maxChunks: number, module: Module, customChunks?: number) {
+    return getChunks(maxChunks, module, customChunks);
   }
   getSrcTokenChunkAmount(srcAmount: string, chunks?: number) {
     return getSrcChunkAmount(srcAmount, chunks);
   }
-  getFillDelay(isLimitPanel: boolean, typedFillDelay?: TimeDuration) {
-    return getFillDelay(isLimitPanel, typedFillDelay);
+  getFillDelay(module: Module, typedFillDelay?: TimeDuration) {
+    return getFillDelay(module, typedFillDelay);
   }
   getOrderDuration(chunks: number, fillDelay: TimeDuration, typedDuration?: TimeDuration) {
     return getDuration(chunks, fillDelay, typedDuration);
@@ -88,14 +88,14 @@ export class TwapSDK {
 
   getStopLossError(marketPrice: string, triggerPrice: string) {
     return {
-      isError: BN(triggerPrice || 0).isGreaterThan(BN(marketPrice || 0)),
+      isError: BN(triggerPrice || 0).gte(BN(marketPrice || 0)),
       value: marketPrice,
     };
   }
 
   getStopLossLimitPriceError(triggerPrice: string, limitPrice: string, isMarketOrder: boolean) {
     return {
-      isError: !isMarketOrder && BN(limitPrice || 0).isGreaterThan(BN(triggerPrice || 0)),
+      isError: !isMarketOrder && BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
       value: triggerPrice,
     };
   }
@@ -128,9 +128,9 @@ export class TwapSDK {
       value: minChunkSizeUsd,
     };
   }
-  getMaxChunksError(chunks: number, maxChunks: number, isLimitPanel: boolean) {
+  getMaxChunksError(chunks: number, maxChunks: number, module: Module) {
     return {
-      isError: !isLimitPanel && BN(chunks).isGreaterThan(maxChunks),
+      isError: module === Module.TWAP && BN(chunks).isGreaterThan(maxChunks),
       value: maxChunks,
     };
   }

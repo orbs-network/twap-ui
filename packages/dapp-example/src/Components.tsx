@@ -12,6 +12,7 @@ import { isAddress, maxUint256 } from "viem";
 import { useAppParams } from "./dapp/hooks";
 import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
 import clsx from "clsx";
+import { SettingsIcon } from "lucide-react";
 
 export const NumberInput = (props: {
   onChange: (value: string) => void;
@@ -23,7 +24,7 @@ export const NumberInput = (props: {
   onBlur?: () => void;
   loading?: boolean;
   className?: string;
-  maxValue?: string;
+  maxValue?: number;
   prefix?: string;
   decimalScale?: number;
   minAmount?: number;
@@ -34,16 +35,19 @@ export const NumberInput = (props: {
 
   return (
     <NumericFormat
-      className={clsx(`input text-white rounded-lg indent-2 text-[20px] outline-none py-2 bg-[rgba(255,255,255,0.05)] ${props.className} ${disabled ? "input-disabled" : ""}`)}
+      className={clsx(
+        `input text-white w-full rounded-lg indent-2 text-[20px] outline-none py-2 bg-[rgba(255,255,255,0.05)] ${props.className} ${disabled ? "input-disabled" : ""}`,
+      )}
       allowNegative={false}
       disabled={disabled}
       decimalScale={decimalScale}
       onBlur={onBlur}
       onFocus={onFocus}
       placeholder={placeholder || "0"}
+      max={maxValue}
       isAllowed={(values) => {
         const { floatValue = 0 } = values;
-        return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
+        return maxValue ? floatValue <= parseFloat(maxValue.toString()) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
       }}
       prefix={prefix ? `${prefix} ` : ""}
       suffix={suffix ? `${suffix} ` : ""}
@@ -239,18 +243,46 @@ export const TokensList = ({ onClick }: TokensListProps) => {
   );
 };
 
+const SettingsModal = ({ className }: { className?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { slippage, setSlippage } = useDappContext();
+  return (
+    <>
+      <SettingsIcon onClick={() => setIsOpen(true)} className="cursor-pointer text-white" />
+      <Modal
+        footer={null}
+        classNames={{
+          content: `popup-main ${className}`,
+        }}
+        open={isOpen}
+        onCancel={() => setIsOpen(false)}
+      >
+        <div className="text-white pt-6">
+          <div className="flex flex-row gap-2 items-center justify-between">
+            <p>Slippage</p>
+            <NumberInput onChange={(value) => setSlippage(Number(value))} value={slippage} />
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+};
+
 export const PanelToggle = () => {
   const { setPanel, panel } = useDappContext();
 
   return (
-    <div className="panel-selector">
-      {Object.values(Module).map((it) => {
-        return (
-          <button className={`${panel === it ? "panel-selector-btn-selected" : ""} panel-selector-btn`} key={it} onClick={() => setPanel(it)}>
-            {it.replace("_", " ")}
-          </button>
-        );
-      })}
+    <div className="flex items-center gap-2 mb-[20px]">
+      <div className="panel-selector">
+        {Object.values(Module).map((it) => {
+          return (
+            <button className={`${panel === it ? "panel-selector-btn-selected" : ""} panel-selector-btn`} key={it} onClick={() => setPanel(it)}>
+              {it.replace("_", " ")}
+            </button>
+          );
+        })}
+      </div>
+      <SettingsModal />
     </div>
   );
 };

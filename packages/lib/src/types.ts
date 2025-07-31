@@ -1,9 +1,9 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Order, OrderType, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
+import { Config, Module, Order, OrderType, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
-export { OrderStatus, type TwapFill, OrderType } from "@orbs-network/twap-sdk";
+export { OrderStatus, type TwapFill, OrderType, Module } from "@orbs-network/twap-sdk";
 
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
@@ -11,13 +11,18 @@ export interface Translations {
   orderHistory: string;
   orderCancelled: string;
   cancelOrderModalTitle: string;
+  tradePrice: string;
+  stopLossLimitPriceTooltip: string;
+  stopLossDurationTooltip: string;
   stopLossTriggerPriceGreaterThanMarketPrice: string;
   perTrade: string;
+  triggerMarketPriceDisclaimer: string;
   stopLossTooltip: string;
   stopLossLimitPriceGreaterThanTriggerPrice: string;
   stopLossLabel: string;
   confirmationDeadlineTooltip: string;
   confirmationTradeSizeTooltip: string;
+  triggerPrice: string;
   confirmationTotalTradesTooltip: string;
   confirmationMinDstAmountTooltipLimit: string;
   marketPriceTooltip: string;
@@ -428,6 +433,7 @@ export interface TwapProps {
   children?: React.ReactNode;
   components?: Components;
   SubmitOrderPanel: FC<SubmitOrderPanelProps>;
+  slippage: number;
   module: Module;
   TransactionModal?: {
     Spinner?: ReactNode;
@@ -535,13 +541,6 @@ export enum Steps {
   CREATE = "create",
 }
 
-export enum Module {
-  TWAP = "TWAP",
-  LIMIT = "LIMIT",
-  STOP_LOSS = "STOP_LOSS",
-  TAKE_PROFIT = "TAKE_PROFIT",
-}
-
 export interface State {
   swapStatus?: SwapStatus;
   fetchingAllowance?: boolean;
@@ -561,11 +560,11 @@ export interface State {
   typedChunks?: number;
   typedFillDelay: TimeDuration;
   typedDuration?: TimeDuration;
-  typedPrice?: string;
+  typedLimitPrice?: string;
   typedTriggerPrice?: string;
   triggerPricePercent?: number;
-  isInvertedPrice?: boolean;
-  selectedPricePercent?: number;
+  isInvertedTrade?: boolean;
+  limitPricePercent?: number;
   isMarketOrder?: boolean;
 
   currentTime: number;
@@ -573,7 +572,6 @@ export interface State {
   cancelOrderTxHash?: string;
   cancelOrderError?: string;
   cancelOrderId?: number;
-  isInvertedTriggerPrice?: boolean;
 }
 
 export { SwapStatus };

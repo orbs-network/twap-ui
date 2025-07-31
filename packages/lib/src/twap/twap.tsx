@@ -1,41 +1,34 @@
-import React, { useMemo } from "react";
 import { Orders, OrdersPortal } from "./orders/Orders";
 import { SubmitOrderPanel } from "./submit-order-modal/SubmitOrderModal";
 import { TwapProvider } from "../context";
 import { TwapProps } from "../types";
-import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
-import {
-  useShowOrderConfirmationModalButton,
-  useDisclaimerPanel,
-  useDurationPanel,
-  useFillDelayPanel,
-  useLimitPricePanel,
-  usePriceModePanel,
-  useTokenPanel,
-  useChunkSizeMessage,
-  useChunksPanel,
-  useDisclaimerMessage,
-  useOrderHistoryPanel,
-  useTriggerPricePanel,
-} from "../hooks/ui-hooks";
 import { DISCLAIMER_URL, ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
-import { useOrders } from "../hooks/order-hooks";
-import { useInputsError, useResetState } from "../hooks/logic-hooks";
+import { useOrderHistoryPanel, useOrders } from "../hooks/order-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "./consts";
-import { useSubmitOrderPanel } from "../hooks/use-submit-order-panel";
 import { Portal } from "../components/Portal";
+import { useResetState } from "../useTwapStore";
+import { useFieldsErrors } from "../hooks/use-fields-errors";
+import { useConfirmationPanel } from "../hooks/use-confirmation";
+import { useInvertTrade } from "../hooks/use-invert-trade";
+import { useMarketPricePanel } from "../hooks/use-market-price-panel";
+import { useLimitPricePanel } from "../hooks/use-limit-price";
+import { useTokenPanel } from "../hooks/use-token-panel";
+import { useLimitPriceToggle } from "../hooks/use-limit-price-toggle";
+import { useFillDelayPanel } from "../hooks/use-fill-delay";
+import { useDurationPanel } from "../hooks/use-duration";
+import { useChunkSizeMessage, useDisclaimerMessage, useTriggerPriceWarning } from "../hooks/use-message";
+import { useChunksPanel } from "../hooks/use-chunks";
+import { useOnOpenConfirmationButton } from "../hooks/use-open-confirmation-button";
+import { useTriggerPricePanel } from "../hooks/use-trigger-price";
 
 const TWAP = (props: TwapProps) => {
-  const shouldWrapOrUnwrap = useMemo(() => {
-    return shouldWrapOnly(props.srcToken, props.dstToken, props.chainId) || shouldUnwrapOnly(props.srcToken, props.dstToken, props.chainId);
-  }, [props.srcToken, props.dstToken, props.chainId]);
   return (
     <TwapProvider {...props}>
-      <div className={`twap-container ${shouldWrapOrUnwrap ? "twap-container-wrap-only" : ""}`}>
+      <>
         <Orders />
         <SubmitOrderPanel />
         {props.children}
-      </div>
+      </>
     </TwapProvider>
   );
 };
@@ -44,21 +37,23 @@ export {
   TWAP,
   OrdersPortal as OrderHistory,
   useOrders,
-  useSubmitOrderPanel,
+  useMarketPricePanel,
+  useConfirmationPanel,
   useTokenPanel,
-  usePriceModePanel as usePriceTogglePanel,
+  useLimitPriceToggle,
   useFillDelayPanel,
   useDurationPanel,
   useChunkSizeMessage,
   useChunksPanel,
-  useShowOrderConfirmationModalButton,
+  useOnOpenConfirmationButton,
   useLimitPricePanel,
-  useDisclaimerPanel,
-  useInputsError,
+  useFieldsErrors,
   useDisclaimerMessage,
   useOrderHistoryPanel,
   useResetState,
   useTriggerPricePanel,
+  useInvertTrade,
+  useTriggerPriceWarning,
   ORBS_WEBSITE_URL,
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,

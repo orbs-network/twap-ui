@@ -7,10 +7,11 @@ import { useTwapContext } from "../context";
 import { Steps } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { ensureWrappedToken, getTotalSteps, isTxRejected } from "../utils";
-import { useHasAllowanceCallback, useSrcAmount } from "./logic-hooks";
 import { useApproveToken } from "./use-approve-token";
 import { useCreateOrder } from "./use-create-order";
 import { useWrapToken } from "./use-wrap";
+import { useSrcAmount } from "./use-src-amount";
+import { useHasAllowanceCallback } from "./use-has-allowance";
 
 export const useSubmitOnChainOrder = () => {
   const { srcToken, dstToken, isExactAppoval, chainId } = useTwapContext();

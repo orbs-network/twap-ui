@@ -1,6 +1,6 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, getAskParamsProps, TimeDuration, TimeUnit } from "./types";
+import { Config, getAskParamsProps, Module, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
@@ -27,8 +27,8 @@ export const getDuration = (chunks: number, fillDelay: TimeDuration, customDurat
   return customDuration || { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
 };
 
-export const getChunks = (maxPossibleChunks: number, isLimitPanel = false, typedChunks?: number) => {
-  if (isLimitPanel) return 1;
+export const getChunks = (maxPossibleChunks: number, module: Module, typedChunks?: number) => {
+  if (module === Module.STOP_LOSS || module === Module.LIMIT) return 1;
   if (typedChunks !== undefined) return typedChunks;
   return maxPossibleChunks;
 };
@@ -42,8 +42,8 @@ export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, on
   return res > 1 ? res : 1;
 };
 
-export const getFillDelay = (isLimitPanel = false, customFillDelay?: TimeDuration) => {
-  if (isLimitPanel || !customFillDelay) return DEFAULT_FILL_DELAY;
+export const getFillDelay = (module: Module, customFillDelay?: TimeDuration) => {
+  if (module === Module.STOP_LOSS || module === Module.LIMIT || !customFillDelay) return DEFAULT_FILL_DELAY;
   return customFillDelay;
 };
 

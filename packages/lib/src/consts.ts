@@ -2,6 +2,8 @@ import { TimeUnit, Configs } from "@orbs-network/twap-sdk";
 export const REFETCH_ORDER_HISTORY = 40_000;
 
 export const MIN_NATIVE_BALANCE = 0.01;
+export const DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE = -7;
+export const DEFAULT_STOP_LOSS_TRIGGER_PERCENTAGE = -5;
 
 export const QUERY_PARAMS = {
   INTERVAL: "twap-interval",

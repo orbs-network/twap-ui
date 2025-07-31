@@ -55,7 +55,7 @@ export const amountUi = (decimals?: number, amount?: string) => {
 
 export const amountBN = (decimals?: number, amount?: string) => {
   if (!decimals || !amount) return "";
-  return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toFixed();
+  return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toFixed(0);
 };
 export const zero = BN(0);
 export const one = BN(1);

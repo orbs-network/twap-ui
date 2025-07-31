@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { amountBN, constructSDK } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType, Translations, Components, Module } from "./types";
-import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
+import { DEFAULT_LIMIT_PANEL_DURATION, DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE, DEFAULT_STOP_LOSS_TRIGGER_PERCENTAGE } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
 import { useTwapStore } from "./useTwapStore";
@@ -20,16 +20,11 @@ const queryClient = new QueryClient({
 const Listeners = () => {
   const updateStore = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-
-  const { isLimitPanel, isStopLossModule, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
+  const { isLimitPanel, module, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
 
   useEffect(() => {
     updateStore({ disclaimerAccepted: orderDisclaimerAcceptedByDefault });
   }, [orderDisclaimerAcceptedByDefault]);
-
-  useEffect(() => {
-    updateStore({ typedPrice: undefined });
-  }, [srcToken?.address, dstToken?.address]);
 
   useEffect(() => {
     if (onInputAmountChange) {
@@ -38,12 +33,28 @@ const Listeners = () => {
   }, [typedSrcAmount, srcToken?.decimals, onInputAmountChange]);
 
   useEffect(() => {
-    if (isLimitPanel || isStopLossModule) {
+    if (isLimitPanel || module === Module.STOP_LOSS) {
       updateStore({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: isLimitPanel ? false : isTwapMarketByDefault || false });
     } else {
       updateStore({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault || false });
     }
-  }, [isLimitPanel, updateStore, isTwapMarketByDefault, isStopLossModule]);
+  }, [isLimitPanel, updateStore, isTwapMarketByDefault, module]);
+
+  useEffect(() => {
+    if (srcToken && dstToken) {
+      updateStore({ typedLimitPrice: undefined, typedTriggerPrice: undefined });
+    }
+  }, [srcToken?.address, dstToken?.address, updateStore]);
+
+  useEffect(() => {
+    if (module === Module.STOP_LOSS) {
+      updateStore({
+        triggerPricePercent: DEFAULT_STOP_LOSS_TRIGGER_PERCENTAGE,
+        limitPricePercent: DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE,
+        isMarketOrder: false,
+      });
+    }
+  }, [module]);
 
   useEffect(() => {
     setInterval(() => {
@@ -83,10 +94,7 @@ const Content = (props: TwapProps) => {
         noLiquidity: props.marketReferencePrice.noLiquidity,
         components: props.components || ({} as Components),
         numberFormat: props.numberFormat,
-        isLimitModule: props.isLimitPanel || props.module === Module.LIMIT,
-        isStopLossModule: props.module === Module.STOP_LOSS,
-        isTwapModule: props.module === Module.TWAP,
-        isTakeProfitModule: props.module === Module.TAKE_PROFIT,
+        isLimitPanel: props.module === Module.LIMIT,
       }}
     >
       <Listeners />
