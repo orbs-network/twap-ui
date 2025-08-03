@@ -2,7 +2,13 @@ import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { amountBN, constructSDK } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType, Translations, Components, Module } from "./types";
-import { DEFAULT_LIMIT_PANEL_DURATION, DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE, DEFAULT_STOP_LOSS_TRIGGER_PERCENTAGE } from "./consts";
+import {
+  DEFAULT_DURATION,
+  DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE,
+  DEFAULT_STOP_LOSS_TRIGGER_PERCENTAGE,
+  DEFAULT_TAKE_PROFIT_PERCENTAGE,
+  DEFAULT_TAKE_PROFIT_TRIGGER_PERCENTAGE,
+} from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
 import { useTwapStore } from "./useTwapStore";
@@ -17,14 +23,14 @@ const queryClient = new QueryClient({
   },
 });
 
-const Listeners = () => {
+const useDefaults = (props: TwapProps) => {
   const updateStore = useTwapStore((s) => s.updateState);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const { isLimitPanel, module, isTwapMarketByDefault, srcToken, dstToken, onInputAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
+  const { module, stateDefaults, srcToken, dstToken, onInputAmountChange } = props;
 
   useEffect(() => {
-    updateStore({ disclaimerAccepted: orderDisclaimerAcceptedByDefault });
-  }, [orderDisclaimerAcceptedByDefault]);
+    updateStore({ disclaimerAccepted: stateDefaults?.disclaimerAccepted });
+  }, [stateDefaults, updateStore]);
 
   useEffect(() => {
     if (onInputAmountChange) {
@@ -32,14 +38,7 @@ const Listeners = () => {
     }
   }, [typedSrcAmount, srcToken?.decimals, onInputAmountChange]);
 
-  useEffect(() => {
-    if (isLimitPanel || module === Module.STOP_LOSS) {
-      updateStore({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: isLimitPanel ? false : isTwapMarketByDefault || false });
-    } else {
-      updateStore({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault || false });
-    }
-  }, [isLimitPanel, updateStore, isTwapMarketByDefault, module]);
-
+  // reset limit price and trigger price when src or dst token changes
   useEffect(() => {
     if (srcToken && dstToken) {
       updateStore({ typedLimitPrice: undefined, typedTriggerPrice: undefined });
@@ -47,22 +46,35 @@ const Listeners = () => {
   }, [srcToken?.address, dstToken?.address, updateStore]);
 
   useEffect(() => {
+    if (module === Module.LIMIT) {
+      updateStore({ typedDuration: DEFAULT_DURATION, isMarketOrder: false });
+    }
     if (module === Module.STOP_LOSS) {
       updateStore({
+        typedDuration: DEFAULT_DURATION,
+        isMarketOrder: false,
         triggerPricePercent: DEFAULT_STOP_LOSS_TRIGGER_PERCENTAGE,
         limitPricePercent: DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE,
-        isMarketOrder: false,
       });
     }
-  }, [module]);
+    if (module === Module.TAKE_PROFIT) {
+      updateStore({
+        typedDuration: DEFAULT_DURATION,
+        isMarketOrder: false,
+        triggerPricePercent: DEFAULT_TAKE_PROFIT_TRIGGER_PERCENTAGE,
+        limitPricePercent: DEFAULT_TAKE_PROFIT_PERCENTAGE,
+      });
+    }
+    if (module === Module.TWAP) {
+      updateStore({ typedDuration: undefined, isMarketOrder: Boolean(stateDefaults?.isMarketOrder) });
+    }
+  }, [module, updateStore, stateDefaults]);
 
   useEffect(() => {
     setInterval(() => {
       updateStore({ currentTime: Date.now() });
     }, 60_000);
   }, [updateStore]);
-
-  return null;
 };
 
 const useTranslations = (translations?: Partial<Translations>): Translations => {
@@ -77,6 +89,7 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
 
 const Content = (props: TwapProps) => {
   const translations = useTranslations(props.translations);
+  useDefaults(props);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   return (
@@ -94,10 +107,8 @@ const Content = (props: TwapProps) => {
         noLiquidity: props.marketReferencePrice.noLiquidity,
         components: props.components || ({} as Components),
         numberFormat: props.numberFormat,
-        isLimitPanel: props.module === Module.LIMIT,
       }}
     >
-      <Listeners />
       <TwapErrorWrapper>{props.children}</TwapErrorWrapper>
     </TwapContext.Provider>
   );

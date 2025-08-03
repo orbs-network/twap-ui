@@ -8,8 +8,9 @@ import { InputError, InputErrors } from "../types";
 import { millisToDays, millisToMinutes } from "../utils";
 import { DEFAULT_DURATION_OPTIONS } from "../twap/consts";
 
-const useDurationError = (duration: TimeDuration) => {
+export const useDurationError = () => {
   const { twapSDK, translations: t } = useTwapContext();
+  const duration = useDuration().duration;
 
   return useMemo((): InputError | undefined => {
     const maxError = twapSDK.getMaxOrderDurationError(duration);
@@ -39,18 +40,17 @@ export const useDuration = () => {
   const typedDuration = useTwapStore((s) => s.state.typedDuration);
   const updateState = useTwapStore((s) => s.updateState);
   const duration = useMemo(() => twapSDK.getOrderDuration(chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, twapSDK]);
-  const error = useDurationError(duration);
 
   return {
     duration,
     setDuration: useCallback((typedDuration: TimeDuration) => updateState({ typedDuration }), [updateState]),
-    error,
   };
 };
 
 export const useDurationPanel = () => {
   const { translations: t, module } = useTwapContext();
-  const { duration, setDuration, error } = useDuration();
+  const { duration, setDuration } = useDuration();
+  const error = useDurationError();
 
   const onInputChange = useCallback(
     (value: string) => {

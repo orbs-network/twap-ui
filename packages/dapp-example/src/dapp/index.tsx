@@ -1,7 +1,7 @@
 import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD } from "../hooks";
 import { NumberInput, Popup, PanelToggle } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar, Modal } from "antd";
+import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar } from "antd";
 import {
   TooltipProps,
   TWAP,
@@ -46,7 +46,7 @@ import { GlobalStyles } from "./styles";
 import { CurrencyInputPanel, Section, SwitchTokensButton } from "./components";
 import { useDappStore } from "./store";
 import { ChevronDown, Info, RefreshCcw, Repeat, X } from "react-feather";
-import { ArrowUpDown, MessageCircleWarning, SettingsIcon, TriangleAlert } from "lucide-react";
+import { ArrowUpDown, TriangleAlert } from "lucide-react";
 import BN from "bignumber.js";
 import { useGetToken } from "./hooks";
 import styled from "styled-components";
@@ -300,7 +300,7 @@ const LimitPanel = () => {
   const prefix = isInverted ? "-" : "+";
   const showReset = marketDiffPercentage && marketDiffPercentage !== selectedPercentage;
 
-  if (!isActive || panel === Module.STOP_LOSS) return null;
+  if (!isActive || (panel !== Module.TWAP && panel !== Module.LIMIT)) return null;
   return (
     <Section>
       <Flex vertical gap={10} align="center" style={{ width: "100%" }}>
@@ -467,7 +467,7 @@ const TriggerPriceToggle = () => {
   const { isMarketOrder, setIsMarketOrder } = useLimitPriceToggle();
   const { label, tooltip } = useLimitPricePanel();
   const { panel } = useDappContext();
-  if (panel !== Module.STOP_LOSS) return null;
+  if (panel !== Module.STOP_LOSS && panel !== Module.TAKE_PROFIT) return null;
   return (
     <div className="flex flex-row gap-2 items-center flex-1">
       <div className="flex flex-row gap-2 items-center">
@@ -505,7 +505,7 @@ const PercentageInput = ({ value, onChange, prefix }: { value: string; onChange:
       value={value}
       className="max-w-[110px] text-center rounded-[14px] text-[20px] ml-auto"
       suffix="%"
-      placeholder="-0%"
+      placeholder={prefix ? `${prefix}0%` : "0%"}
     />
   );
 };
@@ -526,10 +526,9 @@ const SymbolInput = ({ token, onChange, value }: { token?: Token; onChange: (val
 };
 
 const TriggerLimitPrice = () => {
-  const { price, dstToken, onReset, isInverted, marketDiffPercentage, onChange, onPercentageChange } = useLimitPricePanel();
+  const { price, dstToken, onReset, prefix, marketDiffPercentage, onChange, onPercentageChange } = useLimitPricePanel();
   const { isMarketOrder } = useLimitPriceToggle();
   const triggerPriceWarning = useTriggerPriceWarning();
-  const prefix = isInverted ? "+" : "-";
 
   return (
     <>
@@ -546,7 +545,7 @@ const TriggerLimitPrice = () => {
           <SymbolInput token={dstToken} onChange={onChange} value={price} />
           <PercentageInput prefix={prefix} onChange={(value) => onPercentageChange(Number(value))} value={marketDiffPercentage?.toString() || ""} />
         </div>
-      ) : (
+      ) : triggerPriceWarning ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1 bg-[rgba(255,255,255,0.02)] rounded-[12px] px-2 py-2">
           <TriangleAlert size={14} color="white" className="relative top-[1px]" />
           <p className="text-[13px] text-white opacity-80 flex-1 leading-[18px]">
@@ -556,7 +555,7 @@ const TriggerLimitPrice = () => {
             </a>
           </p>
         </div>
-      )}
+      ) : null}
     </>
   );
 };
@@ -667,7 +666,7 @@ const PanelInputs = () => {
     return <OrderDuration />;
   }
 
-  if (panel === Module.STOP_LOSS) {
+  if (panel === Module.STOP_LOSS || panel === Module.TAKE_PROFIT) {
     return (
       <>
         <TriggerPrice />
@@ -708,7 +707,6 @@ export const Dapp = () => {
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         customMinChunkSizeUsd={5}
-        isTwapMarketByDefault={panel === Module.STOP_LOSS}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
         OrderHistory={{
           Panel: OrderHistoryModal,
@@ -716,16 +714,12 @@ export const Dapp = () => {
           CancelOrderButton,
         }}
         SubmitOrderPanel={SubmitOrderPanel}
-        TransactionModal={{
-          Link: Link,
-        }}
         components={{
           Tooltip: CustomTooltip,
         }}
         useToken={useToken}
         fee={0.25}
         account={account}
-        orderDisclaimerAcceptedByDefault
       >
         <div className="flex flex-col gap-4 justify-center items-center max-w-[450px] w-full">
           <PanelToggle />

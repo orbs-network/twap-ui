@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { useChunks } from "./use-chunks";
-import { useSrcChunkAmount } from "./use-src-chunk-amount";
+import { useSrcChunkAmount, useSrcChunkAmountError } from "./use-src-chunk-amount";
 import { useFormatNumber } from "./useFormatNumber";
 import BN from "bignumber.js";
 import { Module } from "@orbs-network/twap-sdk";
@@ -21,16 +21,17 @@ export const useDisclaimerMessage = () => {
 };
 
 export const useChunkSizeMessage = () => {
-  const { usd: chunkSize, amountUI: amountUI, error: chunkSizeError } = useSrcChunkAmount();
+  const { usd: chunkSize, amountUI: amountUI } = useSrcChunkAmount();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const { chunks } = useChunks();
+  const chunkSizeError = useSrcChunkAmountError();
   const error = !typedSrcAmount ? false : chunkSizeError;
   const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
   const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });
-  const { srcToken, isLimitPanel } = useTwapContext();
-  const isZero = isLimitPanel || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0) || !chunks;
+  const { srcToken, module } = useTwapContext();
+  const isZero = module === Module.LIMIT || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0) || !chunks;
   return {
-    hide: isLimitPanel || !srcToken,
+    hide: module === Module.LIMIT || !srcToken,
     tokenAmount: isZero ? "0" : amountUIF,
     usdAmount: isZero ? "0" : chunkSizeF,
     error,

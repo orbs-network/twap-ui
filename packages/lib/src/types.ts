@@ -13,12 +13,13 @@ export interface Translations {
   cancelOrderModalTitle: string;
   tradePrice: string;
   stopLossLimitPriceTooltip: string;
+  StopLossTriggerPriceError: string;
+  TakeProfitTriggerPriceError: string;
   stopLossDurationTooltip: string;
-  stopLossTriggerPriceGreaterThanMarketPrice: string;
+  triggerLimitPriceError: string;
   perTrade: string;
   triggerMarketPriceDisclaimer: string;
   stopLossTooltip: string;
-  stopLossLimitPriceGreaterThanTriggerPrice: string;
   stopLossLabel: string;
   confirmationDeadlineTooltip: string;
   confirmationTradeSizeTooltip: string;
@@ -338,6 +339,7 @@ export enum InputErrors {
   MISSING_LIMIT_PRICE,
   STOP_LOSS_TRIGGER_PRICE_GREATER_THAN_MARKET_PRICE,
   STOP_LOSS_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
+  TRIGGER_LIMIT_PRICE_GREATER_THAN_MARKET_PRICE,
 }
 
 export type Callbacks = {
@@ -372,7 +374,6 @@ export interface Provider {
 export type PublicClient = ReturnType<typeof createPublicClient>;
 export type WalletClient = ReturnType<typeof createWalletClient>;
 export interface BaseTwapProps {
-  isLimitPanel?: boolean;
   config: Config;
   srcToken?: Token;
   dstToken?: Token;
@@ -416,9 +417,13 @@ export type HasApprovalCallbackProps = {
   spenderAddress: string;
 };
 
+type StateDefaults = {
+  isMarketOrder?: boolean;
+  disclaimerAccepted?: boolean;
+};
+
 export interface TwapProps {
   provider?: Provider;
-  isLimitPanel?: boolean;
   enableQueryParams?: boolean;
   fee?: number;
   config: Config;
@@ -471,8 +476,7 @@ export interface TwapProps {
   dateFormat?: (date: number) => string;
   numberFormat?: (value: number | string) => string;
   account?: string;
-  orderDisclaimerAcceptedByDefault?: boolean;
-  isTwapMarketByDefault?: boolean;
+  stateDefaults?: Partial<StateDefaults>;
   onInputAmountChange?: (amountWei: string, amountUI: string) => void;
   transactions?: {
     wrap?: (amount: bigint) => Promise<`0x${string}`>;
@@ -495,10 +499,6 @@ export interface TwapContextType extends TwapProps {
   account?: `0x${string}`;
   noLiquidity?: boolean;
   components: Components;
-  isStopLossModule?: boolean;
-  isLimitModule?: boolean;
-  isTakeProfitModule?: boolean;
-  isTwapModule?: boolean;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };

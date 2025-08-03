@@ -5,9 +5,10 @@ import { useTwapStore } from "../useTwapStore";
 import { DEFAULT_DURATION_OPTIONS, InputError, InputErrors, millisToDays, millisToMinutes } from "..";
 import { useChunks } from "./use-chunks";
 
-const useFillDelayError = (fillDelay: TimeDuration) => {
+export const useFillDelayError = () => {
   const { twapSDK, translations: t } = useTwapContext();
   const { chunks } = useChunks();
+  const fillDelay = useFillDelay().fillDelay;
 
   const maxFillDelayError = useMemo((): InputError | undefined => {
     const { isError, value } = twapSDK.getMaxFillDelayError(fillDelay, chunks);
@@ -37,17 +38,15 @@ export const useFillDelay = () => {
   const typedFillDelay = useTwapStore((s) => s.state.typedFillDelay);
   const updateState = useTwapStore((s) => s.updateState);
   const fillDelay = useMemo(() => twapSDK.getFillDelay(module, typedFillDelay), [module, typedFillDelay, twapSDK]);
-  const error = useFillDelayError(fillDelay);
   return {
     fillDelay,
     setFillDelay: useCallback((typedFillDelay: TimeDuration) => updateState({ typedFillDelay }), [updateState]),
-    error,
   };
 };
 
 export const useFillDelayPanel = () => {
-  const { setFillDelay, fillDelay, error } = useFillDelay();
-
+  const { setFillDelay, fillDelay } = useFillDelay();
+  const error = useFillDelayError();
   const { translations: t } = useTwapContext();
 
   const onInputChange = useCallback(

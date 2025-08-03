@@ -9,7 +9,7 @@ import { useTwapStore } from "../useTwapStore";
 import { InputError, InputErrors } from "../types";
 import BN from "bignumber.js";
 
-const useSrcChunkAmountError = () => {
+export const useSrcChunkAmountError = () => {
   const { twapSDK, translations: t } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const srcUsd1Token = useTwapContext().srcUsd1Token;
@@ -46,6 +46,5 @@ export const useSrcChunkAmount = () => {
     amountWei,
     amountUI,
     usd,
-    error: useSrcChunkAmountError(),
   };
 };

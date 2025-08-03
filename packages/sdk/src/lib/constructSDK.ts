@@ -86,16 +86,54 @@ export class TwapSDK {
     };
   }
 
-  getStopLossError(marketPrice: string, triggerPrice: string) {
+  getStopLossPriceError(marketPrice = "", triggerPrice = "", module: Module) {
+    if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) {
+      return {
+        isError: false,
+        value: triggerPrice,
+      };
+    }
     return {
       isError: BN(triggerPrice || 0).gte(BN(marketPrice || 0)),
       value: marketPrice,
     };
   }
 
-  getStopLossLimitPriceError(triggerPrice: string, limitPrice: string, isMarketOrder: boolean) {
+  getTakeProfitPriceError(marketPrice = "", triggerPrice = "", module: Module) {
+    if (module !== Module.TAKE_PROFIT && module !== Module.STOP_LOSS) {
+      return {
+        isError: false,
+        value: triggerPrice,
+      };
+    }
     return {
-      isError: !isMarketOrder && BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
+      isError: BN(triggerPrice || 0).lte(BN(marketPrice || 0)),
+      value: marketPrice,
+    };
+  }
+
+  getStopLossLimitPriceError(triggerPrice = "", limitPrice = "", isMarketOrder = false, module: Module) {
+    if (isMarketOrder || (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT)) {
+      return {
+        isError: false,
+        value: triggerPrice,
+      };
+    }
+    return {
+      isError: BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
+      value: triggerPrice,
+    };
+  }
+
+  getTakeProfitLimitPriceError(triggerPrice = "", limitPrice = "", isMarketOrder = false, module: Module) {
+    if (isMarketOrder || (module !== Module.TAKE_PROFIT && module !== Module.STOP_LOSS)) {
+      return {
+        isError: false,
+        value: triggerPrice,
+      };
+    }
+    return {
+      isError: BN(limitPrice || 0).lte(BN(triggerPrice || 0)),
       value: triggerPrice,
     };
   }

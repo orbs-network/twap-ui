@@ -5,6 +5,9 @@ export const MIN_NATIVE_BALANCE = 0.01;
 export const DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE = -7;
 export const DEFAULT_STOP_LOSS_TRIGGER_PERCENTAGE = -5;
 
+export const DEFAULT_TAKE_PROFIT_PERCENTAGE = 7;
+export const DEFAULT_TAKE_PROFIT_TRIGGER_PERCENTAGE = 5;
+
 export const QUERY_PARAMS = {
   INTERVAL: "twap-interval",
   DURATION: "twap-duration",
@@ -12,7 +15,7 @@ export const QUERY_PARAMS = {
   INPUT_AMOUNT: "twap-input",
   CHUNKS: "twap-trades",
 };
-export const DEFAULT_LIMIT_PANEL_DURATION = { unit: TimeUnit.Days, value: 7 };
+export const DEFAULT_DURATION = { unit: TimeUnit.Days, value: 7 };
 
 export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg";
 export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";

@@ -4,9 +4,10 @@ import { InputError, InputErrors } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 
-const useChunksError = (chunks: number, maxChunks: number) => {
+export const useChunksError = () => {
   const { twapSDK, module } = useTwapContext();
   const t = useTwapContext().translations;
+  const { chunks, maxChunks } = useChunks();
 
   return useMemo((): InputError | undefined => {
     if (!chunks) {
@@ -34,7 +35,6 @@ export const useChunks = () => {
   const maxChunks = useMaxChunks();
 
   const chunks = useMemo(() => twapSDK.getChunks(maxChunks, module, typedChunks), [maxChunks, typedChunks, twapSDK]);
-  const error = useChunksError(chunks, maxChunks);
 
   const setChunks = useCallback(
     (typedChunks: number) => {
@@ -49,7 +49,6 @@ export const useChunks = () => {
     chunks,
     maxChunks,
     setChunks,
-    error,
   };
 };
 
@@ -63,7 +62,9 @@ const useMaxChunks = () => {
 
 export const useChunksPanel = () => {
   const { translations: t } = useTwapContext();
-  const { setChunks, chunks, error } = useChunks();
+  const { setChunks, chunks } = useChunks();
+  const error = useChunksError();
+
   return {
     error,
     trades: chunks,
