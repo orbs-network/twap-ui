@@ -2,61 +2,65 @@ import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { useInputWithPercentage } from "./use-input-with-percentage";
-import { DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE } from "../consts";
 import { InputErrors, InputError, Module } from "../types";
 import BN from "bignumber.js";
 import { useInvertTrade } from "./use-invert-trade";
 import { useTriggerPrice } from "./use-trigger-price";
+import { useDefaultLimitPricePercent } from "./use-default-values";
 
 export const useLimitPriceError = () => {
   const { translations: t, twapSDK, module } = useTwapContext();
   const { amountWei: triggerPrice } = useTriggerPrice();
-  const typedLimitPrice = useTwapStore((s) => s.state.typedLimitPrice);
+  const limitPrice = useLimitPrice().amountWei;
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
-    const _stopLossError = twapSDK.getStopLossLimitPriceError(triggerPrice, typedLimitPrice, isMarketOrder, module);
-    const _takeProfitError = twapSDK.getTakeProfitLimitPriceError(triggerPrice, typedLimitPrice, isMarketOrder, module);
+    if (!typedSrcAmount || !triggerPrice) return;
+    const _stopLossError = twapSDK.getStopLossLimitPriceError(triggerPrice, limitPrice, isMarketOrder, module);
+    const _takeProfitError = twapSDK.getTakeProfitLimitPriceError(triggerPrice, limitPrice, isMarketOrder, module);
 
-    if (_stopLossError.isError) {
+    if (_stopLossError?.isError) {
       return {
-        type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_MARKET_PRICE,
+        type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
         message: t.triggerLimitPriceError,
         value: _stopLossError.value,
       };
     }
 
-    if (_takeProfitError.isError) {
+    if (_takeProfitError?.isError) {
       return {
-        type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_MARKET_PRICE,
+        type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
         message: t.triggerLimitPriceError,
         value: _takeProfitError.value,
       };
     }
 
-    if (typedLimitPrice && BN(typedLimitPrice || 0).isZero()) {
+    if (limitPrice && BN(limitPrice || 0).isZero()) {
       return {
         type: InputErrors.MISSING_LIMIT_PRICE,
-        message: t.enterLimitPrice,
-        value: typedLimitPrice || "",
+        message: t.emptyLimitPrice,
+        value: limitPrice || "",
       };
     }
-  }, [typedLimitPrice, t, triggerPrice, module]);
+  }, [limitPrice, t, triggerPrice, module, isMarketOrder, typedSrcAmount]);
 };
 
 export const useLimitPrice = () => {
   const { dstToken, marketPrice, module } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
-
+  const defaultLimitPricePercent = useDefaultLimitPricePercent();
+  const typedPercent = useTwapStore((s) => s.state.limitPricePercent);
+  const percentage = typedPercent === undefined ? defaultLimitPricePercent : typedPercent;
   return useInputWithPercentage({
     typedValue: useTwapStore((s) => s.state.typedLimitPrice),
-    percentage: useTwapStore((s) => s.state.limitPricePercent),
+    percentage,
     tokenDecimals: dstToken?.decimals,
     initialPrice: marketPrice,
     setValue: useCallback((typedLimitPrice?: string) => updateState({ typedLimitPrice }), [updateState]),
     setPercentage: useCallback(
-      (limitPricePercent?: number) => {
+      (limitPricePercent?: number | null) => {
         const result = module === Module.STOP_LOSS ? -Math.abs(limitPricePercent || 0) : Math.abs(limitPricePercent || 0);
-        updateState({ limitPricePercent: !limitPricePercent ? undefined : result });
+        updateState({ limitPricePercent: limitPricePercent === null ? null : result });
       },
       [updateState, module],
     ),
@@ -64,21 +68,18 @@ export const useLimitPrice = () => {
 };
 
 export const useLimitPricePanel = () => {
-  const { translations: t, module, srcToken, dstToken } = useTwapContext();
+  const { translations: t, module, srcToken, dstToken, marketPrice, marketPriceLoading } = useTwapContext();
   const { amountUI, onChange, onPercentageChange, usd, percentDiffFromMarketPrice, percentage } = useLimitPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const updateState = useTwapStore((s) => s.updateState);
   const { isInverted } = useInvertTrade();
   const error = useLimitPriceError();
+  const defaultLimitPricePercent = useDefaultLimitPricePercent();
 
   const reset = useCallback(() => {
     updateState({ typedLimitPrice: undefined });
-    if (module === Module.STOP_LOSS) {
-      updateState({ limitPricePercent: DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE });
-    } else {
-      updateState({ limitPricePercent: undefined });
-    }
-  }, [updateState, module]);
+    updateState({ limitPricePercent: defaultLimitPricePercent });
+  }, [updateState, module, defaultLimitPricePercent]);
 
   const tooltip = useMemo(() => {
     if (module === Module.STOP_LOSS) {
@@ -106,5 +107,6 @@ export const useLimitPricePanel = () => {
     selectedPercentage: percentage,
     isInverted,
     prefix: module === Module.STOP_LOSS ? stopLossPrefix : takeProfitPrefix,
+    isLoading: marketPriceLoading || !marketPrice,
   };
 };

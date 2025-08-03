@@ -6,9 +6,7 @@ import {
   TooltipProps,
   TWAP,
   SubmitOrderPanelProps,
-  LinkProps,
   SelectMenuProps,
-  SelectMeuItem,
   useFormatNumber,
   useLimitPriceToggle,
   useChunkSizeMessage,
@@ -35,8 +33,9 @@ import {
   useMarketPricePanel,
   useInvertTrade,
   useTriggerPriceWarning,
+  SelectMeuItem,
 } from "@orbs-network/twap-ui";
-import { Config, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 
 import { useAccount, useWalletClient } from "wagmi";
@@ -125,14 +124,6 @@ const useToken = (addressOrSymbol?: string) => {
   }, [getToken, addressOrSymbol]);
 };
 
-const Link = ({ href, children }: LinkProps) => {
-  return (
-    <a href={href} target="_blank" rel="noreferrer">
-      {children}
-    </a>
-  );
-};
-
 const SelectMenu = (props: SelectMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -148,9 +139,9 @@ const SelectMenu = (props: SelectMenuProps) => {
     handleClose();
   };
 
-  const items: MenuProps["items"] = props.items.map((it) => {
+  const items: MenuProps["items"] = props.items.map((it, index) => {
     return {
-      key: it.value,
+      key: index,
       label: it.text,
       onClick: () => handleSelect(it),
     };
@@ -246,7 +237,7 @@ const useTokens = () => {
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const { input, usd, balance, token } = useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
+  const { input, usd, balance, token, isLoading } = useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
   const { panel } = useDappContext();
   const { setSrcToken, setDstToken } = useDappStore();
 
@@ -267,12 +258,47 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         value={input.value}
         title={isSrcToken ? "From" : toTitle}
         disabled={isSrcToken ? false : true}
+        isLoading={isLoading}
       />
     </Section>
   );
 };
 
 const options = [1, 5, 10];
+
+const SELECT_DURATION_OPTIONS = [
+  {
+    text: "Hours",
+    value: TimeUnit.Hours,
+  },
+  {
+    text: "Days",
+    value: TimeUnit.Days,
+  },
+  {
+    text: "Months",
+    value: TimeUnit.Months,
+  },
+];
+
+const DURATION_OPTIONS = [
+  {
+    text: "1 Day",
+    unit: TimeUnit.Days,
+    value: 1,
+  },
+
+  {
+    text: "1 Week",
+    unit: TimeUnit.Days,
+    value: 7,
+  },
+  {
+    text: "1 Month",
+    unit: TimeUnit.Days,
+    value: 30,
+  },
+];
 
 const PercentageButton = ({ onClick, children, selected }: { onClick: () => void; children: React.ReactNode; selected: boolean }) => {
   return (
@@ -361,52 +387,21 @@ const Label = ({ label, tooltip }: { label: string; tooltip?: string }) => {
   );
 };
 
-const OrderDuration = () => {
-  const { title, tooltip, duration, onUnitSelect, onInputChange } = useDurationPanel();
-
-  const selected = DEFAULT_DURATION_OPTIONS.find((it) => it.value === duration.unit);
-
-  return (
-    <Section className="order-delay twap-input-panel">
-      <Label label={title} tooltip={tooltip} />
-      <div className="flex flex-row gap-2 items-center justify-between">
-        <NumberInput onChange={onInputChange} value={duration.value} />
-        <SelectMenu items={DEFAULT_DURATION_OPTIONS} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
-      </div>
-    </Section>
-  );
-};
-export const TRIGGER_PRICE_DURATION_OPTIONS: { text: string; unit: TimeUnit; value: number }[] = [
-  {
-    text: "1 Day",
-    unit: TimeUnit.Days,
-    value: 1,
-  },
-  {
-    text: "1 Week",
-    unit: TimeUnit.Days,
-    value: 7,
-  },
-  {
-    text: "1 Month",
-    unit: TimeUnit.Days,
-    value: 30,
-  },
-];
-
-const TriggerPriceDuration = () => {
+const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) => {
   const { title, tooltip, duration, onUnitSelect, onInputChange, setDuration } = useDurationPanel();
   const [isCustom, setIsCustom] = useState(false);
 
   const onCustomChange = useCallback(
     (value: boolean) => {
-      setDuration({ unit: TimeUnit.Days, value: 7 });
       setIsCustom(value);
+      setDuration(defaultDuration);
     },
-    [setDuration, isCustom],
+    [setDuration, isCustom, defaultDuration],
   );
 
-  const selected = DEFAULT_DURATION_OPTIONS.find((it) => it.value === duration.unit);
+  const customSelected = SELECT_DURATION_OPTIONS.find((it) => {
+    return it.value === duration.unit;
+  });
 
   return (
     <Section className="order-delay twap-input-panel">
@@ -419,13 +414,13 @@ const TriggerPriceDuration = () => {
       </div>
       {isCustom ? (
         <div className="flex flex-row gap-2 items-center justify-between">
-          <NumberInput onChange={onInputChange} value={duration.value} />
-          <SelectMenu items={DEFAULT_DURATION_OPTIONS} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
+          <NumberInput onChange={onInputChange} value={duration.value} className="text-[18px]" />
+          <SelectMenu items={SELECT_DURATION_OPTIONS} selected={customSelected} onSelect={(item) => onUnitSelect(Number(item.value))} />
         </div>
       ) : (
         <div className="flex flex-row gap-2 items-center justify-end">
-          {TRIGGER_PRICE_DURATION_OPTIONS.map((it) => {
-            const selected = it.value === duration.value;
+          {DURATION_OPTIONS.map((it) => {
+            const selected = it.unit * it.value === duration.unit * duration.value;
             return (
               <PercentageButton
                 selected={selected}
@@ -433,7 +428,7 @@ const TriggerPriceDuration = () => {
                 onClick={() =>
                   setDuration({
                     unit: it.unit,
-                    value: it.value,
+                    value: it.value || 1,
                   })
                 }
               >
@@ -496,54 +491,72 @@ const MarketPriceDisplay = () => {
   );
 };
 
-const PercentageInput = ({ value, onChange, prefix }: { value: string; onChange: (value: string) => void; prefix?: string }) => {
+const PercentageInput = ({ value, onChange, prefix, isLoading }: { value: string; onChange: (value: string) => void; prefix?: string; isLoading?: boolean }) => {
   return (
     <NumberInput
       maxValue={100}
       prefix={prefix}
       onChange={onChange}
       value={value}
-      className="max-w-[110px] text-center rounded-[14px] text-[20px] ml-auto"
+      className="max-w-[110px]  ml-auto rounded-xl justify-center"
+      inputClassName="text-center  text-[18px]"
       suffix="%"
       placeholder={prefix ? `${prefix}0%` : "0%"}
+      loading={isLoading}
     />
   );
 };
 
-const SymbolInput = ({ token, onChange, value }: { token?: Token; onChange: (value: string) => void; value: string }) => {
+const SymbolInput = ({ token, onChange, value, error, isLoading }: { token?: Token; onChange: (value: string) => void; value: string; error?: boolean; isLoading?: boolean }) => {
   const usd = useUSD(token?.address);
 
   const totalUsd = !usd ? 0 : BN(usd).multipliedBy(value).toString();
   return (
-    <div className="flex flex-row gap-1 justify-between items-center  bg-[rgba(255,255,255,0.05)] rounded-[12px] px-4 py-2 flex-1">
-      <p className="text-[18px] text-white font-bold">{token?.symbol}</p>
-      <div className="flex flex-col items-end gap-1 w-full">
-        <NumberInput onChange={onChange} value={value} className="bg-transparent text-right text-[17px] pt-0 pb-0 w-full" />
-        <p className="text-[12px] text-gray-500">{abbreviate(totalUsd)} USD</p>
+    <div
+      className={clsx(
+        "flex flex-row gap-1 justify-between items-center  bg-[rgba(255,255,255,0.05)] rounded-[12px] border border-solid px-3 py-2 flex-1",
+        error ? "border-[#FF0000]" : "border-transparent",
+      )}
+    >
+      <p className="text-[14px] text-white font-medium">{token?.symbol}</p>
+      <div className="flex flex-col items-end gap-0 w-full">
+        <NumberInput
+          loading={isLoading}
+          onChange={onChange}
+          value={value}
+          className="bg-transparent text-[18px] pt-0 pb-0 w-full rounded-none justify-end pr-0"
+          inputClassName="text-right"
+          error={error}
+        />
+        <p className="text-[12px] text-gray-500">${abbreviate(totalUsd)}</p>
       </div>
     </div>
   );
 };
 
+const ResetButton = ({ onClick, text }: { onClick: () => void; text: string }) => {
+  return (
+    <div onClick={onClick} className="text-sm text-white cursor-pointer opacity-80 hover:opacity-100">
+      {text}
+    </div>
+  );
+};
+
 const TriggerLimitPrice = () => {
-  const { price, dstToken, onReset, prefix, marketDiffPercentage, onChange, onPercentageChange } = useLimitPricePanel();
+  const { price, dstToken, onReset, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, error } = useLimitPricePanel();
   const { isMarketOrder } = useLimitPriceToggle();
   const triggerPriceWarning = useTriggerPriceWarning();
 
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <div className="flex flex-row gap-4 justify-between items-center flex-1">
         <TriggerPriceToggle />
-        {!isMarketOrder && (
-          <div onClick={onReset} className="text-sm text-white cursor-pointer opacity-80">
-            set to default
-          </div>
-        )}
+        {!isMarketOrder && <ResetButton onClick={onReset} text="set to default" />}
       </div>
       {!isMarketOrder ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1">
-          <SymbolInput token={dstToken} onChange={onChange} value={price} />
-          <PercentageInput prefix={prefix} onChange={(value) => onPercentageChange(Number(value))} value={marketDiffPercentage?.toString() || ""} />
+          <SymbolInput isLoading={isLoading} error={Boolean(error)} token={dstToken} onChange={onChange} value={price} />
+          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={(value) => onPercentageChange(Number(value))} value={marketDiffPercentage?.toString() || ""} />
         </div>
       ) : triggerPriceWarning ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1 bg-[rgba(255,255,255,0.02)] rounded-[12px] px-2 py-2">
@@ -556,12 +569,12 @@ const TriggerLimitPrice = () => {
           </p>
         </div>
       ) : null}
-    </>
+    </div>
   );
 };
 
 const TriggerPrice = () => {
-  const { price, srcToken, dstToken, onReset, prefix, marketDiffPercentage, onChange, onPercentageChange, tooltip, label } = useTriggerPricePanel();
+  const { price, srcToken, dstToken, onReset, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error } = useTriggerPricePanel();
   const { onInvert, isInverted } = useInvertTrade();
 
   return (
@@ -577,14 +590,11 @@ const TriggerPrice = () => {
       <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
         <div className="flex flex-row gap-2 justify-between items-center w-full">
           <Label label={label} tooltip={tooltip} />
-
-          <p onClick={onReset} className="text-sm text-white cursor-pointer opacity-80">
-            set market rate
-          </p>
+          <ResetButton onClick={onReset} text="set market rate" />
         </div>
         <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
-          <SymbolInput token={dstToken} onChange={onChange} value={price} />
-          <PercentageInput prefix={prefix} onChange={(value) => onPercentageChange(Number(value))} value={marketDiffPercentage?.toString() || ""} />
+          <SymbolInput isLoading={isLoading} error={Boolean(error)} token={dstToken} onChange={onChange} value={price} />
+          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={(value) => onPercentageChange(Number(value))} value={marketDiffPercentage?.toString() || ""} />
         </div>
       </div>
       <TriggerLimitPrice />
@@ -599,7 +609,7 @@ const TradeAmount = ({ className }: { className?: string }) => {
     <Section className={clsx(`trade-amount twap-input-panel ${className}`)}>
       <Label label={label} tooltip={tooltip} />
       <div className="flex flex-row gap-2 items-center justify-between bg-[rgba(255,255,255,0.05)] rounded-[12px] px-2 py-0 h-[40px]">
-        <NumberInput onChange={(value) => onChange(Number(value))} value={trades} className="bg-transparent" />
+        <NumberInput onChange={(value) => onChange(Number(value))} value={trades} className="bg-transparent flex-1" />
         <Typography>Orders</Typography>
       </div>
     </Section>
@@ -628,10 +638,10 @@ const WarningMessage = () => {
   const { panel } = useDappContext();
   if (panel === Module.STOP_LOSS || panel === Module.TAKE_PROFIT) return null;
   return (
-    <Flex style={{ width: "100%" }} justify="center" gap={10}>
+    <div className="flex flex-row gap-2 items-start justify-center w-full  bg-[rgba(255,255,255,0.1)] rounded-[12px] px-3 py-2">
       <RiErrorWarningLine style={{ color: "white", width: 16, height: 16, position: "relative", top: 2 }} />
-      <Typography style={{ flex: 1 }}>{text}</Typography>
-    </Flex>
+      <p className="text-[13px] text-white opacity-80 flex-1 leading-[18px]">{text}</p>
+    </div>
   );
 };
 
@@ -650,6 +660,8 @@ const PoweredByOrbs = () => {
   );
 };
 
+const DEFAULT_LIMIT_DURATION = { unit: TimeUnit.Days, value: 7 };
+const DEFAULT_TRIGGER_PRICE_DURATION = { unit: TimeUnit.Days, value: 30 };
 const PanelInputs = () => {
   const { panel } = useDappContext();
 
@@ -657,20 +669,20 @@ const PanelInputs = () => {
     return (
       <div className="flex flex-row gap-[10px] items-stretch justify-between w-full">
         <FillDelay className="flex-1" />
-        <TradeAmount className="w-[40%]" />
+        <TradeAmount className="max-w-[40%]" />
       </div>
     );
   }
 
   if (panel === Module.LIMIT) {
-    return <OrderDuration />;
+    return <OrderDuration defaultDuration={DEFAULT_LIMIT_DURATION} />;
   }
 
   if (panel === Module.STOP_LOSS || panel === Module.TAKE_PROFIT) {
     return (
       <>
         <TriggerPrice />
-        <TriggerPriceDuration />
+        <OrderDuration defaultDuration={DEFAULT_TRIGGER_PRICE_DURATION} />
       </>
     );
   }
@@ -684,10 +696,6 @@ export const Dapp = () => {
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
-  const srcUsd = useUSD(srcToken?.address);
-  const dstUsd = useUSD(dstToken?.address);
-  const srcBalance = useTokenBalance(srcToken).data?.wei;
-  const dstBalance = useTokenBalance(dstToken).data?.wei;
   const twap = panel === Module.TWAP;
 
   return (
@@ -702,10 +710,10 @@ export const Dapp = () => {
         srcToken={srcToken}
         dstToken={dstToken}
         module={panel}
-        srcUsd1Token={srcUsd}
-        dstUsd1Token={dstUsd}
-        srcBalance={srcBalance}
-        dstBalance={dstBalance}
+        srcUsd1Token={useUSD(srcToken?.address)}
+        dstUsd1Token={useUSD(dstToken?.address)}
+        srcBalance={useTokenBalance(srcToken).data?.wei}
+        dstBalance={useTokenBalance(dstToken).data?.wei}
         customMinChunkSizeUsd={5}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
         OrderHistory={{
@@ -735,9 +743,9 @@ export const Dapp = () => {
           <InputsError />
           <ConfirmationButton />
 
-          <PoweredByOrbs />
           <OrderHistory />
           <WarningMessage />
+          <PoweredByOrbs />
         </div>
       </TWAP>
     </>

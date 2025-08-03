@@ -134,7 +134,7 @@ const StopLossModuleDetails = () => {
   const { amountUI, percentDiffFromMarketPrice: triggerPricePercent } = useTriggerPrice();
   const { amountUI: limitPrice, percentDiffFromMarketPrice: limitPricePercent } = useLimitPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  if (module !== Module.STOP_LOSS) return null;
+  if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) return null;
   return (
     <>
       <OrderDetails.TriggerPrice price={amountUI} dstToken={dstToken} percentage={triggerPricePercent} />

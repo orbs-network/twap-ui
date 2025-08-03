@@ -34,10 +34,11 @@ export const useFillDelayError = () => {
 };
 
 export const useFillDelay = () => {
-  const { twapSDK, module } = useTwapContext();
+  const { twapSDK } = useTwapContext();
   const typedFillDelay = useTwapStore((s) => s.state.typedFillDelay);
   const updateState = useTwapStore((s) => s.updateState);
-  const fillDelay = useMemo(() => twapSDK.getFillDelay(module, typedFillDelay), [module, typedFillDelay, twapSDK]);
+  const fillDelay = useMemo(() => twapSDK.getFillDelay(typedFillDelay), [typedFillDelay, twapSDK]);
+
   return {
     fillDelay,
     setFillDelay: useCallback((typedFillDelay: TimeDuration) => updateState({ typedFillDelay }), [updateState]),

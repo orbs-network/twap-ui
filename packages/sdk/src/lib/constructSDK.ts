@@ -61,11 +61,11 @@ export class TwapSDK {
   getSrcTokenChunkAmount(srcAmount: string, chunks?: number) {
     return getSrcChunkAmount(srcAmount, chunks);
   }
-  getFillDelay(module: Module, typedFillDelay?: TimeDuration) {
-    return getFillDelay(module, typedFillDelay);
+  getFillDelay(typedFillDelay?: TimeDuration) {
+    return getFillDelay(typedFillDelay);
   }
-  getOrderDuration(chunks: number, fillDelay: TimeDuration, typedDuration?: TimeDuration) {
-    return getDuration(chunks, fillDelay, typedDuration);
+  getDuration(module: Module, chunks: number, fillDelay: TimeDuration, typedDuration?: TimeDuration) {
+    return getDuration(module, chunks, fillDelay, typedDuration);
   }
   getDestTokenMinAmount(srcTokenChunkAmount: string, limitPrice: string, isMarketOrder: boolean, srcTokenDecimals: number) {
     return getDestTokenMinAmount(srcTokenChunkAmount, limitPrice, isMarketOrder, srcTokenDecimals);
@@ -87,58 +87,49 @@ export class TwapSDK {
   }
 
   getStopLossPriceError(marketPrice = "", triggerPrice = "", module: Module) {
-    if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) {
+    if (module === Module.STOP_LOSS) {
       return {
-        isError: false,
-        value: triggerPrice,
+        isError: BN(triggerPrice || 0).gte(BN(marketPrice || 0)),
+        value: marketPrice,
       };
     }
-    return {
-      isError: BN(triggerPrice || 0).gte(BN(marketPrice || 0)),
-      value: marketPrice,
-    };
   }
 
   getTakeProfitPriceError(marketPrice = "", triggerPrice = "", module: Module) {
-    if (module !== Module.TAKE_PROFIT && module !== Module.STOP_LOSS) {
+    if (module === Module.TAKE_PROFIT) {
       return {
-        isError: false,
-        value: triggerPrice,
+        isError: BN(triggerPrice || 0).lte(BN(marketPrice || 0)),
+        value: marketPrice,
       };
     }
-    return {
-      isError: BN(triggerPrice || 0).lte(BN(marketPrice || 0)),
-      value: marketPrice,
-    };
   }
 
   getStopLossLimitPriceError(triggerPrice = "", limitPrice = "", isMarketOrder = false, module: Module) {
-    if (isMarketOrder || (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT)) {
+    if (!isMarketOrder && module === Module.STOP_LOSS) {
       return {
-        isError: false,
+        isError: BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
         value: triggerPrice,
       };
     }
-    return {
-      isError: BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
-      value: triggerPrice,
-    };
   }
 
   getTakeProfitLimitPriceError(triggerPrice = "", limitPrice = "", isMarketOrder = false, module: Module) {
-    if (isMarketOrder || (module !== Module.TAKE_PROFIT && module !== Module.STOP_LOSS)) {
+    if (!isMarketOrder && module === Module.TAKE_PROFIT) {
       return {
-        isError: false,
+        isError: BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
         value: triggerPrice,
       };
     }
-    return {
-      isError: BN(limitPrice || 0).lte(BN(triggerPrice || 0)),
-      value: triggerPrice,
-    };
   }
 
-  getMaxOrderDurationError(duration: TimeDuration) {
+  getMaxOrderDurationError(module: Module, duration: TimeDuration) {
+    if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
+      const max = 90 * 24 * 60 * 60 * 1000; // 3 months
+      return {
+        isError: getTimeDurationMillis(duration) > max,
+        value: max,
+      };
+    }
     return {
       isError: getTimeDurationMillis(duration) > MAX_ORDER_DURATION_MILLIS,
       value: MAX_ORDER_DURATION_MILLIS,

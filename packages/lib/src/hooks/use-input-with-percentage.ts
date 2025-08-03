@@ -17,9 +17,9 @@ export const useInputWithPercentage = ({
   typedValue?: string;
   tokenDecimals?: number;
   initialPrice?: string;
-  percentage?: number;
+  percentage?: number | null;
   setValue: (value?: string) => void;
-  setPercentage: (percentage?: number) => void;
+  setPercentage: (percentage?: number | null) => void;
 }) => {
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();
   const { isInverted } = useInvertTrade();
@@ -31,8 +31,10 @@ export const useInputWithPercentage = ({
 
     if (percentage !== undefined && initialPrice) {
       const price = BN(initialPrice);
-      const percentFactor = BN(percentage).abs().div(100);
-      const adjusted = percentage < 0 ? price.minus(price.multipliedBy(percentFactor)) : price.plus(price.multipliedBy(percentFactor));
+      const percentFactor = BN(percentage || 0)
+        .abs()
+        .div(100);
+      const adjusted = percentage && percentage < 0 ? price.minus(price.multipliedBy(percentFactor)) : price.plus(price.multipliedBy(percentFactor));
       return adjusted.decimalPlaces(0).toFixed();
     }
 
@@ -42,7 +44,7 @@ export const useInputWithPercentage = ({
   const onChange = useCallback(
     (typed?: string) => {
       setValue(typed);
-      setPercentage(undefined);
+      setPercentage(null);
     },
     [setValue, setPercentage],
   );
@@ -58,7 +60,7 @@ export const useInputWithPercentage = ({
   const percentDiffFromMarketPrice = useMemo(() => {
     if (!initialPrice || BN(initialPrice).isZero()) return undefined;
 
-    if (percentage !== undefined) {
+    if (percentage !== undefined && percentage !== null) {
       return !percentage ? undefined : percentage;
     }
 

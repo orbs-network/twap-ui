@@ -65,6 +65,7 @@ export const CurrencyInputPanel = ({
   hideBalance = false,
   hideUsd = false,
   disabled = false,
+  isLoading = false,
 }: {
   onSelect: (token: Token) => void;
   usd?: string;
@@ -76,14 +77,15 @@ export const CurrencyInputPanel = ({
   hideBalance?: boolean;
   hideUsd?: boolean;
   disabled?: boolean;
+  isLoading?: boolean;
 }) => {
   const usdF = useFormatNumber({ value: usd, decimalScale: 2 });
   const balanceF = useFormatNumber({ value: balance, decimalScale: 4 });
   return (
-    <Flex vertical gap={10} style={{ width: "100%" }}>
+    <div className="flex flex-col gap-3 w-full">
       {title && <Typography className="token-panel-title">{title}</Typography>}
       <Flex gap={10}>
-        <NumberInput onChange={onInputChange} value={value} disabled={disabled} className="flex-1" />
+        <NumberInput onChange={onInputChange} value={value} disabled={disabled} className="flex-1 text-[20px]" loading={isLoading} />
         <TokenSelectButton onSelect={onSelect} token={token} />
       </Flex>
       <Flex justify="space-between">
@@ -94,7 +96,7 @@ export const CurrencyInputPanel = ({
           </Typography>
         )}
       </Flex>
-    </Flex>
+    </div>
   );
 };
 

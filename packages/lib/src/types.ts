@@ -12,10 +12,12 @@ export interface Translations {
   orderCancelled: string;
   cancelOrderModalTitle: string;
   tradePrice: string;
+  takeProfit: string;
   stopLossLimitPriceTooltip: string;
   StopLossTriggerPriceError: string;
   TakeProfitTriggerPriceError: string;
   stopLossDurationTooltip: string;
+  emptyTriggerPrice: string;
   triggerLimitPriceError: string;
   perTrade: string;
   triggerMarketPriceDisclaimer: string;
@@ -73,7 +75,7 @@ export interface Translations {
   minFillDelayError: string;
   maxFillDelayError: string;
   outAmountLoading: string;
-  enterLimitPrice: string;
+  emptyLimitPrice: string;
   maxChunksError: string;
   minChunksError: string;
   minTradeSizeError: string;
@@ -338,8 +340,9 @@ export enum InputErrors {
   MIN_ORDER_DURATION,
   MISSING_LIMIT_PRICE,
   STOP_LOSS_TRIGGER_PRICE_GREATER_THAN_MARKET_PRICE,
-  STOP_LOSS_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
-  TRIGGER_LIMIT_PRICE_GREATER_THAN_MARKET_PRICE,
+  TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
+  TAKE_PROFIT_TRIGGER_PRICE_LESS_THAN_MARKET_PRICE,
+  EMPTY_TRIGGER_PRICE,
 }
 
 export type Callbacks = {
@@ -562,9 +565,9 @@ export interface State {
   typedDuration?: TimeDuration;
   typedLimitPrice?: string;
   typedTriggerPrice?: string;
-  triggerPricePercent?: number;
+  triggerPricePercent?: number | null;
   isInvertedTrade?: boolean;
-  limitPricePercent?: number;
+  limitPricePercent?: number | null;
   isMarketOrder?: boolean;
 
   currentTime: number;

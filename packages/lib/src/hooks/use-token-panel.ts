@@ -55,11 +55,13 @@ export const useToken = ({ isSrcToken }: { isSrcToken: boolean }) => {
 };
 
 export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { marketPriceLoading } = useTwapContext();
   return {
     balance: useTokenBalance({ isSrcToken }),
     usd: useTokenUSD({ isSrcToken }),
     input: useTokenInput({ isSrcToken }),
     token: useToken({ isSrcToken }),
     error: useBalanceError(),
+    isLoading: isSrcToken ? false : marketPriceLoading,
   };
 };

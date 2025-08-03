@@ -29,41 +29,54 @@ export const NumberInput = (props: {
   decimalScale?: number;
   minAmount?: number;
   suffix?: string;
+  error?: boolean;
+  inputClassName?: string;
 }) => {
-  const { onChange, value, placeholder, disabled, onFocus, onBlur, maxValue, prefix, decimalScale, minAmount, suffix } = props;
+  const { onChange, value, placeholder, disabled, onFocus, onBlur, maxValue, prefix, decimalScale, minAmount, suffix, error, loading, inputClassName } = props;
+
   const inputValue = value || minAmount || "";
 
   return (
-    <NumericFormat
+    <div
       className={clsx(
-        `input text-white w-full rounded-lg indent-2 text-[20px] outline-none py-2 bg-[rgba(255,255,255,0.05)] ${props.className} ${disabled ? "input-disabled" : ""}`,
+        ` text-white flex min-h-[30px] items-center px-3 text-right w-full rounded-lg  py-2 bg-[rgba(255,255,255,0.05)] ${props.className} ${
+          disabled ? "input-disabled" : ""
+        } relative ${error ? "text-[#FF0000]" : ""}`
       )}
-      allowNegative={false}
-      disabled={disabled}
-      decimalScale={decimalScale}
-      onBlur={onBlur}
-      onFocus={onFocus}
-      placeholder={placeholder || "0"}
-      max={maxValue}
-      isAllowed={(values) => {
-        const { floatValue = 0 } = values;
-        return maxValue ? floatValue <= parseFloat(maxValue.toString()) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
-      }}
-      prefix={prefix ? `${prefix} ` : ""}
-      suffix={suffix ? `${suffix} ` : ""}
-      value={disabled && value === "0" ? "" : inputValue}
-      thousandSeparator={","}
-      decimalSeparator="."
-      type="text"
-      min={minAmount}
-      onValueChange={(values, _sourceInfo) => {
-        if (_sourceInfo.source !== "event") {
-          return;
-        }
+    >
+      {loading && <div className="w-[70%] h-[22px] bg-[rgba(255,255,255,0.1)] rounded-lg animate-pulse" />}
+      {!loading && (
+        <NumericFormat
+          className={clsx("bg-transparent w-full h-full outline-none", inputClassName)}
+          allowNegative={false}
+          disabled={disabled}
+          decimalScale={decimalScale}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          placeholder={placeholder || "0"}
+          max={maxValue}
+          isAllowed={(values) => {
+            const { floatValue = 0 } = values;
+            return maxValue ? floatValue <= parseFloat(maxValue.toString()) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
+          }}
+          prefix={prefix ? `${prefix} ` : ""}
+          suffix={suffix ? `${suffix} ` : ""}
+          value={disabled && value === "0" ? "" : inputValue}
+          thousandSeparator={","}
+          decimalSeparator="."
+          type="text"
+          valueIsNumericString
+          min={minAmount}
+          onValueChange={(values, _sourceInfo) => {
+            if (_sourceInfo.source !== "event") {
+              return;
+            }
 
-        onChange(values.value === "." ? "0." : values.value);
-      }}
-    />
+            onChange(values.value === "." ? "0." : values.value);
+          }}
+        />
+      )}
+    </div>
   );
 };
 
@@ -156,7 +169,7 @@ export const ConfigSelector = () => {
       partnerSelect(config);
       onClose();
     },
-    [onClose, setConfig, switchChain, partnerSelect],
+    [onClose, setConfig, switchChain, partnerSelect]
   );
 
   const list = useMemo(() => {

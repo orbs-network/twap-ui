@@ -23,6 +23,9 @@ export const useOrderName = (isMarketOrder = false, chunks = 1) => {
     if (module === Module.STOP_LOSS) {
       return t.stopLoss;
     }
+    if (module === Module.TAKE_PROFIT) {
+      return t.takeProfit;
+    }
     if (isMarketOrder) {
       return t.twapMarket;
     }

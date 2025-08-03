@@ -9,11 +9,11 @@ import { millisToDays, millisToMinutes } from "../utils";
 import { DEFAULT_DURATION_OPTIONS } from "../twap/consts";
 
 export const useDurationError = () => {
-  const { twapSDK, translations: t } = useTwapContext();
+  const { twapSDK, translations: t, module } = useTwapContext();
   const duration = useDuration().duration;
 
   return useMemo((): InputError | undefined => {
-    const maxError = twapSDK.getMaxOrderDurationError(duration);
+    const maxError = twapSDK.getMaxOrderDurationError(module, duration);
     const minError = twapSDK.getMinOrderDurationError(duration);
 
     if (maxError.isError) {
@@ -30,16 +30,16 @@ export const useDurationError = () => {
         message: t.minDurationError.replace("{duration}", `${Math.floor(millisToMinutes(minError.value)).toFixed(0)} ${t.minutes}`),
       };
     }
-  }, [duration, twapSDK, t]);
+  }, [duration, twapSDK, t, module]);
 };
 
 export const useDuration = () => {
-  const { twapSDK } = useTwapContext();
+  const { twapSDK, module } = useTwapContext();
   const { chunks } = useChunks();
   const { fillDelay } = useFillDelay();
   const typedDuration = useTwapStore((s) => s.state.typedDuration);
   const updateState = useTwapStore((s) => s.updateState);
-  const duration = useMemo(() => twapSDK.getOrderDuration(chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, twapSDK]);
+  const duration = useMemo(() => twapSDK.getDuration(module, chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, twapSDK, module]);
 
   return {
     duration,

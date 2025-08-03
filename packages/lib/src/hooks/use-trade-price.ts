@@ -14,7 +14,7 @@ export const useTradePrice = () => {
     return limitPrice || "";
   }
 
-  if (module === Module.STOP_LOSS) {
+  if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
     return triggerPrice || "";
   }
 

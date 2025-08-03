@@ -20,11 +20,23 @@ export const getDestTokenMinAmount = (srcChunkAmount?: string, limitPrice?: stri
   return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0);
 };
 
-export const getDuration = (chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
+export const getDuration = (module: Module, chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
   const minDuration = getTimeDurationMillis(fillDelay) * 2 * chunks;
   const unit = findTimeUnit(minDuration);
 
-  return customDuration || { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
+  if (customDuration) {
+    return customDuration;
+  }
+
+  if (module === Module.LIMIT) {
+    return { unit: TimeUnit.Days, value: 7 } as TimeDuration;
+  }
+
+  if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
+    return { unit: TimeUnit.Days, value: 30 } as TimeDuration;
+  }
+
+  return { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
 };
 
 export const getChunks = (maxPossibleChunks: number, module: Module, typedChunks?: number) => {
@@ -42,9 +54,12 @@ export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, on
   return res > 1 ? res : 1;
 };
 
-export const getFillDelay = (module: Module, customFillDelay?: TimeDuration) => {
-  if (module === Module.STOP_LOSS || module === Module.LIMIT || !customFillDelay) return DEFAULT_FILL_DELAY;
-  return customFillDelay;
+export const getFillDelay = (customFillDelay?: TimeDuration) => {
+  if (customFillDelay) {
+    return customFillDelay;
+  }
+
+  return DEFAULT_FILL_DELAY;
 };
 
 export const getMinimumDelayMinutes = (config: Config) => {
@@ -53,6 +68,7 @@ export const getMinimumDelayMinutes = (config: Config) => {
 
 export const getDeadline = (currentTimeMillis: number, duration: TimeDuration) => {
   const minute = 60_000;
+
   return currentTimeMillis + getTimeDurationMillis(duration) + minute;
 };
 

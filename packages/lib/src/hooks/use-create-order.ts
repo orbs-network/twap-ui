@@ -75,6 +75,9 @@ export const useCreateOrder = () => {
 
       callbacks.onRequest(orderSubmissionArgs.params);
       const typedDataMessage = _TypedDataEncoder.getPayload(permitData.domain, permitData.types, permitData.message);
+      // console.log({permitData});
+
+      console.log({ typedDataMessage });
 
       const signature = await walletClient?.signTypedData({
         account: account as `0x${string}`,

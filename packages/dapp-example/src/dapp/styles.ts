@@ -246,9 +246,6 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     ".twap-limit-price-panel-body": {
       display: "flex",
       gap: 5,
-      ".twap-input": {
-        flex: 1,
-      },
     },
     ".twap-panel-content": {
       display: "flex",
@@ -267,30 +264,16 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       display: "flex",
       flexDirection: "column",
       gap: 5,
-      ".twap-input": {
-        input: {
-          fontSize: 34,
-        },
-      },
     },
 
     ".order-delay": {
       flex: 1,
     },
-    ".twap-input-panel": {
-      input: {
-        fontSize: 18,
-      },
-    },
+
     ".twap-token-panel": {
       display: "flex",
       flexDirection: "column",
       gap: 10,
-      ".twap-input": {
-        input: {
-          fontSize: 34,
-        },
-      },
     },
     ".twap-token-panel-usd": {
       color: colors.text.dark,
