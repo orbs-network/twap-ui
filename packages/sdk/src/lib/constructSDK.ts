@@ -8,12 +8,14 @@ import {
   getSrcChunkAmount,
   getFillDelay,
   getDuration,
-  getDestTokenMinAmount,
   getDestTokenAmount,
   getAskParams,
   DEFAULT_FILL_DELAY,
+  getDestTokenMinAmountPerChunk,
+  getTriggerPricePerChunk,
 } from "./lib";
 import { getOrders } from "./orders";
+import { submitOrder } from "./submit-order";
 import { Config, getAskParamsProps, Module, TimeDuration } from "./types";
 import { getTimeDurationMillis } from "./utils";
 import BN from "bignumber.js";
@@ -52,6 +54,9 @@ export class TwapSDK {
   getAskParams(props: getAskParamsProps) {
     return getAskParams(this.config, props);
   }
+  submitOrder(signedOrder: string) {
+    return submitOrder(signedOrder);
+  }
   getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) {
     return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);
   }
@@ -67,9 +72,13 @@ export class TwapSDK {
   getDuration(module: Module, chunks: number, fillDelay: TimeDuration, typedDuration?: TimeDuration) {
     return getDuration(module, chunks, fillDelay, typedDuration);
   }
-  getDestTokenMinAmount(srcTokenChunkAmount: string, limitPrice: string, isMarketOrder: boolean, srcTokenDecimals: number) {
-    return getDestTokenMinAmount(srcTokenChunkAmount, limitPrice, isMarketOrder, srcTokenDecimals);
+  getDestTokenMinAmountPerChunk(srcTokenChunkAmount: string, limitPrice: string, isMarketOrder: boolean, srcTokenDecimals: number) {
+    return getDestTokenMinAmountPerChunk(srcTokenChunkAmount, limitPrice, isMarketOrder, srcTokenDecimals);
   }
+  getTriggerPricePerChunk(srcChunkAmount: string, triggerPrice: string, srcTokenDecimals: number) {
+    return getTriggerPricePerChunk(srcChunkAmount, triggerPrice, srcTokenDecimals);
+  }
+
   getDestTokenAmount(srcAmount: string, limitPrice: string, srcTokenDecimals: number) {
     return getDestTokenAmount(srcAmount, limitPrice, srcTokenDecimals);
   }

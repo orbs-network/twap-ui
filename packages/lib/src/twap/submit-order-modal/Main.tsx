@@ -7,7 +7,7 @@ import { useChunks } from "../../hooks/use-chunks";
 import { useFillDelay } from "../../hooks/use-fill-delay";
 import { useAmountUi, useUsdAmount } from "../../hooks/helper-hooks";
 import { useOrderType } from "../../hooks/order-hooks";
-import { useDstMinAmount } from "../../hooks/use-dst-min-amount-out";
+import { useDstMinAmountPerChunk } from "../../hooks/use-dst-min-amount-out-per-chunk";
 import { useDeadline } from "../../hooks/use-deadline";
 import { useSrcChunkAmount } from "../../hooks/use-src-chunk-amount";
 import { useFees } from "../../hooks/use-fees";
@@ -50,7 +50,7 @@ export const Main = () => {
   const fee = useFees();
   const chunks = useChunks().chunks;
   const { fillDelay } = useFillDelay();
-  const dstMinAmountOut = useDstMinAmount().amountUI;
+  const dstMinAmountOut = useDstMinAmountPerChunk().amountUI;
   const deadline = useDeadline();
   const tradePrice = useTradePrice();
   const srcChunkAmount = useSrcChunkAmount().amountUI;
@@ -116,7 +116,7 @@ const Details = () => {
 const LimitModuleDetails = () => {
   const deadline = useDeadline();
   const { module, dstToken } = useTwapContext();
-  const minAmountOut = useDstMinAmount().amountUI;
+  const minAmountOut = useDstMinAmountPerChunk().amountUI;
   if (module !== Module.LIMIT) return null;
 
   return (
@@ -150,7 +150,7 @@ const TwapModuleDetails = () => {
   const srcChunkAmount = useSrcChunkAmount().amountUI;
   const deadline = useDeadline();
 
-  const dstMinAmountOut = useDstMinAmount().amountUI;
+  const dstMinAmountOut = useDstMinAmountPerChunk().amountUI;
   const { fillDelay } = useFillDelay();
   const fillDelayMillis = fillDelay.unit * fillDelay.value;
   const chunks = useChunks().chunks;

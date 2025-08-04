@@ -2,7 +2,6 @@ import { SwapStatus } from "@orbs-network/swap-ui";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
-import { maxUint256 } from "viem";
 import { useTwapContext } from "../context";
 import { Steps } from "../types";
 import { useTwapStore } from "../useTwapStore";
@@ -14,14 +13,13 @@ import { useSrcAmount } from "./use-src-amount";
 import { useHasAllowanceCallback } from "./use-has-allowance";
 
 export const useSubmitOnChainOrder = () => {
-  const { srcToken, dstToken, isExactAppoval, chainId } = useTwapContext();
+  const { srcToken, dstToken, chainId } = useTwapContext();
   const { mutateAsync: getHasAllowance } = useHasAllowanceCallback();
   const updateState = useTwapStore((s) => s.updateState);
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
   const srcAmount = useSrcAmount().amountWei;
-  const approvalAmount = isExactAppoval ? srcAmount : maxUint256.toString();
 
   const wrappedRef = useRef(false);
   return useMutation(async () => {
@@ -47,7 +45,7 @@ export const useSubmitOnChainOrder = () => {
 
       if (!haveAllowance) {
         updateState({ activeStep: Steps.APPROVE });
-        await approve({ token: ensureWrappedToken(srcToken, chainId), amount: approvalAmount });
+        await approve(ensureWrappedToken(srcToken, chainId));
         // make sure the allowance was set
         if (!(await ensureAllowance())) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");

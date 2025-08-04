@@ -101,10 +101,15 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
       ".popup-content": {
         flex: 1,
       },
+      ".ant-modal-close-x": {
+        color: "white",
+        svg: {
+          color: "white",
+        },
+      },
       ".popup-header": {
         position: "sticky",
         top: 0,
-        padding: "10px 10px",
         background: "rgb(19, 19, 19)",
         zIndex: 1,
         display: "flex",

@@ -13,6 +13,7 @@ export const useTriggerPriceError = () => {
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
     if (!typedSrcAmount || !marketPrice) return;
+    if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) return;
     const stopLossError = twapSDK.getStopLossPriceError(marketPrice || "", triggerPrice || "", module);
     if (stopLossError?.isError) {
       return {
@@ -59,12 +60,13 @@ export const useTriggerPrice = () => {
   );
 
   const percentage = typedPercent === undefined ? defaultTriggerPricePercent : typedPercent;
+  const enabled = module === Module.STOP_LOSS || module === Module.TAKE_PROFIT;
 
   return useInputWithPercentage({
     typedValue: useTwapStore((s) => s.state.typedTriggerPrice),
     percentage,
     tokenDecimals: dstToken?.decimals,
-    initialPrice: marketPrice,
+    initialPrice: enabled ? marketPrice : undefined,
     setValue: useCallback((typedTriggerPrice?: string) => updateState({ typedTriggerPrice }), [updateState]),
     setPercentage,
   });

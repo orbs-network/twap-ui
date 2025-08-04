@@ -437,7 +437,6 @@ export interface TwapProps {
   dstUsd1Token?: string;
   srcBalance?: string;
   dstBalance?: string;
-  isExactAppoval?: boolean;
   children?: React.ReactNode;
   components?: Components;
   SubmitOrderPanel: FC<SubmitOrderPanelProps>;

@@ -12,9 +12,17 @@ export const getDestTokenAmount = (srcAmount?: string, limitPrice?: string, srcT
   return result.div(decimalAdjustment).toFixed(0);
 };
 
-export const getDestTokenMinAmount = (srcChunkAmount?: string, limitPrice?: string, isMarketOrder?: boolean, srcTokenDecimals?: number) => {
-  if (isMarketOrder || !srcTokenDecimals || !srcChunkAmount || !limitPrice) return BN(1).toString();
+export const getDestTokenMinAmountPerChunk = (srcChunkAmount?: string, limitPrice?: string, isMarketOrder?: boolean, srcTokenDecimals?: number) => {
+  if (isMarketOrder || !srcTokenDecimals || !srcChunkAmount || !limitPrice) return BN(0).toString();
   const result = BN(srcChunkAmount).times(BN(limitPrice));
+  const decimalAdjustment = BN(10).pow(srcTokenDecimals);
+  const adjustedResult = result.div(decimalAdjustment);
+  return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0);
+};
+
+export const getTriggerPricePerChunk = (srcChunkAmount?: string, triggerPrice?: string, srcTokenDecimals?: number) => {
+  if (!srcTokenDecimals || !srcChunkAmount || !triggerPrice) return;
+  const result = BN(srcChunkAmount).times(BN(triggerPrice));
   const decimalAdjustment = BN(10).pow(srcTokenDecimals);
   const adjustedResult = result.div(decimalAdjustment);
   return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0);

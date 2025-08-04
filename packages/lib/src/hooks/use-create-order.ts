@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Abi, TransactionReceipt } from "viem";
+import { Abi, getTypesForEIP712Domain, serializeTypedData, TransactionReceipt, validateTypedData } from "viem";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderIdFromCreateOrderEvent } from "../utils";
@@ -56,11 +56,10 @@ const useCallbacks = () => {
 };
 
 export const useCreateOrder = () => {
-  const { account, walletClient, publicClient, chainId, dstToken } = useTwapContext();
+  const { account, walletClient, publicClient, chainId, dstToken, twapSDK } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
   const orderSubmissionArgs = useOrderSubmissionArgs();
-  const getTransactionReceipt = useGetTransactionReceipt();
   const permitData = usePermitData();
 
   return useMutation(async (srcToken: Token) => {
@@ -73,11 +72,12 @@ export const useCreateOrder = () => {
       if (!permitData) throw new Error("permit is not defined");
       if (!orderSubmissionArgs?.params) throw new Error("failed to get params for ask method");
 
-      callbacks.onRequest(orderSubmissionArgs.params);
+      // callbacks.onRequest(orderSubmissionArgs.params);
       const typedDataMessage = _TypedDataEncoder.getPayload(permitData.domain, permitData.types, permitData.message);
-      // console.log({permitData});
 
       console.log({ typedDataMessage });
+
+      logData(typedDataMessage);
 
       const signature = await walletClient?.signTypedData({
         account: account as `0x${string}`,
@@ -86,7 +86,9 @@ export const useCreateOrder = () => {
         message: typedDataMessage.message,
         domain: typedDataMessage.domain,
       });
-
+      console.log({ signature });
+      const response = await twapSDK.submitOrder(signature);
+      console.log({ response });
       updateState({ createOrderTxHash: "" });
 
       // const receipt = await getTransactionReceipt("");
@@ -111,4 +113,18 @@ export const useCreateOrder = () => {
       throw error;
     }
   });
+};
+
+const logData = (parameters: any) => {
+  const types = {
+    EIP712Domain: getTypesForEIP712Domain({ domain: parameters.domain }),
+    ...parameters.types,
+  };
+
+  // Need to do a runtime validation check on addresses, byte ranges, integer ranges, etc
+  // as we can't statically check this with TypeScript.
+  validateTypedData({ domain: parameters.domain, message: parameters.message, primaryType: parameters.primaryType, types });
+
+  const typedData = serializeTypedData({ domain: parameters.domain, message: parameters.message, primaryType: parameters.primaryType, types });
+  console.log({ serializeTypedData: typedData });
 };

@@ -41,7 +41,7 @@ export const NumberInput = (props: {
       className={clsx(
         ` text-white flex min-h-[30px] items-center px-3 text-right w-full rounded-lg  py-2 bg-[rgba(255,255,255,0.05)] ${props.className} ${
           disabled ? "input-disabled" : ""
-        } relative ${error ? "text-[#FF0000]" : ""}`
+        } relative ${error ? "text-[#FF0000]" : ""}`,
       )}
     >
       {loading && <div className="w-[70%] h-[22px] bg-[rgba(255,255,255,0.1)] rounded-lg animate-pulse" />}
@@ -80,7 +80,19 @@ export const NumberInput = (props: {
   );
 };
 
-export const Popup = ({ isOpen, onClose, children, className = "", title }: { isOpen: boolean; onClose: () => void; children: ReactNode; className?: string; title?: string }) => {
+export const Popup = ({
+  isOpen,
+  onClose,
+  children,
+  className = "",
+  title,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  className?: string;
+  title?: ReactNode;
+}) => {
   return (
     <Modal
       centered={true}
@@ -88,7 +100,7 @@ export const Popup = ({ isOpen, onClose, children, className = "", title }: { is
       onCancel={onClose}
       footer={null}
       classNames={{
-        content: `popup-main ${className}`,
+        content: `popup-main ${className} text-white`,
       }}
       styles={{
         content: {
@@ -96,8 +108,8 @@ export const Popup = ({ isOpen, onClose, children, className = "", title }: { is
         },
       }}
     >
-      <div className="popup-header">{title && <h2>{title}</h2>}</div>
-      <div className="popup-content">{children}</div>
+      <div className="popup-header text-[20px] pb-2 text-white">{title && title}</div>
+      <div className="popup-content text-white">{children}</div>
     </Modal>
   );
 };
@@ -169,7 +181,7 @@ export const ConfigSelector = () => {
       partnerSelect(config);
       onClose();
     },
-    [onClose, setConfig, switchChain, partnerSelect]
+    [onClose, setConfig, switchChain, partnerSelect],
   );
 
   const list = useMemo(() => {
@@ -181,7 +193,7 @@ export const ConfigSelector = () => {
 
   return (
     <>
-      <button className="config-select-button" onClick={onOpen}>
+      <button className="config-select-button px-4" onClick={onOpen}>
         <p>
           {config.name} <small>{`(${network?.shortname})`}</small>
         </p>
@@ -197,7 +209,16 @@ export const ConfigSelector = () => {
           ></path>
         </svg>
       </button>
-      <Popup title="Partner select" isOpen={isOpen} onClose={onClose} className="config-select-popup">
+      <Popup
+        title={
+          <div className="flex items-center gap-2">
+            Partner select <small className="text-[14px] text-white/50">{`(${Object.values(Configs).length})`}</small>
+          </div>
+        }
+        isOpen={isOpen}
+        onClose={onClose}
+        className="config-select-popup"
+      >
         <div className="config-select-content">
           <input value={filter} onChange={(e) => setFilter(e.target.value)} className="token-select-input" placeholder="Search..." />
           <div className="config-select-list">

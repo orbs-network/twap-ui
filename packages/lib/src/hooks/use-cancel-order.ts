@@ -1,5 +1,5 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { Order, TwapAbi } from "@orbs-network/twap-sdk";
+import { Order, REPERMIT_ADDRESS, RePermitAbi, TwapAbi } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { Abi } from "viem";
 import { useTwapContext } from "../context";
@@ -34,10 +34,10 @@ const useCancelOrderMutation = () => {
       } else {
         hash = await walletClient.writeContract({
           account: account as `0x${string}`,
-          address: order.twapAddress as `0x${string}`,
-          abi: TwapAbi,
+          address: REPERMIT_ADDRESS as `0x${string}`,
+          abi: RePermitAbi,
           functionName: "cancel",
-          args: [order.id],
+          args: [order.id], // pass nonce, that is part of the order
           chain: walletClient.chain,
         });
       }

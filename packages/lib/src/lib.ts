@@ -1,7 +1,6 @@
 import { createPublicClient, createWalletClient, custom, defineChain, erc20Abi, http } from "viem";
 import { Provider, PublicClient, WalletClient } from "./types";
 import * as chains from "viem/chains";
-import { Order, TwapAbi } from "@orbs-network/twap-sdk";
 
 export const REFETCH_ORDER_HISTORY = 40_000;
 const katana: chains.Chain = defineChain({
@@ -58,23 +57,4 @@ export const initiateWallet = (chainId?: number, provider?: Provider) => {
     walletClient: walletClient as WalletClient | undefined,
     publicClient: publicClient as PublicClient | undefined,
   };
-};
-
-export const getOrderStatuses = async (publicClient: PublicClient, orders: Order[]) => {
-  const multicallResponse = await publicClient.multicall({
-    contracts: orders.map((order) => {
-      return {
-        abi: TwapAbi as any,
-        address: order.twapAddress as `0x${string}`,
-        functionName: "status",
-        args: [order.id],
-      };
-    }),
-  });
-
-  return multicallResponse
-    .map((it) => {
-      return it.result as number;
-    })
-    .filter((it) => it !== undefined);
 };

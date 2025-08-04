@@ -7,6 +7,7 @@ import _ from "lodash";
 import { useAccount, usePublicClient, useReadContracts } from "wagmi";
 import { api } from "./api";
 import { erc20Abi } from "viem";
+import { useDappContext } from "./context";
 
 type Balance = {
   ui: string;
@@ -14,17 +15,17 @@ type Balance = {
 };
 
 const useGetTokens = () => {
-  const chainId = useAccount()?.chainId;
-  const { address: account } = useAccount();
+  const chainId = useDappContext().config.chainId;
   const { data: cronosZkEvm } = useCronosEvmTokens();
   const isCronosEvm = chainId === Configs.H2Finance.chainId;
 
   const query = useQuery<Token[]>(
     ["useGetTokens", chainId],
     async ({ signal }) => {
-      return api.getTokens(chainId!, signal);
+      const result = await api.getTokens(chainId!, signal);
+      return result;
     },
-    { enabled: !!account && !isCronosEvm, staleTime: Infinity },
+    { enabled: !isCronosEvm, staleTime: Infinity },
   );
 
   return {
@@ -232,7 +233,7 @@ export const useCronosEvmTokens = () => {
 };
 
 export const usePriceUSD = (address?: string) => {
-  const { chainId } = useAccount();
+  const chainId = useDappContext().config.chainId;
   const wToken = getNetwork(chainId)?.wToken.address;
   const { data: cronosZkEvm } = useCronosEvmTokens();
 

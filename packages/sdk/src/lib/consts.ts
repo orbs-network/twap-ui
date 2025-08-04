@@ -1,6 +1,7 @@
 import Configs from "@orbs-network/twap/configs.json";
 import { networks } from "./networks";
 import { Config } from "./types";
+export const API_ENDPOINT = "http://52.14.159.163:8081";
 
 export const SUGGEST_CHUNK_VALUE = 100;
 
@@ -63,3 +64,8 @@ export const LEGACY_EXCHANGES_MAP: Record<string, string[]> = {
   [getPartnerIdentifier(Configs.SpookySwap)]: ["0x3924d62219483015f982b160d48c0fa5Fd436Cba"],
   [getPartnerIdentifier(Configs.SwapX)]: ["0xE5012eBDe5e26EE3Ea41992154731a03023CF274"],
 };
+
+export const REPERMIT_ADDRESS = "0xbBa2344A886D66f43AC0E9ed980Cc14c82715aEC";
+export const REACTOR_ADDRESS = "0xc19E284C8f5ccef721a761d0CA18dc8E9a612aFd";
+export const EXECUTOR_ADDRESS = "0x9B350b26B82F3c088e1C0C345a904ee5EB655E15";
+export const EXCLUSIVITY_OVERRIDE_BPS = "0";

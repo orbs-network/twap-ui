@@ -12,8 +12,8 @@ import { useFillDelay } from "./use-fill-delay";
 import { useChunks } from "./use-chunks";
 import { useUsdAmount } from "./helper-hooks";
 import { useDstAmount } from "./use-dst-amount";
-import { useDstMinAmount } from "./use-dst-min-amount-out";
 import { useFees } from "./use-fees";
+import { useDstMinAmountPerChunk } from "./use-dst-min-amount-out-per-chunk";
 
 export const useOnOpenConfirmationModal = () => {
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
@@ -54,7 +54,7 @@ export const useConfirmationPanel = () => {
   const srcChunkAmount = useSrcChunkAmount().amountUI;
   const chunks = useChunks().chunks;
   const { fillDelay } = useFillDelay();
-  const destMinAmountOut = useDstMinAmount().amountUI;
+  const destMinAmountOut = useDstMinAmountPerChunk().amountUI;
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const fee = useFees();
   const { mutateAsync, isLoading: mutationLoading } = useSubmitOrderCallback();

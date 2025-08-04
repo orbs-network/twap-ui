@@ -3,39 +3,38 @@ import { useTwapContext } from "../context";
 import BN from "bignumber.js";
 import { useSrcAmount } from "./use-src-amount";
 import { useDeadline } from "./use-deadline";
-import { useTriggerPrice } from "./use-trigger-price";
 import { useSrcChunkAmount } from "./use-src-chunk-amount";
-import { useDstMinAmount } from "./use-dst-min-amount-out";
+import { useDstMinAmountPerChunk } from "./use-dst-min-amount-out-per-chunk";
 import { useFillDelay } from "./use-fill-delay";
-import { getEstimatedDelayBetweenChunksMillis } from "@orbs-network/twap-sdk";
-import { useNonce } from "./use-nonce";
 import { ensureWrappedToken } from "../utils";
+import moment from "moment";
+import { EXCLUSIVITY_OVERRIDE_BPS, EXECUTOR_ADDRESS, REACTOR_ADDRESS, REPERMIT_ADDRESS } from "@orbs-network/twap-sdk";
+import { maxUint256 } from "viem";
+import { useTriggerAmountPerChunk } from "./use-trigger-amount-per-chunk";
 
 export const usePermitData = () => {
-  const { srcToken, dstToken, chainId, account: recipient, twapSDK, slippage: _slippage, config } = useTwapContext();
+  const { srcToken, dstToken, chainId, account, slippage: _slippage } = useTwapContext();
   const srcAmountWei = useSrcAmount().amountWei;
-  const srcChunksAmount = useSrcChunkAmount().amountWei;
+  const srcChunkAmount = useSrcChunkAmount().amountWei;
   const deadlineMillis = useDeadline();
-  const { amountWei: triggerPrice } = useTriggerPrice();
-  const dstMinAmount = useDstMinAmount().amountWei;
+  const { amountWei: triggerAmountPerChunk } = useTriggerAmountPerChunk();
+  const dstMinAmountPerChunk = useDstMinAmountPerChunk().amountWei;
   const fillDelay = useFillDelay().fillDelay;
   const fillDelayMillis = fillDelay.unit * fillDelay.value;
-  const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(config)) / 1000;
-  const { data: _nonce } = useNonce();
+  const epoch = fillDelayMillis / 1000;
   const slippage = _slippage * 100;
-  const nonce = _nonce?.toString();
 
   return useMemo(() => {
-    if (!srcToken || !dstToken || !chainId || !recipient || !deadlineMillis || !srcAmountWei) return;
+    if (!srcToken || !dstToken || !chainId || !account || !deadlineMillis || !srcAmountWei) return;
     const deadline = BN(deadlineMillis).div(1000).toFixed(0);
     const stcTokenAddress = ensureWrappedToken(srcToken, chainId).address;
-
+    const nonce = moment().valueOf();
     return {
       domain: {
         name: "RePermit",
         version: "1",
         chainId: chainId,
-        verifyingContract: "0xbBa2344A886D66f43AC0E9ed980Cc14c82715aEC",
+        verifyingContract: REPERMIT_ADDRESS,
       },
       primaryType: "RePermitWitnessTransferFrom",
       types: {
@@ -70,6 +69,10 @@ export const usePermitData = () => {
             name: "amount",
             type: "uint256",
           },
+          {
+            name: "maxAmount",
+            type: "uint256",
+          },
         ],
         Order: [
           {
@@ -82,6 +85,14 @@ export const usePermitData = () => {
           },
           {
             name: "exclusivityOverrideBps",
+            type: "uint256",
+          },
+          {
+            name: "epoch",
+            type: "uint256",
+          },
+          {
+            name: "slippage",
             type: "uint256",
           },
           {
@@ -129,6 +140,10 @@ export const usePermitData = () => {
             type: "uint256",
           },
           {
+            name: "maxAmount",
+            type: "uint256",
+          },
+          {
             name: "recipient",
             type: "address",
           },
@@ -149,35 +164,35 @@ export const usePermitData = () => {
           token: stcTokenAddress,
           amount: srcAmountWei,
         },
-        spender: twapSDK.config.twapAddress,
+        spender: REACTOR_ADDRESS,
         nonce,
         deadline,
         witness: {
           info: {
-            reactor: "0xc19E284C8f5ccef721a761d0CA18dc8E9a612aFd",
-            swapper: recipient,
+            reactor: REACTOR_ADDRESS,
+            swapper: account,
             nonce,
             deadline,
-            additionalValidationContract: "0xbBa2344A886D66f43AC0E9ed980Cc14c82715aEC",
+            additionalValidationContract: EXECUTOR_ADDRESS,
             additionalValidationData: "0x",
           },
-          exclusiveFiller: "0xc19E284C8f5ccef721a761d0CA18dc8E9a612aFd",
-          exclusivityOverrideBps: "100",
-          epoch: fillDelaySeconds,
-          slippage: slippage,
-          trigger: triggerPrice,
+          exclusiveFiller: EXECUTOR_ADDRESS,
+          exclusivityOverrideBps: EXCLUSIVITY_OVERRIDE_BPS,
+          epoch,
+          slippage,
           input: {
             token: stcTokenAddress,
-            amount: srcChunksAmount,
+            amount: srcChunkAmount,
             maxAmount: srcAmountWei,
           },
           output: {
             token: dstToken.address,
-            amount: dstMinAmount,
-            recipient: recipient,
+            amount: dstMinAmountPerChunk,
+            maxAmount: triggerAmountPerChunk || maxUint256.toString(),
+            recipient: account,
           },
         },
       },
     };
-  }, [srcToken, dstToken, chainId, recipient, srcAmountWei, deadlineMillis, srcChunksAmount, triggerPrice, slippage, dstMinAmount, fillDelaySeconds, nonce]);
+  }, [srcToken, dstToken, chainId, account, srcAmountWei, deadlineMillis, srcChunkAmount, triggerAmountPerChunk, slippage, dstMinAmountPerChunk, epoch]);
 };

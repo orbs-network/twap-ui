@@ -205,7 +205,7 @@ const ConfirmationButton = () => {
       }}
       disabled={disabled}
     >
-      {isWrongChain ? "Switch Network" : address ? text : "Connect Wallet"}
+      {!address ? "Connect Wallet" : isWrongChain ? "Switch Network" : text}
     </StyledButton>
   );
 };
@@ -213,18 +213,23 @@ const ConfirmationButton = () => {
 const useTokens = () => {
   const { srcToken, dstToken, setSrcToken, setDstToken, resetTokens } = useDappStore();
   const allTokens = useTokenList();
-  const { chainId } = useAccount();
+  const chainId = useDappContext().config.chainId;
+  const account = useAccount().address;
   const { isLoading } = useTokensWithBalancesUSD();
 
   useEffect(() => {
-    if (isLoading) return;
-    if (!srcToken) {
+    if (!account && isLoading) {
+      if (!srcToken) {
+        setSrcToken(allTokens[1]);
+      }
+      if (!dstToken) {
+        setDstToken(allTokens[2]);
+      }
+    } else {
       setSrcToken(allTokens[1]);
-    }
-    if (!dstToken) {
       setDstToken(allTokens[2]);
     }
-  }, [allTokens, dstToken, srcToken, isLoading]);
+  }, [allTokens, dstToken, srcToken, account, isLoading]);
 
   useEffect(() => {
     resetTokens();
@@ -704,7 +709,6 @@ export const Dapp = () => {
       <TWAP
         slippage={slippage}
         config={config}
-        isExactAppoval={true}
         chainId={chainId}
         provider={client.data?.transport}
         srcToken={srcToken}
@@ -715,6 +719,9 @@ export const Dapp = () => {
         srcBalance={useTokenBalance(srcToken).data?.wei}
         dstBalance={useTokenBalance(dstToken).data?.wei}
         customMinChunkSizeUsd={5}
+        stateDefaults={{
+          disclaimerAccepted: true,
+        }}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
         OrderHistory={{
           Panel: OrderHistoryModal,

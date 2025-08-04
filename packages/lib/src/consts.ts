@@ -1,4 +1,4 @@
-import { TimeUnit, Configs } from "@orbs-network/twap-sdk";
+import { Configs } from "@orbs-network/twap-sdk";
 export const REFETCH_ORDER_HISTORY = 40_000;
 
 export const MIN_NATIVE_BALANCE = 0.01;

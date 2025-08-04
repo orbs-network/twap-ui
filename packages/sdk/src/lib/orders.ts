@@ -4,6 +4,7 @@ import { Config, LensOrder, OrderStatus, OrderType, TwapFill } from "./types";
 import BN from "bignumber.js";
 import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl, normalizeSubgraphList } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
+import { API_ENDPOINT } from "./consts";
 
 type GraphOrder = {
   Contract_id: string | number;
@@ -499,6 +500,9 @@ export const getOrders = async ({
   limit?: number;
   filters?: GetOrdersFilters;
 }) => {
+  const newOrders = await getOrdersNew({ chainId, signal, account: filters?.accounts?.[0] || "" });
+  console.log({ newOrders });
+
   const orders = await getCreatedOrders({ chainId, signal, page, limit, filters });
   const [fills, statuses] = await Promise.all([getFills({ chainId, orders, signal }), getStatuses({ chainId, orders, signal })]);
 
@@ -578,26 +582,8 @@ export const getOrderFillDelayMillis = (order: Order, config: Config) => {
   return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
 };
 
-export const parseLensOrder = (order: LensOrder, account: string, config: Config) => {
-  const progress = getOrderProgress(order.ask.srcAmount.toString(), order.srcFilledAmount.toString());
-
-  return buildOrder({
-    id: Number(order.id.toString()),
-    createdAt: order.time * 1000,
-    srcTokenAddress: order.ask.srcToken,
-    dstTokenAddress: order.ask.dstToken,
-    srcAmountPerChunk: order.ask.srcBidAmount.toString(),
-    deadline: order.ask.deadline * 1000,
-    dstMinAmountPerChunk: order.ask.dstMinAmount.toString(),
-    status: parseRawStatus(progress, order.status),
-    filledSrcAmount: order.srcFilledAmount.toString(),
-    srcAmount: order.ask.srcAmount.toString(),
-    tradeDollarValueIn: "",
-    fillDelay: order.ask.fillDelay,
-    txHash: "",
-    maker: account!,
-    exchange: order.ask.exchange,
-    twapAddress: config.twapAddress,
-    chainId: config.chainId,
+const getOrdersNew = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account: string }) => {
+  const result = await fetch(`${API_ENDPOINT}/orders?swapper=${account}&chainId=${chainId}`, {
+    signal,
   });
 };
