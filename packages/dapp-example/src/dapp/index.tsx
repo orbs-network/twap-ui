@@ -218,16 +218,13 @@ const useTokens = () => {
   const { isLoading } = useTokensWithBalancesUSD();
 
   useEffect(() => {
-    if (!account && isLoading) {
+    if (account && !isLoading) {
       if (!srcToken) {
         setSrcToken(allTokens[1]);
       }
       if (!dstToken) {
         setDstToken(allTokens[2]);
       }
-    } else {
-      setSrcToken(allTokens[1]);
-      setDstToken(allTokens[2]);
     }
   }, [allTokens, dstToken, srcToken, account, isLoading]);
 
