@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui",
-  "version": "0.11.40",
+  "version": "0.11.41",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -40,6 +40,7 @@
     "moment": "2.x",
     "qrcode.react": "^3.1.0",
     "react-error-boundary": "^4.0.10",
+    "react-markdown": "^10.1.0",
     "react-number-format": "5.x",
     "react-text-overflow": "^1.0.2",
     "web3": "1.x",
