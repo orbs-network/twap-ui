@@ -10,7 +10,6 @@ import {
   lightTheme,
   StyledChangeTokensOrder,
   StyledLimitPriceInput,
-  StyledMarketPrice,
   StyledOrdersPanel,
   StyledOrderSummaryModal,
   StyledPriceCard,
@@ -176,7 +175,7 @@ const TWAPPanel = () => {
         <ChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledMarketPrice />
+
       <LimitPrice />
       <TradeSize />
       <TradeInterval />
@@ -202,7 +201,7 @@ const LimitPanel = () => {
         <ChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledMarketPrice />
+
       <LimitPrice limit={true} />
       <StyledSubmitButton />
       <OrderSummary>

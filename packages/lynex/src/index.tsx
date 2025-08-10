@@ -101,7 +101,7 @@ const PercentSelector = () => {
     <StyledPercentSelect>
       {[0.25, 0.5, 0.75, 1].map((it) => {
         TwapStyles.StyledRowFlex;
-        const text = it === 1 ? translations.max : `${it * 100}%`;
+        const text = "";
         return (
           <button key={it} onClick={() => onClick(it)}>
             {text}

@@ -108,9 +108,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={16}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.Base.SmallLabel className="twap-token-panel-title">
-                {isSrcToken ? translations.from : `${translations.to} (${translations.estimate})`}
-              </Components.Base.SmallLabel>
+              <Components.Base.SmallLabel className="twap-token-panel-title"></Components.Base.SmallLabel>
               {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
@@ -139,7 +137,6 @@ const SrcTokenPercentSelector = () => {
   return (
     <TwapStyles.StyledRowFlex className="twap-percent-selector" width="fit-content">
       <button onClick={() => onClick(0.5)}>50%</button>
-      <button onClick={() => onClick(1)}>{translations.max}</button>
     </TwapStyles.StyledRowFlex>
   );
 };

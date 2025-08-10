@@ -61,16 +61,6 @@ export const StyledEmpty = styled(Typography)({
   },
 });
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  background: gradient,
-  padding: 12,
-  borderRadius: 12,
-  "> p": {
-    fontSize: 15,
-    fontWeight: 500,
-  },
-});
-
 export const StyledTokenChange = styled(Components.ChangeTokensOrder)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   button: {
     position: "absolute",

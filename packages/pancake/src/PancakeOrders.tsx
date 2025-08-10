@@ -13,7 +13,6 @@ import {
 } from "./styles";
 import { Styles, OrderLoader } from "@orbs-network/twap-ui";
 import { Status } from "@orbs-network/twap";
-import _ from "lodash";
 
 type ContextType = {
   showOpenOrders: boolean;
@@ -73,11 +72,12 @@ const Header = () => {
 
 const HeaderBottom = () => {
   const { orders, ordersLoading, showOpenOrders } = useOrdersContext();
+  const { translations } = useTwapContext();
   const newOrderLoading = store.useTwapStore((s) => s.newOrderLoading);
   if (!ordersLoading && !orders?.length && !newOrderLoading) {
     return (
       <StyledOrdersHeaderBottom>
-        <Styles.StyledText>{showOpenOrders ? "No open orders" : "No history found"}</Styles.StyledText>
+        <Styles.StyledText>{showOpenOrders ? translations.noOpenOrders : translations.noOrderHistory}</Styles.StyledText>
       </StyledOrdersHeaderBottom>
     );
   }
@@ -108,6 +108,7 @@ const Orders = () => {
 
 const CancelledOrdersController = () => {
   const { hideCancelledOrders, setHideCancelledOrders, showOpenOrders, orders } = useOrdersContext();
+  const { translations } = useTwapContext();
 
   const hide = React.useMemo(() => {
     if (showOpenOrders) {
@@ -121,7 +122,7 @@ const CancelledOrdersController = () => {
   if (hide) return null;
   return (
     <StyledCanceledOrdersController>
-      <Styles.StyledText>Hide canceled orders</Styles.StyledText>
+      <Styles.StyledText>{translations.hideCancelledOrders}</Styles.StyledText>
       <Components.Base.Switch onChange={setHideCancelledOrders} value={hideCancelledOrders} />
     </StyledCanceledOrdersController>
   );
@@ -130,14 +131,15 @@ const CancelledOrdersController = () => {
 const Tabs = () => {
   const { showOpenOrders, setShowOpenOrders } = useOrdersContext();
   const openOrders = hooks.useGroupedOrders().Open?.length || 0;
+  const { translations } = useTwapContext();
 
   return (
     <StyledOrdersTabs>
       <StyledOrdersTab selected={showOpenOrders ? 1 : 0} onClick={() => setShowOpenOrders(true)}>
-        Open Orders {`(${openOrders})`}
+        {translations.openOrders} {`(${openOrders})`}
       </StyledOrdersTab>
       <StyledOrdersTab selected={!showOpenOrders ? 1 : 0} onClick={() => setShowOpenOrders(false)}>
-        Order History
+        {translations.orderHistory}
       </StyledOrdersTab>
     </StyledOrdersTabs>
   );

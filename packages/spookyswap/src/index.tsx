@@ -117,7 +117,6 @@ const SrcTokenPercentSelector = () => {
   return (
     <StyledPercentSelector>
       <button onClick={() => onClick(0.5)}>50%</button>
-      <button onClick={() => onClick(1)}>{translations.max.toUpperCase()}</button>
     </StyledPercentSelector>
   );
 };

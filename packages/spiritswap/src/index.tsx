@@ -102,7 +102,6 @@ const SrcTokenPercentSelector = () => {
       <button onClick={() => onClick(0.25)}>25%</button>
       <button onClick={() => onClick(0.5)}>50%</button>
       <button onClick={() => onClick(0.75)}>75%</button>
-      <button onClick={() => onClick(1)}>{translations.max}</button>
     </TwapStyles.StyledRowFlex>
   );
 };
@@ -197,7 +196,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             {isSrcToken && <SrcTokenPercentSelector />}
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        {!isSrcToken && <Components.MarketPrice />}
       </TwapStyles.StyledColumnFlex>
     </>
   );

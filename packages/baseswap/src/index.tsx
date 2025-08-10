@@ -100,7 +100,7 @@ const MaxButton = () => {
   const onPercentClick = hooks.useCustomActions();
   const translations = useTwapContext().translations;
 
-  return <StyledMaxButton onClick={() => onPercentClick(1)}>{translations.max.toUpperCase()}</StyledMaxButton>;
+  return null;
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {

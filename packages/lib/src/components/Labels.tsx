@@ -9,7 +9,7 @@ import { handleFillDelayText } from "../utils";
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
 
-  return <Label tooltipText={translations.tradeSizeTooltip}>{translations.tradeSize} </Label>;
+  return <Label tooltipText={translations.sizePerTradeTooltip}>{translations.sizePerTrade} </Label>;
 }
 
 export const TotalTradesLabel = () => {
@@ -25,7 +25,6 @@ export const CurrentMarketPriceLabel = () => {
 
 export const LimitPriceLabel = ({ custom }: { custom?: string }) => {
   const translations = useTwapContext().translations;
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
@@ -49,7 +48,7 @@ export const OrderSummaryDeadlineLabel = ({ subtitle, translations: _translation
   const translations = useTwapContext()?.translations || _translations;
 
   return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationDeadlineTooltip}>
+    <Label subtitle={subtitle} tooltipText={translations.expirationTooltip}>
       {translations.expiration}
     </Label>
   );
@@ -59,7 +58,7 @@ export const OrderSummaryOrderTypeLabel = ({ subtitle, translations: _translatio
   const translations = useTwapContext()?.translations || _translations;
 
   return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationOrderType}>
+    <Label subtitle={subtitle} tooltipText="">
       {translations.orderType}
     </Label>
   );
@@ -69,8 +68,8 @@ export const OrderSummaryChunkSizeLabel = ({ subtitle, translations: _translatio
   const translations = useTwapContext()?.translations || _translations;
 
   return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationTradeSizeTooltip}>
-      {translations.tradeSize}
+    <Label subtitle={subtitle} tooltipText={translations.chunkSizeTooltip}>
+      {translations.sizePerTrade}
     </Label>
   );
 };
@@ -79,7 +78,7 @@ export const OrderSummaryTotalChunksLabel = ({ subtitle, translations: _translat
   const translations = useTwapContext()?.translations || _translations;
 
   return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationTotalTradesTooltip}>
+    <Label subtitle={subtitle} tooltipText={translations.totalTradesTooltip}>
       {translations.totalTrades}
     </Label>
   );
@@ -89,7 +88,7 @@ export const OrderSummaryTradeIntervalLabel = ({ subtitle, translations: _transl
   const translations = useTwapContext()?.translations || _translations;
 
   return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationtradeIntervalTooltip}>
+    <Label subtitle={subtitle} tooltipText={translations.tradeIntervalTooltip}>
       {translations.tradeInterval}
     </Label>
   );
@@ -98,7 +97,6 @@ export const OrderSummaryTradeIntervalLabel = ({ subtitle, translations: _transl
 export const OrderSummaryMinDstAmountOutLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
   const translations = useTwapContext()?.translations || _translations;
 
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   return <Label subtitle={subtitle}>{translations.minReceivedPerTrade}</Label>;
 };
 

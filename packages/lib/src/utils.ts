@@ -87,7 +87,7 @@ export const fillDelayText = (value: number, translations: Translations) => {
 };
 
 export const handleFillDelayText = (text: string, minutes: number) => {
-  return text.replace("{{minutes}}", minutes.toString());
+  return text.replace("{minutes}", minutes.toString());
 };
 
 export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {

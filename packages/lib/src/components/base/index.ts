@@ -23,3 +23,4 @@ export { default as Portal } from "./Portal";
 export { default as Odnp } from "./Odnp";
 export { default as Spinner } from "./Spinner";
 export { default as Pagination } from "./Pagination";
+export { default as Markdown } from "./Markdown";

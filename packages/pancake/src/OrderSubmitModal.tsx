@@ -1,7 +1,7 @@
 import { isNativeAddress } from "@defi.org/web3-candies";
-import { Box, Drawer, styled, SwipeableDrawer } from "@mui/material";
+import { styled } from "@mui/material";
 import { TokenData } from "@orbs-network/twap";
-import { Components, getTokenFromTokensList, hooks, store, Styles, useTwapContext } from "@orbs-network/twap-ui";
+import { Components, getTokenFromTokensList, hooks, store, Styles, translations, useTwapContext } from "@orbs-network/twap-ui";
 import React, { createContext, ReactNode, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useAdapterContext } from "./context";
 import { ArrowBottom, CloseIcon, InfoIcon, LinkIcon } from "./icons";
@@ -27,7 +27,6 @@ import Lottie from "react-lottie";
 import * as Loading_Lottie from "./lottie/Loading_Lottie.json";
 import * as Long_Success_Lottie from "./lottie/Long_Success_Lottie.json";
 import * as Submit_Lottie from "./lottie/Submit_Lottie.json";
-import BN from "bignumber.js";
 const Loading_Lottie_options = {
   loop: true,
   autoplay: true,
@@ -423,20 +422,22 @@ const StepContent = ({
 };
 
 const AwaitingTxMessage = () => {
-  const { account } = useTwapContext();
+  const { account, translations } = useTwapContext();
 
   return (
     <StyledAwaitingTxMessage>
-      <Styles.StyledText>Please approve it in your wallet: {shortenWalletAddress(account)}</Styles.StyledText>
+      <Styles.StyledText>
+        {translations.pleaseApproveItInYourWallet}: {shortenWalletAddress(account || "")}
+      </Styles.StyledText>
       <Components.Base.Spinner />
     </StyledAwaitingTxMessage>
   );
 };
 
 const WrapContent = () => {
-  const { config } = useTwapContext();
+  const { config, translations } = useTwapContext();
   return (
-    <StepContent title={`Wrap ${config.nativeToken.symbol}`} indicator={true} message={<AwaitingTxMessage />}>
+    <StepContent title={`${translations.wrap} ${config.nativeToken.symbol}`} indicator={true} message={<AwaitingTxMessage />}>
       <SubmitModalSrcToken />
       <LoadingLottie />
       <SubmitModalDstToken />
@@ -449,8 +450,9 @@ const LoadingLottie = () => {
 };
 
 const CreateOrderContent = () => {
+  const { translations } = useTwapContext();
   return (
-    <StepContent title="Confirm Placing" message={<AwaitingTxMessage />} indicator={true}>
+    <StepContent title={translations.confirmPlacing} message={<AwaitingTxMessage />} indicator={true}>
       <SubmitModalSrcToken />
       <LoadingLottie />
       <SubmitModalDstToken />
@@ -461,10 +463,11 @@ const CreateOrderContent = () => {
 const ExplorerMessage = () => {
   const txHash = store.useTwapStore((s) => s.txHash);
   const network = hooks.useNetwork();
+  const { translations } = useTwapContext();
   return (
     <StyledOrderPlacedMessage>
       <a href={`${network?.explorer}/tx/${txHash}`} target="_blank" rel="noreferrer">
-        View on explorer: {shortenTxHash(txHash || "")} <LinkIcon />
+        {translations.viewOnExplorer}: {shortenTxHash(txHash || "")} <LinkIcon />
       </a>
     </StyledOrderPlacedMessage>
   );
@@ -473,6 +476,7 @@ const ExplorerMessage = () => {
 const OrderPlacedContent = () => {
   const isLimitOrder = useAdapterContext().limit;
   const [paused, setPaused] = useState(false);
+  const { translations } = useTwapContext();
 
   useEffect(() => {
     setTimeout(() => {
@@ -480,7 +484,7 @@ const OrderPlacedContent = () => {
     }, 2_400);
   }, []);
 
-  const title = isLimitOrder ? "Limit Order Placed" : "TWAP Order Placed";
+  const title = isLimitOrder ? translations.limitOrderPlaced : translations.twapOrderPlaced;
 
   return (
     <StepContent className="twap-order-summary-placed-step" title={title} indicator={false} message={<ExplorerMessage />}>
@@ -492,8 +496,9 @@ const OrderPlacedContent = () => {
 };
 
 const OrderCreatedContent = () => {
+  const { translations } = useTwapContext();
   return (
-    <StepContent className="twap-order-summary-created-step" title="Order Submitted" indicator={false} message={<ExplorerMessage />}>
+    <StepContent className="twap-order-summary-created-step" title={translations.orderSubmitted} indicator={false} message={<ExplorerMessage />}>
       <SubmitModalSrcToken />
       <Lottie options={Long_Success_Lottie_options} width={95} style={{ position: "absolute", top: -15 }} />
       <SubmitModalDstToken />
@@ -504,13 +509,14 @@ const OrderCreatedContent = () => {
 const ErrorContent = () => {
   const { TransactionErrorContent } = useAdapterContext();
   const { onClose, state } = useSubmitContext();
+  const { translations } = useTwapContext();
 
   const message = useMemo(() => {
     if (isTxRejected(state.error)) {
-      return "Transaction rejected";
+      return translations.transactionRejected;
     }
 
-    return "Transaction failed";
+    return translations.transactionFailed;
   }, [state.error]);
 
   return (
@@ -521,11 +527,11 @@ const ErrorContent = () => {
 };
 
 const ApproveContent = () => {
-  const { dappTokens, srcToken } = useTwapContext();
+  const { dappTokens, srcToken, translations } = useTwapContext();
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, srcToken?.address), [dappTokens, srcToken]);
 
   return (
-    <StepContent title={`Approve ${inputCurrency?.symbol}`} indicator={true} message={<AwaitingTxMessage />}>
+    <StepContent title={`${translations.approve} ${inputCurrency?.symbol}`} indicator={true} message={<AwaitingTxMessage />}>
       <SubmitModalSrcToken />
     </StepContent>
   );
@@ -607,11 +613,11 @@ const Fee = () => {
 };
 const OrderReview = ({ onSubmit }: { onSubmit: () => void }) => {
   const { isLoading: allowanceLoading } = hooks.useHasAllowanceQuery();
-  const Button = useAdapterContext().Button;
-  const orderType = useOrderType();
+  const { Button, limit } = useAdapterContext();
+  const { translations } = useTwapContext();
 
   return (
-    <StyledOrderReviewStep title={`Place ${orderType} Order`}>
+    <StyledOrderReviewStep title={limit ? translations.placeLimitOrder : translations.placeTWAPOrder}>
       <StyledOrderSummary>
         <StyledTokens>
           <OrderReviewTokenDisplay isSrc={true} />
@@ -637,7 +643,7 @@ const OrderReview = ({ onSubmit }: { onSubmit: () => void }) => {
         </StyledDisclaimer>
         <StyledButtonContainer>
           <Button disabled={allowanceLoading} onClick={() => onSubmit()}>
-            {allowanceLoading ? "Loading" : "Confirm"}
+            {allowanceLoading ? translations.loading : translations.confirm}
           </Button>
         </StyledButtonContainer>
       </StyledOrderSummary>
@@ -681,7 +687,7 @@ const OrderReviewTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
   );
 };
 
-const shortenWalletAddress = (address: string, visibleChars: number = 4): string => {
+const shortenWalletAddress = (address: string, visibleChars = 4): string => {
   // Validate the input
   if (!address || !address.startsWith("0x") || address.length <= visibleChars + 2) {
     return "";
@@ -694,7 +700,7 @@ const shortenWalletAddress = (address: string, visibleChars: number = 4): string
   return `0x...${visiblePart}`;
 };
 
-const shortenTxHash = (hash: string, visibleStart: number = 8): string => {
+const shortenTxHash = (hash: string, visibleStart = 8): string => {
   // Validate the input
   if (!hash || !hash.startsWith("0x") || hash.length <= visibleStart) {
     return "";
@@ -709,7 +715,8 @@ const shortenTxHash = (hash: string, visibleStart: number = 8): string => {
 
 const useOrderType = () => {
   const isLimitPanel = useAdapterContext().limit;
-  return isLimitPanel ? "Limit" : "TWAP";
+  const { translations } = useTwapContext();
+  return isLimitPanel ? translations.limit : translations.twap;
 };
 
 const useCurrencies = () => {
@@ -724,13 +731,18 @@ const useCurrencies = () => {
 
 const useOrderPlacedToast = () => {
   const { toast } = useAdapterContext();
+  const { translations } = useTwapContext();
 
   return useCallback(
     (srcToken?: TokenData, dstToken?: TokenData, srcAmount?: string, outAmount?: string) => {
       try {
         toast({
-          title: "Order submitted",
-          message: `${srcAmount} ${srcToken?.symbol} for ${outAmount} ${dstToken?.symbol}`,
+          title: translations.orderSubmitted,
+          message: translations.srcTokenForDstToken
+            .replace("{srcAmount}", srcAmount || "")
+            .replace("{srcToken}", srcToken?.symbol || "")
+            .replace("{dstAmount}", outAmount || "")
+            .replace("{dstToken}", dstToken?.symbol || ""),
           variant: "success",
           autoCloseMillis: 4_000,
         });
@@ -738,7 +750,7 @@ const useOrderPlacedToast = () => {
         console.error(error);
       }
     },
-    [toast]
+    [toast, translations]
   );
 };
 
@@ -768,45 +780,45 @@ const useToastError = () => {
 
 const useFailedToastError = () => {
   const orderType = useOrderType();
-  const { config } = useTwapContext();
+  const { config, translations } = useTwapContext();
   const { inputCurrency } = useCurrencies();
 
   return useCallback(
     (error: any, step?: SwapStep) => {
       if (error.message?.toLowerCase().includes("gas required exceeds allowance")) {
         return {
-          title: `Insufficient ${config.nativeToken.symbol} balance`,
-          message: "You don't have enough balance to perform the swap.",
+          title: translations.insufficientBalance.replace("{token}", config.nativeToken.symbol),
+          message: translations.insufficientBalanceMessage,
         };
       }
 
-      const message = `Please try again. If it doesn’t work, try getting help by using the link below.`;
+      const message = translations.errorMessage;
       if (step === SwapStep.WRAP) {
         return {
-          title: `${config.nativeToken?.symbol} wrapping went wrong`,
+          title: translations.wrappingError.replace("{token}", config.nativeToken.symbol),
           message,
         };
       }
 
       if (step === SwapStep.APPROVE) {
         return {
-          title: `${inputCurrency?.symbol} approval went wrong`,
+          title: translations.approvingError.replace("{token}", inputCurrency?.symbol || ""),
           message,
         };
       }
       if (step === SwapStep.ORDER_CREATE) {
         return {
-          title: `${orderType} order placing confirmation went wrong`,
+          title: translations.orderPlacingError.replace("{orderType}", orderType),
           message,
         };
       }
 
       return {
-        title: "Transaction submission went wrong",
+        title: translations.transactionSubmissionWentWrong,
         message,
       };
     },
-    [inputCurrency, config, orderType]
+    [inputCurrency, config, orderType, translations]
   );
 };
 
@@ -815,7 +827,7 @@ const useRejectedToastError = () => {
   const { inputCurrency } = useCurrencies();
   const orderType = useOrderType();
 
-  const { config } = useTwapContext();
+  const { config, translations } = useTwapContext();
 
   return useCallback(
     (step?: SwapStep) => {
@@ -823,28 +835,28 @@ const useRejectedToastError = () => {
 
       if (step === SwapStep.APPROVE) {
         return {
-          title: `You canceled ${inputCurrency?.symbol} approval`,
-          message: `You didn't approve ${inputCurrency?.symbol} in your wallet: ${wallet}`,
+          title: translations.canceledApproval.replace("{token}", inputCurrency?.symbol || ""),
+          message: translations.canceledApprovalMessage.replace("{token}", inputCurrency?.symbol || "").replace("{wallet}", wallet),
         };
       }
       if (step === SwapStep.WRAP) {
         return {
-          title: `You canceled ${config.nativeToken?.symbol} wrapping`,
-          message: `You didn't approve ${config.nativeToken?.symbol} wrapping in your wallet: ${wallet}`,
+          title: translations.canceledWrapping.replace("{token}", config.nativeToken.symbol),
+          message: translations.canceledWrappingMessage.replace("{token}", config.nativeToken.symbol).replace("{wallet}", wallet),
         };
       }
       if (step === SwapStep.ORDER_CREATE) {
         return {
-          title: `You canceled ${orderType} order placing confirmation`,
-          message: `You didn't confirm placing ${orderType.toLowerCase()} order in your wallet: ${wallet}`,
+          title: translations.canceledOrderPlacing.replace("{orderType}", orderType),
+          message: translations.canceledOrderPlacingMessage.replace("{orderType}", orderType).replace("{wallet}", wallet),
         };
       }
       return {
-        title: "You canceled the transaction",
-        message: `You didn't confirm the transaction in your wallet: ${wallet}`,
+        title: translations.canceledTransaction,
+        message: translations.canceledTransactionMessage.replace("{wallet}", wallet),
       };
     },
-    [inputCurrency, config, orderType, account]
+    [inputCurrency, config, orderType, account, translations]
   );
 };
 
@@ -886,5 +898,7 @@ export const isTxRejected = (error: any) => {
     if (message) {
       return message?.toLowerCase()?.includes("rejected") || message?.toLowerCase()?.includes("denied");
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+  }
 };

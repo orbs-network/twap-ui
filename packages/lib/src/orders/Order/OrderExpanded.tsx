@@ -41,10 +41,11 @@ const OrderId = () => {
 
 const OrderStatusComponent = () => {
   const { order } = useListOrderContext();
+  const { translations } = useTwapContext();
 
   if (order.status === Status.Open) return null;
 
-  return <OrderDetailsRow label="Status">{<OrderStatus order={order} />}</OrderDetailsRow>;
+  return <OrderDetailsRow label={translations.status}>{<OrderStatus order={order} />}</OrderDetailsRow>;
 };
 
 const OrderBottom = () => {
@@ -58,6 +59,7 @@ const OrderBottom = () => {
 
 const ViewOnExplorer = () => {
   const { order, expanded } = useListOrderContext();
+  const { translations } = useTwapContext();
 
   const explorer = useNetwork()?.explorer;
 
@@ -67,7 +69,7 @@ const ViewOnExplorer = () => {
   return (
     <StyledViewOnExplorer href={url} target="_blank" className="twap-order-tx-hash">
       <StyledRowFlex gap={5} className="twap-order-tx-hash-content">
-        {order.status !== Status.Open ? <StyledText>View on explorer</StyledText> : null}
+        {order.status !== Status.Open ? <StyledText>{translations.viewOnExplorer}</StyledText> : null}
         <ExplorerIcon />
       </StyledRowFlex>
     </StyledViewOnExplorer>
@@ -143,9 +145,10 @@ const Filled = () => {
   const srcAmountUI = useAmountUi(srcToken?.decimals, order.srcAmount);
   const srcFilledAmountUiF = useFormatNumber({ value: srcFilledAmountUI, decimalScale: 4 });
   const srcAmountUiF = useFormatNumber({ value: srcAmountUI, decimalScale: 4 });
+  const { translations } = useTwapContext();
 
   return (
-    <OrderDetails.Row label="Filled" className="twap-order-details-filled">
+    <OrderDetails.Row label={translations.filled} className="twap-order-details-filled">
       <StyledText>
         {"("}
         {`${srcFilledAmountUiF || "0"}`}

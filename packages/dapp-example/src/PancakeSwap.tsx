@@ -12,9 +12,10 @@ import { erc20s, isNativeAddress, zeroAddress, eqIgnoreCase } from "@defi.org/we
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { Button, styled, Tooltip as MuiTooltip } from "@mui/material";
-import { Components, hooks, Styles } from "@orbs-network/twap-ui";
+import { Components, hooks, Styles, Translations } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 import { useSnackbar } from "notistack";
+import Markdown from "react-markdown";
 
 const useConfig = () => {
   const { chainId } = useWeb3React();
@@ -330,6 +331,8 @@ const CurrencyLogo = ({ address, size = "24px" }: { address?: string; size?: str
   return <img src={currency?.logoURI} style={{ width: size, height: size, borderRadius: "50%" }} />;
 };
 
+const translations: Partial<Translations> = {};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
@@ -364,6 +367,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       dappTokens={dappTokens}
       isDarkTheme={isDarkTheme}
       limit={limit}
+      translations={translations}
       ConnectButton={ConnectButton}
       usePriceUSD={usePriceUSD}
       connectedChainId={chainId}
@@ -379,6 +383,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       TransactionErrorContent={TxErrorContent}
       Button={_Button}
       toast={toast}
+      ReactMarkdown={ReactMarkdown}
       CurrencyLogo={CurrencyLogo}
     />
   );
@@ -388,7 +393,6 @@ const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-
 const DappComponent = () => {
   const { isDarkTheme } = useTheme();
   const [selected, setSelected] = useState(SelectorOption.TWAP);
-  const isMobile = useIsMobile();
   const config = useConfig();
   return (
     <ContextWrapper>
@@ -404,6 +408,10 @@ const DappComponent = () => {
       </StyledPancake>
     </ContextWrapper>
   );
+};
+
+const ReactMarkdown = ({ children, components }: { children: string; components?: any }) => {
+  return <Markdown components={components}>{children}</Markdown>;
 };
 
 export const useParseToken = () => {
@@ -452,11 +460,6 @@ const Tokens = () => {
     </Popup>
   );
 };
-
-const StyledWrapper = styled(Box)({
-  position: "relative",
-  width: "100%",
-});
 
 const dapp: Dapp = {
   Component: DappComponent,

@@ -3,6 +3,7 @@ import { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Typography } from "@mui/material";
+import Markdown from "./Markdown";
 
 interface Props {
   children: string | number | ReactNode;
@@ -25,7 +26,16 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
   return (
     <StyledContainer className={`twap-label ${tooltipText ? "twap-label-with-tooltip" : ""} ${className}`} style={{ gap: 0 }}>
       {tooltipText ? (
-        <Tooltip placement={placement} text={tooltipText}>
+        <Tooltip
+          placement={placement}
+          text={
+            typeof tooltipText === "string" ? (
+              <Markdown components={{ p: ({ children }: { children: any }) => <StyledText style={{ fontSize }}>{children}</StyledText> }}>{tooltipText}</Markdown>
+            ) : (
+              tooltipText
+            )
+          }
+        >
           <StyledText style={{ fontSize }}>{children}</StyledText>
         </Tooltip>
       ) : (

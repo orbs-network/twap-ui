@@ -205,19 +205,7 @@ const SrcTokenPercentSelector = () => {
     onPercentClick(value);
   };
 
-  return (
-    <StyledPercentSelect>
-      {percent.map((it) => {
-        TwapStyles.StyledRowFlex;
-        const text = it === 1 ? translations.max : `${it * 100}%`;
-        return (
-          <button key={it} onClick={() => onClick(it)}>
-            <Typography>{text}</Typography>
-          </button>
-        );
-      })}
-    </StyledPercentSelect>
-  );
+  return null;
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
@@ -263,12 +251,10 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const Recipient = () => {
   const maker = store.useTwapStore((store) => store.lib?.maker);
-  const translations = useTwapContext().translations;
 
   return (
     <StyledRecipient>
       <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-recipient-flex">
-        <Components.Base.Label>{translations.outputWillBeSentTo}</Components.Base.Label>
         <Components.Base.Tooltip text={maker}>
           <Typography>{makeElipsisAddress(maker)}</Typography>
         </Components.Base.Tooltip>
@@ -473,7 +459,6 @@ const TWAPPanel = () => {
           <TokenPanel />
         </StyledTopColumnFlex>
         <StyledColumnFlex>
-          <MarketPrice />
           <LimitPrice />
           <TradeSize />
           <TradeInterval />
@@ -501,7 +486,6 @@ const LimitPanel = () => {
           <TokenPanel />
         </StyledTopColumnFlex>
         <StyledColumnFlex>
-          <MarketPrice />
           <LimitPrice limit={true} />
 
           <StyledSubmit isMain />

@@ -5,6 +5,7 @@ import { useGetToken, usePriceInvert } from "../../hooks";
 import { Order } from "../../order";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { CanceledIcon, CheckIcon } from "./icons";
+import { useTwapContext } from "../../context";
 
 export const useOrderExcecutionPrice = (order: Order) => {
   const srcToken = useGetToken(order.srcTokenAddress);
@@ -22,7 +23,24 @@ export const useOrderExcecutionPrice = (order: Order) => {
   };
 };
 
+const useOrderStatus = (order: Order) => {
+  const { translations } = useTwapContext();
+  return useMemo(() => {
+    if (order.status === Status.Canceled) {
+      return translations.canceled;
+    }
+    if (order.status === Status.Completed) {
+      return translations.completed;
+    }
+    if (order.status === Status.Expired) {
+      return translations.expired;
+    }
+    return translations.open;
+  }, [order.status, translations]);
+};
+
 export const OrderStatus = ({ order }: { order: Order }) => {
+  const status = useOrderStatus(order);
   const icon = useMemo(() => {
     switch (order.status) {
       case Status.Canceled:
@@ -33,11 +51,11 @@ export const OrderStatus = ({ order }: { order: Order }) => {
       default:
         break;
     }
-  }, [order.status]);
+  }, [order.status, status]);
 
   return (
     <StyledStatus className={`twap-orders-status twap-orders-status-${order.status.toLowerCase()}`}>
-      <StyledText>{order?.status}</StyledText>
+      <StyledText>{status}</StyledText>
       {icon}
     </StyledStatus>
   );

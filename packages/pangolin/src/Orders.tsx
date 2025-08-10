@@ -205,13 +205,7 @@ const MinReceivedPerTrade = ({ orderUI }: { orderUI?: OrderUI }) => {
   return (
     <OrderDetail
       valueTooltip={tooltip}
-      labelTooltip={
-        <>
-          {translations.confirmationMinDstAmountTootipLimitPart1}
-          <br />
-          {translations.confirmationMinDstAmountTootipLimitPart2}
-        </>
-      }
+      labelTooltip={translations.minDstAmountTooltipLimit}
       label={translations.minReceivedPerTrade}
       value={<Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>}
     />
@@ -234,8 +228,8 @@ const TradeSize = ({ orderUI }: { orderUI?: OrderUI }) => {
         </Styles.StyledRowFlex>
       }
       valueTooltip={tooltip}
-      label={translations.tradeSize}
-      labelTooltip={translations.tradeSizeTooltip}
+      label={translations.sizePerTrade}
+      labelTooltip={translations.sizePerTradeTooltip}
     />
   );
 };
@@ -278,7 +272,7 @@ const Deadline = ({ orderUI }: { orderUI: OrderUI }) => {
   const { limit } = useOrdersContext();
 
   if (limit) return null;
-  return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.deadline} value={<Typography>{orderUI?.ui.deadlineUi}</Typography>} />;
+  return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.expiry} value={<Typography>{orderUI?.ui.deadlineUi}</Typography>} />;
 };
 
 const Header = () => {

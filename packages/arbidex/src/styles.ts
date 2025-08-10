@@ -138,17 +138,6 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)({
     fontSize: 28,
   },
 });
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  padding: "0px 12px",
-  ".title": {
-    fontSize: 12,
-    fontWeight: 600,
-  },
-  [`@media(max-width:${MOBILE}px)`]: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
-});
 
 // const getButtonStyles = (theme: Theme) => {};
 export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)(({ theme }) => ({

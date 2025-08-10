@@ -1,5 +1,5 @@
 import { LinearProgress, Typography, Box, styled } from "@mui/material";
-import { Components } from "../..";
+import { Components, useTwapContext } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
 import { useAmountUi, useFormatNumber, useGetToken, useIsMobile } from "../../hooks";
 import { Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
@@ -115,10 +115,12 @@ const OrderExcecutionPrice = () => {
 
 const OrderPreviewRight = () => {
   const { order, expanded } = useListOrderContext();
+  const { translations } = useTwapContext();
+
   return (
     <StyledStatus>
       {expanded ? (
-        <StyledStatusHide className="twap-order-hide">Hide</StyledStatusHide>
+        <StyledStatusHide className="twap-order-hide">{translations.hide}</StyledStatusHide>
       ) : order.status === Status.Open ? (
         <OrderProgress order={order} />
       ) : (

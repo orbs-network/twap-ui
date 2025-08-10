@@ -1424,7 +1424,7 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     display: "flex",
-    width: 156,
+    width: 180,
     flexDirection: "row",
     gap: 15,
     alignItems: "center",
@@ -1435,7 +1435,7 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
     },
     ".twap-label": {
       p: {
-        fontSize: 16,
+        fontSize: 15,
       },
     },
     ".twap-input": {

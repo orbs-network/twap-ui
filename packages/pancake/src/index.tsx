@@ -1,6 +1,5 @@
 import { GlobalStyles, ThemeProvider, styled } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, store, Orders, TwapContextUIPreferences, Styles, TooltipProps, parseError } from "@orbs-network/twap-ui";
-import translations from "./i18n/en.json";
+import { Components, hooks, Translations, TwapAdapter, store, Orders, TwapContextUIPreferences, Styles, TooltipProps } from "@orbs-network/twap-ui";
 import {
   configureStyles,
   darkTheme,
@@ -9,7 +8,6 @@ import {
   StyledColumnFlex,
   StyledLimitPrice,
   StyledTokenPanelTitle,
-  StyledBalanceAndPercent,
   StyledContainerPadding,
   StyledPricePanel,
   StyledPricePanelInput,
@@ -32,8 +30,8 @@ import {
   StyledSliderDots,
   StyledPoweredBy,
 } from "./styles";
-import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
+import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { StyledBalance, StyledEmptyUSD, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
@@ -47,12 +45,6 @@ import { configs } from "./config";
 import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
 import { BackBody, ChangeIcon, CloseIcon, InfoIcon } from "./icons";
 import { SwapModal } from "./OrderSubmitModal";
-
-const PERCENT = [
-  { text: "25%", value: 0.25 },
-  { text: "50%", value: 0.5 },
-  { text: "MAX", value: 1 },
-];
 
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const context = useAdapterContext();
@@ -167,6 +159,7 @@ const Balance = ({ isSrc, showPercent }: { isSrc?: boolean; showPercent: boolean
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
   const [showPercent, setShowPercent] = useState(false);
+  const { translations } = useTwapContext();
   const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   const onSelect = useCallback(
@@ -180,7 +173,7 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
     <StyledContainerPadding>
       <StyledTokenPanel>
         <Styles.StyledRowFlex justifyContent="space-between" style={{ position: "relative", marginBottom: 4 }}>
-          <StyledTokenPanelTitle>{isSrcToken ? "From" : "To"}</StyledTokenPanelTitle>
+          <StyledTokenPanelTitle>{isSrcToken ? translations.from : translations.to}</StyledTokenPanelTitle>
           <Balance isSrc={isSrcToken} showPercent={showPercent} />
         </Styles.StyledRowFlex>
         <StyledTokenPanelContent disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
@@ -301,6 +294,7 @@ const TwapPanel = memo(() => {
   const onCancelOrderSuccess = useOnCancelOrderSuccess();
 
   const parsedTokens = useParsedTokens();
+
   return (
     <div className="twap-adapter-wrapper">
       <TwapAdapter
@@ -308,7 +302,7 @@ const TwapPanel = memo(() => {
         config={config}
         maxFeePerGas={context.maxFeePerGas}
         priorityFeePerGas={context.priorityFeePerGas}
-        translations={translations as Translations}
+        translations={context.translations as Translations}
         provider={context.provider}
         account={context.account}
         srcToken={srcToken}
@@ -322,6 +316,7 @@ const TwapPanel = memo(() => {
         onSrcTokenSelected={context.onSrcTokenSelected}
         isDarkTheme={context.isDarkTheme}
         isMobile={context.isMobile}
+        ReactMarkdown={context.ReactMarkdown}
         connectedChainId={context.connectedChainId}
         enableQueryParams={true}
         marketPrice={trade?.outAmount}
@@ -346,16 +341,17 @@ const TwapPanel = memo(() => {
 
 const useOnCancelOrderSuccess = () => {
   const { toast } = useAdapterContext();
+  const translations = useTwapContext().translations;
   return useCallback(
     (id: number) => {
       toast({
-        title: "Order cancelled",
-        message: `Order ${id} has been cancelled`,
+        title: translations.orderCancelled,
+        message: translations.orderCancelledMessage.replace("{id}", id.toString()),
         variant: "success",
         autoCloseMillis: 4_000,
       });
     },
-    [toast]
+    [toast, translations]
   );
 };
 
@@ -527,14 +523,10 @@ export function TotalTrades({ className = "" }: { className?: string }) {
       <StyledTrades>
         <InputContainer.Header>
           <Styles.StyledRowFlex justifyContent="space-between">
-            <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label="Total Trades" />
+            <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label={t.totalTrades} />
             <InputContainer.Header.Label
-              tooltip={
-                <>
-                  {t.tradeSizeTooltip} <br /> {`Note: Min. size per trade should be > USD ${config.minChunkSizeUsd}`}
-                </>
-              }
-              label="Size Per Trade: "
+              tooltip={t.sizePerTradeTooltip.replace("{usd}", config.minChunkSizeUsd.toString())}
+              label={`${t.sizePerTrade}:`}
               value={!srcToken ? "" : `${chunkSize} ${srcToken?.symbol}`}
             />
           </Styles.StyledRowFlex>
@@ -572,7 +564,7 @@ const MaxDuration = () => {
   return (
     <StyledDuration customBorder={!!isWarning}>
       <InputContainer.Header>
-        <InputContainer.Header.Label tooltip={t.maxDurationTooltip} label="Max Duration" />
+        <InputContainer.Header.Label tooltip={t.maxDurationTooltip} label={t.maxDuration} />
       </InputContainer.Header>
       <Components.MaxDurationSelector />
     </StyledDuration>
@@ -586,7 +578,7 @@ const TradeInterval = () => {
   return (
     <StyledTradeInterval customBorder={!!fillDelayWarning}>
       <InputContainer.Header>
-        <InputContainer.Header.Label tooltip={t.tradeIntervalTootlip} label="Trade Interval" />
+        <InputContainer.Header.Label tooltip={t.tradeIntervalTootlip} label={t.tradeInterval} />
       </InputContainer.Header>
       <Components.TradeIntervalSelector />
     </StyledTradeInterval>
@@ -602,7 +594,7 @@ const TimeIntervalAndDurationWarnings = () => {
     if (fillDelayWarning) {
       return {
         variant: "error" as WarningVariant,
-        message: `Trade interval must be more than 1 minute to allow time for bidder auction and block settlement.`,
+        message: translation.tradeIntervalWarning,
       };
     }
     if (durationUi.amount === 0) {
@@ -614,10 +606,10 @@ const TimeIntervalAndDurationWarnings = () => {
     if (isWarning) {
       return {
         variant: "info" as WarningVariant,
-        message: `Order will be partially filled. To fully fill it, the minimum duration should be total trades multiplied by trade interval.`,
+        message: translation.partialFillWarning,
       };
     }
-  }, [fillDelayWarning, isWarning, durationUi.amount, translation.enterMaxDuration]);
+  }, [fillDelayWarning, isWarning, durationUi.amount, translation]);
 
   if (!warning) return null;
 
@@ -689,15 +681,24 @@ const TradePrice = () => {
 
 const PricePanelWarning = () => {
   const gainPercent = hooks.useTradePrice().gainPercent;
+  const translations = useTwapContext().translations;
 
   if (gainPercent >= 0) return null;
 
   return (
     <Warning variant="warning">
-      <span>
-        {" "}
-        Limit price is {gainPercent}% lower than market, you are selling at a much lower rate. Please use our <a href="/swap">Swap</a> instead.
-      </span>
+      <Components.Base.Markdown
+        components={{
+          p: ({ children }: { children: any }) => <span>{children}</span>,
+          a: ({ children, href }: { children: any; href: string }) => (
+            <a href={href} target="_blank" rel="noreferrer">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {translations.limitPriceWarning.replace("{percent}", gainPercent.toString())}
+      </Components.Base.Markdown>
     </Warning>
   );
 };
@@ -712,14 +713,14 @@ const Warning = ({ variant = "warning", children = "" }: { variant?: WarningVari
 };
 
 const PricePanelHeader = () => {
-  const token = useTwapContext().srcToken;
+  const { srcToken: token, translations } = useTwapContext();
   const { onReset } = hooks.useTradePrice();
 
   return (
     <Styles.StyledRowFlex className="twap-limit-price-panel-header">
-      <Styles.StyledText className="twap-limit-price-panel-header-sell">Sell {token?.symbol} at rate</Styles.StyledText>
+      <Styles.StyledText className="twap-limit-price-panel-header-sell">{translations.sellAtRate.replace("{token}", token?.symbol || "")}</Styles.StyledText>
       <button className="twap-limit-price-panel-header-reset" onClick={onReset}>
-        <Styles.StyledText>Set market rate</Styles.StyledText>
+        <Styles.StyledText>{translations.setMarketRate}</Styles.StyledText>
       </button>
     </Styles.StyledRowFlex>
   );
@@ -744,11 +745,12 @@ const LimitPanelInput = () => {
 
 const LimitPanelPercent = () => {
   const { gainPercent, isLoading, onPercent } = hooks.useTradePrice();
+  const { translations } = useTwapContext();
   const warning = BN(gainPercent || 0).lt(0);
 
   return (
     <StyledPricePanelPercent customBorder={!!warning} className="twap-limit-price-panel-percent">
-      <Components.Base.Label>Gain</Components.Base.Label>
+      <Components.Base.Label>{translations.gain}</Components.Base.Label>
       <Styles.StyledRowFlex className="twap-limit-price-panel-percent-right">
         <Components.Base.NumericInput allowNegative={true} loading={isLoading} placeholder={"0"} onChange={(value: string) => onPercent(Number(value))} value={gainPercent} />
         {!isLoading && <Styles.StyledText>%</Styles.StyledText>}
@@ -778,7 +780,7 @@ export const useShowSwapModalButton = () => {
   const srcUsd = hooks.useSrcUsd().value;
   const dstUsd = hooks.useDstUsd().value;
 
-  const placeOrderText = limit ? "Place Limit Order" : "Place TWAP Order";
+  const placeOrderText = limit ? translations.placeLimitOrder : translations.placeTWAPOrder;
 
   const noLiquidity = useMemo(() => {
     if (BN(srcAmount || 0).isZero() || marketPriceLoading) return false;
@@ -800,12 +802,12 @@ export const useShowSwapModalButton = () => {
     };
   }
   if (marketPriceLoading) {
-    return { text: "Searching for the best price", onClick: undefined, disabled: true };
+    return { text: translations.searchingForBestPrice, onClick: undefined, disabled: true };
   }
 
   if (noLiquidity) {
     return {
-      text: "Insufficient liquidity for this trade.",
+      text: translations.insufficientLiquidity,
       disabled: true,
       loading: false,
     };
@@ -813,7 +815,7 @@ export const useShowSwapModalButton = () => {
 
   if (!srcUsd || srcUsd.isZero() || !dstUsd || dstUsd.isZero()) {
     return {
-      text: "Searching for the best price",
+      text: translations.searchingForBestPrice,
       disabled: true,
     };
   }

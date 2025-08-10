@@ -272,7 +272,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <TwapStyles.StyledColumnFlex gap={4} className="twap-token-panel">
         <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
           {!isSrcToken && marketPrice !== "0" && (
             <TwapStyles.StyledRowFlex className="twap-token-panel-price">

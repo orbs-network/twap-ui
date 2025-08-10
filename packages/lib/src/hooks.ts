@@ -1264,7 +1264,7 @@ export const useFillWarning = () => {
     if ((srcBalance && BN(srcAmount || 0).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
       return {
         type: "balance",
-        message: `Insufficient ${srcToken.symbol} balance`,
+        message: translation.insufficientFunds.replace("{token}", srcToken.symbol),
       };
     }
 
@@ -1314,6 +1314,8 @@ export const useFillWarning = () => {
     maxSrcInputAmount,
     lib,
     dstAmountOut,
+    shouldWrap,
+    shouldUnwrap,
   ]);
 };
 

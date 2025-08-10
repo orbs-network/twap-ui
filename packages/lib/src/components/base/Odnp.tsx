@@ -24,7 +24,6 @@ function Odnp({ className = "" }: { className?: string }) {
       <StyledButton onClick={() => setOpen(true)} className="twap-odnp-button">
         <StyledRowFlex className="twap-odnp-button-children">
           <img src={icon} />
-          <StyledOneLineText>{translations.notify}</StyledOneLineText>
         </StyledRowFlex>
       </StyledButton>
       <StyledModal open={open} onClose={() => setOpen(false)} className="twap-odnp-modal">

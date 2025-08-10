@@ -1,4 +1,4 @@
-import React, { CSSProperties, FC, ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { CSSProperties, FC, ReactElement, ReactNode, useCallback, useMemo } from "react";
 import {
   Balance,
   Button,
@@ -50,7 +50,6 @@ import {
   useSetSrcAmountUi,
   usePriceInvert,
   useTradePrice,
-  getDecimals,
 } from "../hooks";
 import { useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
@@ -58,7 +57,6 @@ import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
 import {
   OrderSummaryDeadlineLabel,
-  OrderSummaryOrderTypeLabel,
   OrderSummaryChunkSizeLabel,
   OrderSummaryTotalChunksLabel,
   OrderSummaryTradeIntervalLabel,
@@ -78,6 +76,8 @@ import BN from "bignumber.js";
 import { TokenData } from "@orbs-network/twap";
 import { ArrowsIcon } from "../orders/Order/icons";
 import moment from "moment";
+import Markdown from "./base/Markdown";
+
 export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
   const chunks = useChunks();
@@ -161,7 +161,7 @@ const Input = (props: {
 
 export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boolean; placeholder?: string; className?: string }) => {
   // src
-  const { srcAmount, isLimitOrder } = useTwapStore((s) => ({
+  const { srcAmount } = useTwapStore((s) => ({
     srcAmount: s.srcAmountUi,
     isLimitOrder: s.isLimitOrder,
   }));
@@ -189,17 +189,7 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
   );
 };
 
-export const TokenPanelInput = ({
-  isSrc,
-  placeholder,
-  className = "",
-  dstDecimalScale,
-}: {
-  isSrc?: boolean;
-  placeholder?: string;
-  className?: string;
-  dstDecimalScale?: number;
-}) => {
+export const TokenPanelInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boolean; placeholder?: string; className?: string; dstDecimalScale?: number }) => {
   if (isSrc) {
     return <SrcTokenInput className={className} placeholder={placeholder} />;
   }
@@ -355,18 +345,13 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: 
 };
 
 export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; style?: CSSProperties }) {
-  const { priceUI, onReset } = useTradePrice();
+  const { onReset } = useTradePrice();
 
   const { isLimitOrder, setLimitOrder } = useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
     setLimitOrder: store.setLimitOrder,
   }));
 
-  const { srcToken, dstToken } = useTwapContext();
-
-  const { leftToken, rightToken } = usePriceInvert(priceUI, srcToken, dstToken);
-
-  const loadingState = useLoadingState();
   const onSetLimitOrder = useCallback(
     (value?: boolean) => {
       setLimitOrder(value);
@@ -465,7 +450,6 @@ export function TokenUSD({
   onlyValue,
   prefix,
   suffix,
-  hideIfZero,
   decimalScale,
 }: {
   isSrc?: boolean;
@@ -566,19 +550,6 @@ export function LimitPriceInput({
   );
 }
 
-export const MarketPrice = ({ className = "", hideLabel }: { className?: string; hideLabel?: boolean }) => {
-  const [inverted, setInverted] = useState(false);
-
-  return null;
-};
-
-const StyledMarketPrice = styled(StyledRowFlex)({
-  ".twap-token-logo": {
-    minWidth: 22,
-    minHeight: 22,
-  },
-});
-
 export function PoweredBy({ className = "" }: { className?: string }) {
   const translations = useTwapContext().translations;
   return (
@@ -604,13 +575,17 @@ const Warning = ({ tootlip, warning }: { tootlip: string; warning: string }) => 
   );
 };
 
+export const MarketPrice = (props: any) => {
+  return null;
+};
+
 export const PartialFillWarning = () => {
   const translations = useTwapContext().translations;
   const isWarning = useIsPartialFillWarning();
   const lib = useTwapStore((state) => state.lib);
   if (!isWarning || !lib) return null;
 
-  return <Warning tootlip={translations.prtialFillWarningTooltip} warning={translations.prtialFillWarning} />;
+  return <Warning tootlip={translations.partialFillWarning} warning="" />;
 };
 
 export const FillDelayWarning = () => {
@@ -621,7 +596,7 @@ export const FillDelayWarning = () => {
 
   if (!fillDelayWarning || !lib) return null;
 
-  return <Warning tootlip={handleFillDelayText(translations.fillDelayWarningTooltip, minimumDelayMinutes)} warning={translations.invalid} />;
+  return <Warning tootlip={handleFillDelayText(translations.tradeIntervalWarning, minimumDelayMinutes)} warning="" />;
 };
 
 /// --- order summary ---- ///
@@ -681,17 +656,17 @@ export const TradeIntervalAsText = ({ translations: _translations }: { translati
   return <StyledOneLineText>{getFillDelayText(translations)}</StyledOneLineText>;
 };
 
-export const MinDstAmountOut = ({ translations: _translations }: { translations?: Translations }) => {
+export const MinDstAmountOut = (props: { translations?: Translations }) => {
   const { isLimitOrder } = useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
   }));
-  const { dstToken, translations } = useTwapContext();
+  const { translations } = useTwapContext();
   const dstMinAmountOutUi = useDstMinAmountOut().amountUI;
 
   const formattedValue = useFormatNumber({ value: dstMinAmountOutUi });
 
   if (!isLimitOrder) {
-    return <StyledOneLineText>{translations.none}</StyledOneLineText>;
+    return <StyledOneLineText>-</StyledOneLineText>;
   }
 
   return (
@@ -785,7 +760,7 @@ export const OrderSummaryDetailsChunkSize = ({ subtitle, translations }: { subti
 export const OrderSummaryDetailsOrderType = () => {
   const t = useTwapContext().translations;
   return (
-    <OrderDetailsRow label={t.orderType} tooltip={t.confirmationOrderType}>
+    <OrderDetailsRow label={t.orderType} tooltip="">
       <OrderType />
     </OrderDetailsRow>
   );
@@ -811,18 +786,20 @@ const Expiry = ({ expiryMillis, format = "ll HH:mm" }: { expiryMillis?: number; 
   const expiry = useMemo(() => moment(expiryMillis).format(format), [expiryMillis, format]);
 
   return (
-    <OrderDetailsRow label="Expiration" tooltip={t.confirmationDeadlineTooltip}>
+    <OrderDetailsRow label={t.expiration} tooltip={t.expirationTooltip}>
       {expiry}
     </OrderDetailsRow>
   );
 };
 
 const OrderId = ({ id }: { id: number }) => {
-  return <OrderDetailsRow label="Order ID">{id}</OrderDetailsRow>;
+  const t = useTwapContext().translations;
+  return <OrderDetailsRow label={t.orderId}>{id}</OrderDetailsRow>;
 };
 
 const Price = ({ srcToken, dstToken, price: _price }: { srcToken?: TokenData; dstToken?: TokenData; price?: string }) => {
-  return <StyledPrice label="Price">{_price ? <InvertPrice price={_price} srcToken={srcToken} dstToken={dstToken} /> : "-"}</StyledPrice>;
+  const t = useTwapContext().translations;
+  return <StyledPrice label={t.price}>{_price ? <InvertPrice price={_price} srcToken={srcToken} dstToken={dstToken} /> : "-"}</StyledPrice>;
 };
 
 const StyledPrice = styled(OrderDetailsRow)({
@@ -848,20 +825,7 @@ const MinReceived = ({ minReceived, isMarketOrder = false, symbol = "" }: { minR
   if (isMarketOrder) return null;
 
   return (
-    <OrderDetailsRow
-      label={t.minReceivedPerTrade}
-      tooltip={
-        !isMarketOrder ? (
-          <>
-            {t.confirmationMinDstAmountTootipLimitPart1}
-            <br />
-            {t.confirmationMinDstAmountTootipLimitPart2}
-          </>
-        ) : (
-          t.confirmationMinDstAmountTootipMarket
-        )
-      }
-    >
+    <OrderDetailsRow label={t.minReceivedPerTrade} tooltip={!isMarketOrder ? t.minDstAmountTooltipLimit : t.minDstAmountTooltipMarket}>
       {isMarketOrder ? "-" : `${minReceivedF} ${symbol}`}
     </OrderDetailsRow>
   );
@@ -871,7 +835,7 @@ const SizePerTrade = ({ sizePerTrade, symbol = "" }: { sizePerTrade?: string; sy
   const t = useTwapContext().translations;
   const sizePerTradeF = useFormatNumber({ value: sizePerTrade });
   return (
-    <OrderDetailsRow label={t.tradeSize} tooltip={t.confirmationTradeSizeTooltip}>
+    <OrderDetailsRow label={t.sizePerTrade} tooltip={t.chunkSizeTooltip}>
       {`${sizePerTradeF} ${symbol}`}
     </OrderDetailsRow>
   );
@@ -882,7 +846,7 @@ const TradeInterval = ({ tradeIntervalMillis }: { tradeIntervalMillis: number })
   const value = useMemo(() => fillDelayText(tradeIntervalMillis, t), [t]);
 
   return (
-    <OrderDetailsRow label={t.tradeInterval} tooltip={t.confirmationtradeIntervalTooltip}>
+    <OrderDetailsRow label={t.tradeInterval} tooltip={t.tradeIntervalTooltip}>
       {value}
     </OrderDetailsRow>
   );
@@ -904,7 +868,7 @@ const Fee = ({ fee, dstToken, outAmount }: { fee?: number; dstToken?: TokenData;
   const t = useTwapContext().translations;
   const amountF = useFormatNumber({ value: amount });
   return (
-    <OrderDetailsRow label={`Fee (${fee}%)`} tooltip="Fee is estimated and exact amount may change at execution.">
+    <OrderDetailsRow label={`${t.fee} (${fee}%)`} tooltip={t.feeTooltip}>
       {`${amountF} ${dstToken?.symbol}`}
     </OrderDetailsRow>
   );
@@ -1028,14 +992,11 @@ export const OrderSummaryTokenDisplay = ({
 };
 
 export const AcceptDisclaimer = ({ variant, className, translations: _translations }: { variant?: SwitchVariant; className?: string; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-
   const setDisclaimerAccepted = useTwapStore((store) => store.setDisclaimerAccepted);
   const disclaimerAccepted = useTwapStore((store) => store.disclaimerAccepted);
 
   return (
     <StyledRowFlex gap={5} justifyContent="space-between" className={`twap-disclaimer-switch ${className}`}>
-      <Label>{translations.acceptDisclaimer}</Label>
       <Switch variant={variant} value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
     </StyledRowFlex>
   );
@@ -1043,13 +1004,9 @@ export const AcceptDisclaimer = ({ variant, className, translations: _translatio
 
 export const OutputAddress = ({ className, translations: _translations, ellipsis }: { className?: string; translations?: Translations; ellipsis?: number }) => {
   const maker = useTwapStore((store) => store.lib?.maker);
-  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <StyledOutputAddress className={`twap-order-summary-output-address ${className}`}>
-      <StyledText style={{ textAlign: "center", width: "100%" }} className="text">
-        {translations.outputWillBeSentTo}
-      </StyledText>
       <StyledOneLineText style={{ textAlign: "center", width: "100%" }} className="address">
         {ellipsis ? makeElipsisAddress(maker, ellipsis) : maker}
       </StyledOneLineText>
@@ -1058,13 +1015,6 @@ export const OutputAddress = ({ className, translations: _translations, ellipsis
 };
 
 const StyledOutputAddress = styled(StyledColumnFlex)({});
-
-export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { translations?: Translations }) => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const translations = useTwapContext()?.translations || _translations;
-
-  return null;
-};
 
 export const OrderSummaryPriceCompare = () => {
   const limitPrice = useTradePrice().priceUI;
@@ -1079,8 +1029,7 @@ export const OrderSummaryLimitPrice = ({ translations: _translations }: { transl
 
   return (
     <StyledRowFlex className="twap-order-summary-limit-price" justifyContent="space-between">
-      <Label tooltipText={translations.confirmationLimitPriceTooltip}>{translations.limitPrice}</Label>
-      <OrderSummaryLimitPriceToggle translations={translations} />
+      <Label tooltipText={translations.limitPriceTooltip}>{translations.limitPrice}</Label>
     </StyledRowFlex>
   );
 };
@@ -1090,23 +1039,18 @@ export const DisclaimerText = ({ className = "", translations: _translations }: 
   const lib = useTwapStore((state) => state.lib);
   return (
     <StyledTradeInfoExplanation className={`twap-disclaimer-text ${className}`}>
-      <StyledText>{translations.disclaimer1}</StyledText>
-      <StyledText>{translations.disclaimer2}</StyledText>
-      <StyledText>{translations.disclaimer3}</StyledText>
-      <StyledText>{translations.disclaimer4}</StyledText>
-      <StyledText>{translations.disclaimer5.replace("{{dex}}", lib?.config.name || "DEX")}</StyledText>
-
-      <StyledText>
-        {translations.disclaimer6}{" "}
-        <a href="https://github.com/orbs-network/twap" target="_blank">
-          here
-        </a>
-        . {translations.disclaimer7}{" "}
-        <a href="https://github.com/orbs-network/twap/blob/master/TOS.md" target="_blank">
-          here
-        </a>
-        .
-      </StyledText>
+      <Markdown
+        components={{
+          p: ({ children }: { children: any }) => <StyledText>{children}</StyledText>,
+          a: ({ children, href }: { children: any; href: string }) => (
+            <a href={href} target="_blank" rel="noreferrer">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {translations.disclaimer.replace("{dex}", lib?.config.name || "DEX")}
+      </Markdown>
     </StyledTradeInfoExplanation>
   );
 };
@@ -1161,7 +1105,7 @@ const StyledChunksSliderSelect = styled(Slider)({
 
 const StyledTradeInfoExplanation = styled(StyledColumnFlex)({
   overflow: "auto",
-  gap: 10,
+  gap: 0,
   "*": {
     fontSize: 14,
   },
@@ -1273,12 +1217,6 @@ const StyledTradeSize = styled(StyledRowFlex)({
   },
 });
 
-const StyledMsg = styled(StyledRowFlex)({
-  flexWrap: "wrap",
-  justifyContent: "flex-start",
-  padding: "10px 12px",
-});
-
 export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
   const { srcToken, dstToken } = useTwapContext();
 
@@ -1353,12 +1291,18 @@ export const LimitPriceMessage = ({ className }: { className?: string }) => {
   return (
     <div className={`${className} twap-limit-price-message`}>
       <IoWarning />
-      <StyledText>
-        {t.limitPriceMessage}{" "}
-        <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
-          {t.learnMore}
-        </a>
-      </StyledText>
+      <Markdown
+        components={{
+          p: ({ children }: { children: any }) => <StyledText>{children}</StyledText>,
+          a: ({ children, href }: { children: any; href: string }) => (
+            <a href={href} target="_blank" rel="noreferrer">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {t.limitPriceMessage}
+      </Markdown>
     </div>
   );
 };
