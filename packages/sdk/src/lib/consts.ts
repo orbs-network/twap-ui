@@ -1,7 +1,7 @@
 import Configs from "@orbs-network/twap/configs.json";
 import { networks } from "./networks";
 import { Config } from "./types";
-export const API_ENDPOINT = "http://52.14.159.163:8081";
+export const API_ENDPOINT = "https://order-sink.orbs.network";
 
 export const SUGGEST_CHUNK_VALUE = 100;
 

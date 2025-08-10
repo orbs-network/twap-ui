@@ -54,7 +54,7 @@ export const useSubmitOnChainOrder = () => {
         updateState({ currentStepIndex: stepIndex });
       }
       updateState({ activeStep: Steps.CREATE });
-      const order = await createOrder(ensureWrappedToken(srcToken, chainId));
+      const order = await createOrder();
 
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;

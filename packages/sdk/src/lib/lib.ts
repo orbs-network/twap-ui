@@ -1,7 +1,7 @@
 import BN from "bignumber.js";
-import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, getAskParamsProps, Module, TimeDuration, TimeUnit } from "./types";
-import { findTimeUnit, getTimeDurationMillis } from "./utils";
+import { EXCLUSIVITY_OVERRIDE_BPS, EXECUTOR_ADDRESS, maxUint256, MIN_FILL_DELAY_MINUTES, REACTOR_ADDRESS, REPERMIT_ADDRESS } from "./consts";
+import { Address, Config, getAskParamsProps, GetPermitDataProps, Module, RePermitTypedData, TimeDuration, TimeUnit } from "./types";
+import { findTimeUnit, getNetwork, getTimeDurationMillis, isNativeAddress, safeBNString } from "./utils";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
 export const getDestTokenAmount = (srcAmount?: string, limitPrice?: string, srcTokenDecimals?: number) => {
@@ -105,4 +105,194 @@ export const getAskParams = (config: Config, args: getAskParamsProps) => {
     BN(fillDelaySeconds).toFixed(0),
     [],
   ].map((it) => it.toString());
+};
+
+export const getPermitData = ({
+  chainId,
+  srcToken: _srcToken,
+  dstToken,
+  srcAmount,
+  deadlineMilliseconds,
+  fillDelayMillis,
+  slippage,
+  account,
+  srcAmountPerChunk,
+  dstMinAmountPerChunk,
+  triggerAmountPerChunk,
+}: GetPermitDataProps): RePermitTypedData => {
+  const nonce = (Date.now() * 1000).toString();
+  const epoch = safeBNString(fillDelayMillis / 1000);
+
+  const deadline = safeBNString(deadlineMilliseconds / 1000);
+  const srcToken = isNativeAddress(_srcToken) ? getNetwork(chainId)?.wToken.address : _srcToken;
+
+  if (!srcToken) {
+    throw new Error("srcToken is not defined");
+  }
+
+  return {
+    domain: {
+      name: "RePermit",
+      version: "1",
+      chainId,
+      verifyingContract: REPERMIT_ADDRESS,
+    },
+    primaryType: "RePermitWitnessTransferFrom",
+    types: {
+      RePermitWitnessTransferFrom: [
+        {
+          name: "permitted",
+          type: "TokenPermissions",
+        },
+        {
+          name: "spender",
+          type: "address",
+        },
+        {
+          name: "nonce",
+          type: "uint256",
+        },
+        {
+          name: "deadline",
+          type: "uint256",
+        },
+        {
+          name: "witness",
+          type: "Order",
+        },
+      ],
+      Input: [
+        {
+          name: "token",
+          type: "address",
+        },
+        {
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          name: "maxAmount",
+          type: "uint256",
+        },
+      ],
+      Order: [
+        {
+          name: "info",
+          type: "OrderInfo",
+        },
+        {
+          name: "exclusiveFiller",
+          type: "address",
+        },
+        {
+          name: "exclusivityOverrideBps",
+          type: "uint256",
+        },
+        {
+          name: "epoch",
+          type: "uint256",
+        },
+        {
+          name: "slippage",
+          type: "uint256",
+        },
+        {
+          name: "input",
+          type: "Input",
+        },
+        {
+          name: "output",
+          type: "Output",
+        },
+      ],
+      OrderInfo: [
+        {
+          name: "reactor",
+          type: "address",
+        },
+        {
+          name: "swapper",
+          type: "address",
+        },
+        {
+          name: "nonce",
+          type: "uint256",
+        },
+        {
+          name: "deadline",
+          type: "uint256",
+        },
+        {
+          name: "additionalValidationContract",
+          type: "address",
+        },
+        {
+          name: "additionalValidationData",
+          type: "bytes",
+        },
+      ],
+      Output: [
+        {
+          name: "token",
+          type: "address",
+        },
+        {
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          name: "maxAmount",
+          type: "uint256",
+        },
+        {
+          name: "recipient",
+          type: "address",
+        },
+      ],
+      TokenPermissions: [
+        {
+          name: "token",
+          type: "address",
+        },
+        {
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+    },
+    message: {
+      permitted: {
+        token: srcToken as Address,
+        amount: safeBNString(srcAmount),
+      },
+      spender: REACTOR_ADDRESS,
+      nonce,
+      deadline,
+      witness: {
+        info: {
+          reactor: REACTOR_ADDRESS,
+          swapper: account as Address,
+          nonce,
+          deadline,
+          additionalValidationContract: EXECUTOR_ADDRESS,
+          additionalValidationData: "0x",
+        },
+        exclusiveFiller: EXECUTOR_ADDRESS,
+        exclusivityOverrideBps: EXCLUSIVITY_OVERRIDE_BPS,
+        epoch,
+        slippage: safeBNString(slippage),
+        input: {
+          token: srcToken as Address,
+          amount: safeBNString(srcAmountPerChunk),
+          maxAmount: safeBNString(srcAmount),
+        },
+        output: {
+          token: dstToken as Address,
+          amount: safeBNString(dstMinAmountPerChunk) || "0",
+          maxAmount: safeBNString(triggerAmountPerChunk) || maxUint256.toString(),
+          recipient: account as Address,
+        },
+      },
+    },
+  };
 };

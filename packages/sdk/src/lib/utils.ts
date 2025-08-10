@@ -111,6 +111,11 @@ export const safeInteger = (value?: string) => {
     .toFixed();
 };
 
+export const safeBNString = (value?: string | number) => {
+  if (!value || value === "NaN") return "0";
+  return BN(value).decimalPlaces(0).toFixed();
+};
+
 export const getNetwork = (chainId?: number) => {
   return Object.values(networks).find((it) => it.id === chainId);
 };

@@ -22,9 +22,9 @@ export const useDefaultLimitPricePercent = () => {
     if ((module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) || isMarketOrder) {
       return undefined;
     }
-    const result = BN(slippage).multipliedBy(SLIPPAGE_MULTIPLIER);
+    const result = BN(slippage).multipliedBy(LIMIT_TRIGGER_PRICE_DELTA_PERCENTAGE);
     if (module === Module.STOP_LOSS) {
-      return result.plus(LIMIT_TRIGGER_PRICE_DELTA_PERCENTAGE).multipliedBy(-1).decimalPlaces(0).toNumber();
+      return result.multipliedBy(-1).decimalPlaces(0).toNumber();
     } else {
       return Math.max(result.minus(LIMIT_TRIGGER_PRICE_DELTA_PERCENTAGE).decimalPlaces(0).toNumber(), 2);
     }

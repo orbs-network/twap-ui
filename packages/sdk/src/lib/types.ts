@@ -98,3 +98,94 @@ export type LensOrder = {
   filledTime: number;
   srcFilledAmount: bigint;
 };
+
+export type GetPermitDataProps = {
+  chainId: number;
+  srcToken: string;
+  dstToken: string;
+  srcAmount: string;
+  deadlineMilliseconds: number;
+  fillDelayMillis: number;
+  slippage: number;
+  account: string;
+  srcAmountPerChunk: string;
+  dstMinAmountPerChunk?: string;
+  triggerAmountPerChunk?: string;
+};
+export type Address = `0x${string}`;
+export type Hex = `0x${string}`;
+
+// Structs (match your EIP-712 types)
+export interface TokenPermissions {
+  token: Address;
+  amount: string;
+}
+
+export interface Input {
+  token: Address;
+  amount: string;
+  maxAmount: string;
+}
+
+export interface Output {
+  token: Address;
+  amount: string;
+  maxAmount: string;
+  recipient: Address;
+}
+
+export interface PermitDataOrderInfo {
+  reactor: Address;
+  swapper: Address;
+  nonce: string;
+  deadline: string;
+  additionalValidationContract: Address;
+  additionalValidationData: Hex; // bytes
+}
+
+export interface PermitDataOrder {
+  info: PermitDataOrderInfo;
+  exclusiveFiller: Address;
+  exclusivityOverrideBps: string;
+  epoch: string;
+  slippage: string;
+  input: Input;
+  output: Output;
+}
+
+export interface RePermitWitnessTransferFrom {
+  permitted: TokenPermissions;
+  spender: Address;
+  nonce: string;
+  deadline: string;
+  witness: PermitDataOrder;
+}
+
+// EIP-712 "types" descriptor (for signTypedData)
+export type EIP712TypeName = "TokenPermissions" | "Input" | "Output" | "OrderInfo" | "Order" | "RePermitWitnessTransferFrom";
+
+export interface EIP712Field {
+  name: string;
+  type: string;
+}
+
+export type EIP712Types = Record<EIP712TypeName, EIP712Field[]>;
+
+// Full typed-data container
+export interface RePermitTypedData {
+  domain: {
+    name: "RePermit";
+    version: "1";
+    chainId: number;
+    verifyingContract: Address;
+  };
+  primaryType: "RePermitWitnessTransferFrom";
+  types: EIP712Types;
+  message: RePermitWitnessTransferFrom;
+}
+
+export type Signature = {
+  v: `0x${string}`;
+  r: `0x${string}`;
+  s: `0x${string}`;
+};

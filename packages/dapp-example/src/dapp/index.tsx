@@ -576,7 +576,7 @@ const TriggerLimitPrice = () => {
 };
 
 const TriggerPrice = () => {
-  const { price, srcToken, dstToken, onReset, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error } = useTriggerPricePanel();
+  const { price, srcToken, dstToken, onSetMarketRate, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error } = useTriggerPricePanel();
   const { onInvert, isInverted } = useInvertTrade();
 
   return (
@@ -592,7 +592,7 @@ const TriggerPrice = () => {
       <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
         <div className="flex flex-row gap-2 justify-between items-center w-full">
           <Label label={label} tooltip={tooltip} />
-          <ResetButton onClick={onReset} text="set market rate" />
+          <ResetButton onClick={onSetMarketRate} text="set market rate" />
         </div>
         <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
           <SymbolInput isLoading={isLoading} error={Boolean(error)} token={dstToken} onChange={onChange} value={price} />

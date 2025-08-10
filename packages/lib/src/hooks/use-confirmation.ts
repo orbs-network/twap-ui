@@ -5,7 +5,6 @@ import { useTradePrice } from "../twap/submit-order-modal/usePrice";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderType } from "../utils";
 import { useSubmitOrderCallback } from "./use-submit-order";
-import { useOrderSubmissionArgs } from "./use-order-submission-args";
 import { useDeadline } from "./use-deadline";
 import { useSrcChunkAmount } from "./use-src-chunk-amount";
 import { useFillDelay } from "./use-fill-delay";
@@ -76,7 +75,6 @@ export const useConfirmationPanel = () => {
   const updateState = useTwapStore((s) => s.updateState);
   const isLoading = mutationLoading || swapStatus === SwapStatus.LOADING || fetchingAllowance;
   const tradePrice = useTradePrice();
-  const orderSubmissionArgs = useOrderSubmissionArgs();
 
   const setDisclaimerAccepted = useCallback(
     (accepted: boolean) => {
@@ -92,7 +90,6 @@ export const useConfirmationPanel = () => {
     isOpen: Boolean(showConfirmation),
     setDisclaimerAccepted,
     disclaimerAccepted,
-    orderSubmissionArgs,
     orderDetails: {
       orderType: getOrderType(Boolean(isMarketOrder), chunks),
       srcToken,

@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { Abi, getTypesForEIP712Domain, serializeTypedData, TransactionReceipt, validateTypedData } from "viem";
+import { Abi, concatHex, getTypesForEIP712Domain, numberToHex, padHex, parseSignature, recoverTypedDataAddress, serializeTypedData, TransactionReceipt, validateTypedData, verifyMessage, verifyTypedData } from "viem";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderIdFromCreateOrderEvent } from "../utils";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
-import { useOrderSubmissionArgs } from "./use-order-submission-args";
 import { useCallback } from "react";
 import { useOptimisticAddOrder, useOrders } from "./order-hooks";
 import { Token } from "../types";
@@ -59,10 +58,9 @@ export const useCreateOrder = () => {
   const { account, walletClient, publicClient, chainId, dstToken, twapSDK } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
-  const orderSubmissionArgs = useOrderSubmissionArgs();
   const permitData = usePermitData();
 
-  return useMutation(async (srcToken: Token) => {
+  return useMutation(async () => {
     try {
       if (!account) throw new Error("account is not defined");
       if (!walletClient) throw new Error("walletClient is not defined");
@@ -70,7 +68,6 @@ export const useCreateOrder = () => {
       if (!chainId) throw new Error("chainId is not defined");
       if (!dstToken) throw new Error("dstToken is not defined");
       if (!permitData) throw new Error("permit is not defined");
-      if (!orderSubmissionArgs?.params) throw new Error("failed to get params for ask method");
 
       // callbacks.onRequest(orderSubmissionArgs.params);
       const typedDataMessage = _TypedDataEncoder.getPayload(permitData.domain, permitData.types, permitData.message);
@@ -87,7 +84,32 @@ export const useCreateOrder = () => {
         domain: typedDataMessage.domain,
       });
       console.log({ signature });
-      const response = await twapSDK.submitOrder(signature);
+
+      const { r, s, v } = parseSignature(signature);
+
+      const signatureObj = {
+        v: numberToHex(v!, { size: 1 }),
+        r: padHex(r, { size: 32 }),
+        s: padHex(s, { size: 32 }),
+      };
+
+
+      // const signatureHex = concatHex([
+      //   signatureObj.r,
+      //   signatureObj.s,
+      //   signatureObj.v,
+      // ])
+      // const ok = await recoverTypedDataAddress({
+      //   domain: permitData.domain,
+      //   types: permitData.types,
+      //   primaryType: permitData.primaryType,
+      //   message: typedDataMessage.message,
+      //   signature: signatureHex,
+      // })
+
+      // console.log({ ok });
+
+      const response = await twapSDK.submitOrder(permitData, signatureObj);
       console.log({ response });
       updateState({ createOrderTxHash: "" });
 
@@ -101,10 +123,10 @@ export const useCreateOrder = () => {
       // }
       // const orderId = getOrderIdFromCreateOrderEvent(receipt);
 
-      await callbacks.onSuccess({} as TransactionReceipt, orderSubmissionArgs.params, srcToken, 100);
+      // await callbacks.onSuccess({} as TransactionReceipt, orderSubmissionArgs.params, srcToken, 100);
 
       return {
-        orderId: 100,
+        orderId: 0,
         receipt: undefined,
       };
     } catch (error) {

@@ -82,8 +82,8 @@ export const useTriggerPricePanel = () => {
   const { isInverted } = useInvertTrade();
   const defaultTriggerPricePercent = useDefaultTriggerPricePercent();
 
-  const reset = useCallback(() => {
-    updateState({ triggerPricePercent: defaultTriggerPricePercent, typedTriggerPrice: undefined });
+  const onSetMarketRate = useCallback(() => {
+    updateState({ triggerPricePercent: null, typedTriggerPrice: undefined });
   }, [updateState, defaultTriggerPricePercent]);
 
   const prefixStopsLoss = isInverted ? "+" : "-";
@@ -98,7 +98,7 @@ export const useTriggerPricePanel = () => {
     onPercentageChange,
     marketDiffPercentage: percentDiffFromMarketPrice,
     isActive: !isMarketOrder,
-    onReset: reset,
+    onSetMarketRate,
     usd,
     srcToken: isInverted ? dstToken : srcToken,
     dstToken: isInverted ? srcToken : dstToken,

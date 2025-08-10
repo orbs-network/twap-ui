@@ -9,14 +9,14 @@ import {
   getFillDelay,
   getDuration,
   getDestTokenAmount,
-  getAskParams,
   DEFAULT_FILL_DELAY,
   getDestTokenMinAmountPerChunk,
   getTriggerPricePerChunk,
+  getPermitData,
 } from "./lib";
 import { getOrders } from "./orders";
 import { submitOrder } from "./submit-order";
-import { Config, getAskParamsProps, Module, TimeDuration } from "./types";
+import { Config, GetPermitDataProps, Module, RePermitTypedData, Signature, TimeDuration } from "./types";
 import { getTimeDurationMillis } from "./utils";
 import BN from "bignumber.js";
 
@@ -50,12 +50,11 @@ export class TwapSDK {
     analytics.onConfigChange(props.config);
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
   }
-  //create order values
-  getAskParams(props: getAskParamsProps) {
-    return getAskParams(this.config, props);
+  getPermitData(props: GetPermitDataProps) {
+    return getPermitData(props);
   }
-  submitOrder(signedOrder: string) {
-    return submitOrder(signedOrder);
+  submitOrder(permitData: RePermitTypedData, signature: Signature) {
+    return submitOrder(permitData, signature);
   }
   getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) {
     return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);
