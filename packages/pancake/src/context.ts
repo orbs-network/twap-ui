@@ -6,7 +6,7 @@ export interface AdapterProps extends TWAPProps {
   dappTokens?: { [key: string]: any };
   isDarkTheme?: boolean;
   ConnectButton: JSXElementConstructor<any>;
-  useTokenModal: any;
+  useTokenModal?: any;
   nativeToken: any;
   connector?: any;
   isMobile?: boolean;
@@ -27,6 +27,16 @@ export interface AdapterProps extends TWAPProps {
   Balance?: FC<BalanceProps>;
   translations?: Partial<Translations>;
   ReactMarkdown: FC<{ children: string; components?: any }>;
+  InputTokenPanel?: FC<{
+    isSrcToken: boolean;
+    isUserInsufficientBalance: boolean;
+    inputLoading: boolean;
+    value: string;
+    onChange: (value: string) => void;
+    onCurrencySelect: (token: any) => void;
+    inputCurrency: any;
+    outputCurrency: any;
+  }>;
 }
 
 export type ToastProps = { title: string; message: ReactNode; autoCloseMillis?: number; variant: "success" | "warning" | "error" | "info" };

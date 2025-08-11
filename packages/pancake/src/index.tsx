@@ -160,7 +160,20 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
   const [showPercent, setShowPercent] = useState(false);
   const { translations } = useTwapContext();
-  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
+  const { onSrcTokenSelected, onDstTokenSelected, InputTokenPanel, srcToken: inputCurrency, dstToken: outputCurrency } = useAdapterContext();
+  const { isLoading: isTradePriceLoading } = hooks.useTradePrice();
+  const srcAmountUi = store.useTwapStore((s) => s.srcAmountUi);
+  const setSrcAmountUi = hooks.useSetSrcAmountUi();
+  const srcAmount = hooks.useSrcAmount().amount;
+  const srcBalance = hooks.useSrcBalance().data?.toString();
+
+  const dstAmountUi = hooks.useDstAmount().amountUI;
+  const amount = isSrcToken ? srcAmountUi : dstAmountUi;
+
+  const isUserInsufficientBalance = useMemo(() => {
+    if (!isSrcToken) return false;
+    return BN(srcAmount || 0).gt(BN(srcBalance || 0));
+  }, [srcAmount, srcBalance, isSrcToken]);
 
   const onSelect = useCallback(
     (token: any) => {
@@ -168,7 +181,24 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
     },
     [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
   );
-  const onTokenSelectClick = useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
+  const onTokenSelectClick = useAdapterContext().useTokenModal?.(onSelect, srcToken, dstToken, isSrcToken);
+
+  if (InputTokenPanel) {
+    return (
+      <StyledContainerPadding>
+        <InputTokenPanel
+          isSrcToken={isSrcToken}
+          isUserInsufficientBalance={isUserInsufficientBalance}
+          inputLoading={Boolean(!isSrcToken && isTradePriceLoading)}
+          value={amount}
+          onChange={setSrcAmountUi}
+          onCurrencySelect={onSelect}
+          inputCurrency={isSrcToken ? inputCurrency : outputCurrency}
+          outputCurrency={isSrcToken ? outputCurrency : inputCurrency}
+        />
+      </StyledContainerPadding>
+    );
+  }
   return (
     <StyledContainerPadding>
       <StyledTokenPanel>

@@ -1227,7 +1227,7 @@ export const StyledInputContainerChildren = styled("div")<{ focused: number; cus
       position: "absolute",
       width: "100%",
       height: "100%",
-      border: showCustomBorder ? "unset" : `${focused ? 2 : 1}px solid  ${borderColor}`,
+      border: showCustomBorder ? "unset" : `${focused ? 2 : 1}px solid  ${focused ? borderColor : "transparent"}`,
       borderRadius: 24,
       left: 0,
       top: 0,
@@ -1424,7 +1424,7 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     display: "flex",
-    width: 180,
+    width: 156,
     flexDirection: "row",
     gap: 15,
     alignItems: "center",
@@ -1435,7 +1435,7 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
     },
     ".twap-label": {
       p: {
-        fontSize: 15,
+        fontSize: 16,
       },
     },
     ".twap-input": {
