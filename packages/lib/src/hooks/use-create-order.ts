@@ -1,5 +1,18 @@
 import { useMutation } from "@tanstack/react-query";
-import { Abi, concatHex, getTypesForEIP712Domain, numberToHex, padHex, parseSignature, recoverTypedDataAddress, serializeTypedData, TransactionReceipt, validateTypedData, verifyMessage, verifyTypedData } from "viem";
+import {
+  Abi,
+  concatHex,
+  getTypesForEIP712Domain,
+  numberToHex,
+  padHex,
+  parseSignature,
+  recoverTypedDataAddress,
+  serializeTypedData,
+  TransactionReceipt,
+  validateTypedData,
+  verifyMessage,
+  verifyTypedData,
+} from "viem";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderIdFromCreateOrderEvent } from "../utils";
@@ -70,18 +83,18 @@ export const useCreateOrder = () => {
       if (!permitData) throw new Error("permit is not defined");
 
       // callbacks.onRequest(orderSubmissionArgs.params);
-      const typedDataMessage = _TypedDataEncoder.getPayload(permitData.domain, permitData.types, permitData.message);
 
-      console.log({ typedDataMessage });
+      console.log({ permitData });
 
-      logData(typedDataMessage);
+      logData(permitData);
+      const { domain, types, primaryType, message } = permitData;
 
       const signature = await walletClient?.signTypedData({
         account: account as `0x${string}`,
-        types: typedDataMessage.types,
-        primaryType: typedDataMessage.primaryType,
-        message: typedDataMessage.message,
-        domain: typedDataMessage.domain,
+        types: types,
+        primaryType: primaryType,
+        message: message as Record<string, any>,
+        domain: domain,
       });
       console.log({ signature });
 
@@ -92,22 +105,17 @@ export const useCreateOrder = () => {
         r: padHex(r, { size: 32 }),
         s: padHex(s, { size: 32 }),
       };
+      const sig = concatHex([padHex(r!, { size: 32 }), padHex(s!, { size: 32 }), numberToHex(v! === 0n || v! === 1n ? v! + 27n : v!, { size: 1 })]);
 
+      const signer = await recoverTypedDataAddress({
+        domain: domain,
+        types: types,
+        primaryType: primaryType,
+        message: message as Record<string, any>,
+        signature: sig,
+      });
 
-      // const signatureHex = concatHex([
-      //   signatureObj.r,
-      //   signatureObj.s,
-      //   signatureObj.v,
-      // ])
-      // const ok = await recoverTypedDataAddress({
-      //   domain: permitData.domain,
-      //   types: permitData.types,
-      //   primaryType: permitData.primaryType,
-      //   message: typedDataMessage.message,
-      //   signature: signatureHex,
-      // })
-
-      // console.log({ ok });
+      console.log({ signer });
 
       const response = await twapSDK.submitOrder(permitData, signatureObj);
       console.log({ response });
