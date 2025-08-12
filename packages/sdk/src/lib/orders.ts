@@ -1,39 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-constant-condition */
-import { Config, LensOrder, OrderStatus, OrderType, TwapFill } from "./types";
+import { Config, LensOrder, OrderStatus, OrderType, ParsedFills, RawOrder, TwapFill } from "./types";
 import BN from "bignumber.js";
 import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl, normalizeSubgraphList } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 import { API_ENDPOINT } from "./consts";
-
-type GraphOrder = {
-  Contract_id: string | number;
-  srcTokenSymbol: string;
-  dollarValueIn: string;
-  blockNumber: number;
-  maker: string;
-  dstTokenSymbol: string;
-  ask_fillDelay: number;
-  exchange: string;
-  twapAddress: string;
-  dex: string;
-  ask_deadline: number;
-  timestamp: string;
-  ask_srcAmount: string;
-  ask_dstMinAmount: string;
-  ask_srcBidAmount: string;
-  transactionHash: string;
-  ask_srcToken: string;
-  ask_dstToken: string;
-};
-
-type ParsedFills = {
-  filledDstAmount: string;
-  filledSrcAmount: string;
-  filledDollarValueIn: string;
-  filledDollarValueOut: string;
-  dexFee: string;
-};
 
 type GraphQLPageFetcher<T> = (page: number, limit: number) => string;
 
@@ -326,12 +297,12 @@ export async function getCreatedOrders({
   page?: number;
   limit?: number;
   filters?: GetOrdersFilters;
-}): Promise<GraphOrder[]> {
+}): Promise<RawOrder[]> {
   const limit = _limit || 1000;
 
   const whereClause = getCreatedOrdersFilters(filters);
 
-  const orders = await fetchWithRetryPaginated<GraphOrder>({
+  const orders = await fetchWithRetryPaginated<RawOrder>({
     chainId,
     signal,
     limit,
@@ -383,7 +354,7 @@ type GraphStatus = {
   status: RawStatus;
 };
 
-export const getStatuses = async ({ chainId, orders, signal }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal }): Promise<GraphStatus[]> => {
+export const getStatuses = async ({ chainId, orders, signal }: { chainId: number; orders: RawOrder[]; signal?: AbortSignal }): Promise<GraphStatus[]> => {
   if (orders.length === 0) return [];
 
   const ids = uniq(orders.map((o) => o.Contract_id.toString()));
@@ -421,7 +392,7 @@ export function uniq<T>(array: T[]): T[] {
   return Array.from(new Set(array));
 }
 
-const getFills = async ({ chainId, orders, signal }: { chainId: number; orders: GraphOrder[]; signal?: AbortSignal }) => {
+const getFills = async ({ chainId, orders, signal }: { chainId: number; orders: RawOrder[]; signal?: AbortSignal }) => {
   const ids = uniq(orders.map((o) => o.Contract_id)); // no `.toString()`
   const twapAddresses = uniq(orders.map((o) => o.twapAddress)).filter(Boolean);
 
@@ -537,7 +508,7 @@ export const getOrders = async ({
   return parsedOrders;
 };
 
-const getStatus = (order: GraphOrder, fills: TwapFill[], statuses?: GraphStatus[]): OrderStatus => {
+const getStatus = (order: RawOrder, fills: TwapFill[], statuses?: GraphStatus[]): OrderStatus => {
   const status = statuses?.find((it) => it.twapId === order.Contract_id.toString() && eqIgnoreCase(it.twapAddress, order.twapAddress))?.status;
   const { filledSrcAmount } = parseFills(fills);
   const progress = getOrderProgress(order.ask_srcAmount, filledSrcAmount);

@@ -7,17 +7,18 @@ import BN from "bignumber.js";
 import { useInvertTrade } from "./use-invert-trade";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useDefaultLimitPricePercent } from "./use-default-values";
+import { getStopLossLimitPriceError, getTakeProfitLimitPriceError } from "@orbs-network/twap-sdk";
 
 export const useLimitPriceError = () => {
-  const { translations: t, twapSDK, module } = useTwapContext();
+  const { translations: t, module } = useTwapContext();
   const { amountWei: triggerPrice } = useTriggerPrice();
   const limitPrice = useLimitPrice().amountWei;
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
     if (!typedSrcAmount || !triggerPrice) return;
-    const _stopLossError = twapSDK.getStopLossLimitPriceError(triggerPrice, limitPrice, isMarketOrder, module);
-    const _takeProfitError = twapSDK.getTakeProfitLimitPriceError(triggerPrice, limitPrice, isMarketOrder, module);
+    const _stopLossError = getStopLossLimitPriceError(triggerPrice, limitPrice, isMarketOrder, module);
+    const _takeProfitError = getTakeProfitLimitPriceError(triggerPrice, limitPrice, isMarketOrder, module);
 
     if (_stopLossError?.isError) {
       return {

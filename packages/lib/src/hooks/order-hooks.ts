@@ -1,4 +1,4 @@
-import { buildOrder, getOrderFillDelayMillis, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { buildOrder, getOrderFillDelayMillis, getUserOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -197,14 +197,13 @@ const useHandlePersistedOrders = () => {
 };
 
 const useOrdersQuery = () => {
-  const { account, twapSDK, publicClient, config } = useTwapContext();
+  const { account, config } = useTwapContext();
   const queryKey = useOrdersQueryKey();
   const handlePersistedOrders = useHandlePersistedOrders();
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
-      if (!publicClient) throw new Error("publicClient is not defined");
-      const orders: Order[] = await twapSDK.getOrders(account!, signal);
+      const orders: Order[] = await getUserOrders(config, account!, signal);
 
       handlePersistedOrders(orders);
 

@@ -156,6 +156,15 @@ export const ensureWrappedToken = (token: Token, chainId: number) => {
   return token;
 };
 
+export const ensureWrappedTokenAddress = (address: string, chainId: number) => {
+  const network = getNetwork(chainId);
+  if (!network) return address;
+  if (isNativeAddress(address)) {
+    return network.wToken.address;
+  }
+  return address;
+};
+
 export function millisToDays(milliseconds?: number): number {
   if (!milliseconds) return 0;
   const millisecondsInADay = 86400000; // 24 * 60 * 60 * 1000

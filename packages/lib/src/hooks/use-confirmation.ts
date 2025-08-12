@@ -4,7 +4,6 @@ import { useTwapContext } from "../context";
 import { useTradePrice } from "../twap/submit-order-modal/usePrice";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderType } from "../utils";
-import { useSubmitOrderCallback } from "./use-submit-order";
 import { useDeadline } from "./use-deadline";
 import { useSrcChunkAmount } from "./use-src-chunk-amount";
 import { useFillDelay } from "./use-fill-delay";
@@ -13,6 +12,7 @@ import { useUsdAmount } from "./helper-hooks";
 import { useDstAmount } from "./use-dst-amount";
 import { useFees } from "./use-fees";
 import { useDstMinAmountPerChunk } from "./use-dst-min-amount-out-per-chunk";
+import { useSubmitOrder } from "./use-submit-order";
 
 export const useOnOpenConfirmationModal = () => {
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
@@ -56,7 +56,7 @@ export const useConfirmationPanel = () => {
   const destMinAmountOut = useDstMinAmountPerChunk().amountUI;
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const fee = useFees();
-  const { mutateAsync, isLoading: mutationLoading } = useSubmitOrderCallback();
+  const { mutateAsync, isLoading: mutationLoading } = useSubmitOrder();
   const srcUsdAmount = useUsdAmount(srcAmount, srcUsd1Token);
   const dstUsdAmount = useUsdAmount(acceptedDstAmount, dstUsd1Token);
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);

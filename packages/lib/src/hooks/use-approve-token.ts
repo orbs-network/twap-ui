@@ -3,11 +3,11 @@ import { useTwapStore } from "../useTwapStore";
 import { useTwapContext } from "../context";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { Token } from "../types";
-import { amountUi, REPERMIT_ADDRESS } from "@orbs-network/twap-sdk";
+import { amountUi, analytics, REPERMIT_ADDRESS } from "@orbs-network/twap-sdk";
 import { erc20Abi, maxUint256 } from "viem";
 
 export const useApproveToken = () => {
-  const { account, walletClient, publicClient, callbacks, twapSDK, transactions } = useTwapContext();
+  const { account, walletClient, publicClient, callbacks, transactions } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const getTransactionReceipt = useGetTransactionReceipt();
   return useMutation(
@@ -41,7 +41,7 @@ export const useApproveToken = () => {
         throw new Error("failed to approve token");
       }
 
-      twapSDK.analytics.onApproveSuccess(hash);
+      analytics.onApproveSuccess(hash);
       callbacks?.approve?.onSuccess?.(receipt, token!, amountUi(token?.decimals, maxUint256.toString()));
     },
     {

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback } from "react";
 import { useTwapContext } from "../context";
 import { useSrcAmount } from "./use-src-amount";
 import { useDeadline } from "./use-deadline";
@@ -6,9 +6,10 @@ import { useSrcChunkAmount } from "./use-src-chunk-amount";
 import { useDstMinAmountPerChunk } from "./use-dst-min-amount-out-per-chunk";
 import { useFillDelay } from "./use-fill-delay";
 import { useTriggerAmountPerChunk } from "./use-trigger-amount-per-chunk";
+import { buildRePermitOrderData, getNetwork, isNativeAddress } from "@orbs-network/twap-sdk";
 
-export const usePermitData = () => {
-  const { srcToken, dstToken, chainId, account, slippage: _slippage, twapSDK } = useTwapContext();
+export const useBuildRePermitOrderDataCallback = () => {
+  const { srcToken, dstToken, chainId, account, slippage: _slippage } = useTwapContext();
   const srcAmountWei = useSrcAmount().amountWei;
   const srcChunkAmount = useSrcChunkAmount().amountWei;
   const deadlineMillis = useDeadline();
@@ -17,11 +18,15 @@ export const usePermitData = () => {
   const fillDelay = useFillDelay().fillDelay;
   const slippage = _slippage * 100;
 
-  return useMemo(() => {
-    if (!srcToken || !dstToken || !chainId || !account || !deadlineMillis || !srcAmountWei) return;
-    return twapSDK.getPermitData({
+  return useCallback(() => {
+    const srcTokenAddress = isNativeAddress(srcToken?.address || "") ? getNetwork(chainId)?.wToken.address : srcToken?.address;
+
+    if (!srcTokenAddress || !dstToken || !chainId || !account || !deadlineMillis || !srcAmountWei) {
+      throw new Error("buildRePermitOrderData missing required parameters");
+    }
+    return buildRePermitOrderData({
       chainId,
-      srcToken: srcToken.address,
+      srcToken: srcTokenAddress,
       dstToken: dstToken.address,
       srcAmount: srcAmountWei,
       deadlineMilliseconds: deadlineMillis,
@@ -32,5 +37,5 @@ export const usePermitData = () => {
       dstMinAmountPerChunk,
       triggerAmountPerChunk,
     });
-  }, [srcToken, dstToken, chainId, account, srcAmountWei, deadlineMillis, srcChunkAmount, triggerAmountPerChunk, slippage, dstMinAmountPerChunk]);
+  }, [srcToken, dstToken, chainId, account, srcAmountWei, deadlineMillis, srcChunkAmount, triggerAmountPerChunk, slippage, dstMinAmountPerChunk, fillDelay]);
 };

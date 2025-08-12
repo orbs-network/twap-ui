@@ -8,15 +8,16 @@ import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { useTwapStore } from "../useTwapStore";
 import { InputError, InputErrors } from "../types";
 import BN from "bignumber.js";
+import { getMinTradeSizeError, getSrcTokenChunkAmount } from "@orbs-network/twap-sdk";
 
 export const useSrcChunkAmountError = () => {
-  const { twapSDK, translations: t } = useTwapContext();
+  const { translations: t } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const srcUsd1Token = useTwapContext().srcUsd1Token;
   const minChunkSizeUsd = useMinChunkSizeUsd();
 
   return useMemo((): InputError | undefined => {
-    const { isError, value } = twapSDK.getMinTradeSizeError(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0);
+    const { isError, value } = getMinTradeSizeError(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0);
 
     if (isError) {
       return {
@@ -25,14 +26,14 @@ export const useSrcChunkAmountError = () => {
         message: t.minTradeSizeError.replace("{minTradeSize}", `${value} USD`),
       };
     }
-  }, [twapSDK, typedSrcAmount, srcUsd1Token, minChunkSizeUsd]);
+  }, [typedSrcAmount, srcUsd1Token, minChunkSizeUsd]);
 };
 
 export const useSrcChunkAmount = () => {
-  const { twapSDK, srcToken, srcUsd1Token } = useTwapContext();
+  const { srcToken, srcUsd1Token } = useTwapContext();
   const { chunks } = useChunks();
   const srcAmountWei = useSrcAmount().amountWei;
-  const amountWei = useMemo(() => twapSDK.getSrcTokenChunkAmount(srcAmountWei || "", chunks), [twapSDK, srcAmountWei, chunks]);
+  const amountWei = useMemo(() => getSrcTokenChunkAmount(srcAmountWei || "", chunks), [srcAmountWei, chunks]);
   const amountUI = useAmountUi(srcToken?.decimals, amountWei);
 
   const usd = useMemo(() => {

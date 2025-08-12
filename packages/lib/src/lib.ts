@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, custom, defineChain, erc20Abi, http } from "viem";
+import { createPublicClient, createWalletClient, custom, defineChain, http } from "viem";
 import { Provider, PublicClient, WalletClient } from "./types";
 import * as chains from "viem/chains";
 
@@ -25,21 +25,7 @@ const katana: chains.Chain = defineChain({
   },
 });
 
-export const getAllowance = async (token: string, account: string, twapAddress: string, publicClient: PublicClient) => {
-  try {
-    const result = await publicClient
-      .readContract({
-        address: token as `0x${string}`,
-        abi: erc20Abi,
-        functionName: "allowance",
-        args: [account as `0x${string}`, twapAddress as `0x${string}`],
-      })
-      .then((res) => res.toString());
-    return result;
-  } catch (error) {
-    return "0";
-  }
-};
+
 
 export const initiateWallet = (chainId?: number, provider?: Provider) => {
   const chain = [katana, ...Object.values(chains)].find((it: any) => it.id === chainId);

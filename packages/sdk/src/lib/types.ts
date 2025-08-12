@@ -99,7 +99,7 @@ export type LensOrder = {
   srcFilledAmount: bigint;
 };
 
-export type GetPermitDataProps = {
+export type BuildRePermitOrderDataProps = {
   chainId: number;
   srcToken: string;
   dstToken: string;
@@ -188,4 +188,70 @@ export type Signature = {
   v: `0x${string}`;
   r: `0x${string}`;
   s: `0x${string}`;
+};
+
+export interface OrderData {
+  permitted: {
+    token: Address;
+    amount: string;
+  };
+  spender: Address;
+  nonce: string;
+  deadline: string;
+  witness: {
+    info: {
+      reactor: Address;
+      swapper: Address;
+      nonce: string;
+      deadline: string;
+      additionalValidationContract: Address;
+      additionalValidationData: Hex;
+    };
+    exclusiveFiller: Address;
+    exclusivityOverrideBps: string;
+    input: {
+      token: Address;
+      amount: string;
+      maxAmount: string;
+    };
+    output: {
+      token: Address;
+      amount: string;
+      recipient: Address;
+      maxAmount: string;
+    };
+    epoch: string;
+    slippage: string;
+    trigger: string;
+    chainId: string;
+  };
+}
+
+export type RawOrder = {
+  Contract_id: string | number;
+  srcTokenSymbol: string;
+  dollarValueIn: string;
+  blockNumber: number;
+  maker: string;
+  dstTokenSymbol: string;
+  ask_fillDelay: number;
+  exchange: string;
+  twapAddress: string;
+  dex: string;
+  ask_deadline: number;
+  timestamp: string;
+  ask_srcAmount: string;
+  ask_dstMinAmount: string;
+  ask_srcBidAmount: string;
+  transactionHash: string;
+  ask_srcToken: string;
+  ask_dstToken: string;
+};
+
+export type ParsedFills = {
+  filledDstAmount: string;
+  filledSrcAmount: string;
+  filledDollarValueIn: string;
+  filledDollarValueOut: string;
+  dexFee: string;
 };

@@ -1,4 +1,4 @@
-import { TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { getFillDelay, getMaxFillDelayError, getMinFillDelayError, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
@@ -6,38 +6,37 @@ import { DEFAULT_DURATION_OPTIONS, InputError, InputErrors, millisToDays, millis
 import { useChunks } from "./use-chunks";
 
 export const useFillDelayError = () => {
-  const { twapSDK, translations: t } = useTwapContext();
+  const { translations: t } = useTwapContext();
   const { chunks } = useChunks();
   const fillDelay = useFillDelay().fillDelay;
 
   const maxFillDelayError = useMemo((): InputError | undefined => {
-    const { isError, value } = twapSDK.getMaxFillDelayError(fillDelay, chunks);
+    const { isError, value } = getMaxFillDelayError(fillDelay, chunks);
     if (!isError) return undefined;
     return {
       type: InputErrors.MAX_FILL_DELAY,
       value: value,
       message: t.maxFillDelayError.replace("{fillDelay}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`),
     };
-  }, [fillDelay, twapSDK, chunks, t]);
+  }, [fillDelay, chunks, t]);
 
   const minFillDelayError = useMemo((): InputError | undefined => {
-    const { isError, value } = twapSDK.getMinFillDelayError(fillDelay);
+    const { isError, value } = getMinFillDelayError(fillDelay);
     if (!isError) return undefined;
     return {
       type: InputErrors.MIN_FILL_DELAY,
       value: value,
       message: t.minFillDelayError.replace("{fillDelay}", `${millisToMinutes(value)} ${t.minutes}`),
     };
-  }, [fillDelay, twapSDK, t]);
+  }, [fillDelay, t]);
 
   return maxFillDelayError || minFillDelayError;
 };
 
 export const useFillDelay = () => {
-  const { twapSDK } = useTwapContext();
   const typedFillDelay = useTwapStore((s) => s.state.typedFillDelay);
   const updateState = useTwapStore((s) => s.updateState);
-  const fillDelay = useMemo(() => twapSDK.getFillDelay(typedFillDelay), [typedFillDelay, twapSDK]);
+  const fillDelay = useMemo(() => getFillDelay(typedFillDelay), [typedFillDelay]);
 
   return {
     fillDelay,

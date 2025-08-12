@@ -138,10 +138,6 @@ export const getExchanges = (config?: Config[]) => {
 
 export const normalizeSubgraphList = <T>(list?: T[], transform?: (val: T) => string) => (list && list.length ? list.map(transform || ((v) => `${v}`)) : undefined);
 
-export const isSupportedByTheGraph = (chainId?: number) => {
-  return getTheGraphUrl(chainId) !== undefined;
-};
-
 export const getConfigByExchange = (exchange: string, chainId: number): Config | undefined => {
   const normalized = exchange.toLowerCase();
 

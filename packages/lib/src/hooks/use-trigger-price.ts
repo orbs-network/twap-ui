@@ -6,15 +6,16 @@ import { useInputWithPercentage } from "./use-input-with-percentage";
 import { InputError, InputErrors, Module } from "../types";
 import { useInvertTrade } from "./use-invert-trade";
 import { useDefaultTriggerPricePercent } from "./use-default-values";
+import { getStopLossPriceError, getTakeProfitPriceError } from "@orbs-network/twap-sdk";
 
 export const useTriggerPriceError = () => {
-  const { module, marketPrice, twapSDK, translations: t } = useTwapContext();
+  const { module, marketPrice, translations: t } = useTwapContext();
   const triggerPrice = useTriggerPrice().amountWei;
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
     if (!typedSrcAmount || !marketPrice) return;
     if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) return;
-    const stopLossError = twapSDK.getStopLossPriceError(marketPrice || "", triggerPrice || "", module);
+    const stopLossError = getStopLossPriceError(marketPrice || "", triggerPrice || "", module);
     if (stopLossError?.isError) {
       return {
         type: InputErrors.STOP_LOSS_TRIGGER_PRICE_GREATER_THAN_MARKET_PRICE,
@@ -22,7 +23,7 @@ export const useTriggerPriceError = () => {
         message: t.StopLossTriggerPriceError,
       };
     }
-    const takeProfitError = twapSDK.getTakeProfitPriceError(marketPrice || "", triggerPrice || "", module);
+    const takeProfitError = getTakeProfitPriceError(marketPrice || "", triggerPrice || "", module);
 
     if (takeProfitError?.isError) {
       return {
@@ -39,7 +40,7 @@ export const useTriggerPriceError = () => {
         message: t.emptyTriggerPrice,
       };
     }
-  }, [twapSDK, marketPrice, triggerPrice, module, t, typedSrcAmount]);
+  }, [marketPrice, triggerPrice, module, t, typedSrcAmount]);
 };
 
 export const useTriggerPrice = () => {

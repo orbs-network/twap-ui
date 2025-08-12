@@ -3,9 +3,10 @@ import { useTwapContext } from "../context";
 import { InputError, InputErrors } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
+import { getChunks, getMaxChunksError, getMaxPossibleChunks } from "@orbs-network/twap-sdk";
 
 export const useChunksError = () => {
-  const { twapSDK, module } = useTwapContext();
+  const { module } = useTwapContext();
   const t = useTwapContext().translations;
   const { chunks, maxChunks } = useChunks();
 
@@ -17,7 +18,7 @@ export const useChunksError = () => {
         message: `${t.minChunksError} 1`,
       };
     }
-    const { isError } = twapSDK.getMaxChunksError(chunks, maxChunks, module);
+    const { isError } = getMaxChunksError(chunks, maxChunks, module);
     if (isError) {
       return {
         type: InputErrors.MAX_CHUNKS,
@@ -25,16 +26,16 @@ export const useChunksError = () => {
         message: t.maxChunksError.replace("{maxChunks}", `${maxChunks}`),
       };
     }
-  }, [chunks, twapSDK, maxChunks, module]);
+  }, [chunks, maxChunks, module]);
 };
 
 export const useChunks = () => {
-  const { twapSDK, module } = useTwapContext();
+  const { module } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const updateState = useTwapStore((s) => s.updateState);
   const maxChunks = useMaxChunks();
 
-  const chunks = useMemo(() => twapSDK.getChunks(maxChunks, module, typedChunks), [maxChunks, typedChunks, twapSDK]);
+  const chunks = useMemo(() => getChunks(maxChunks, module, typedChunks), [maxChunks, typedChunks]);
 
   const setChunks = useCallback(
     (typedChunks: number) => {
@@ -53,11 +54,11 @@ export const useChunks = () => {
 };
 
 const useMaxChunks = () => {
-  const { twapSDK, srcUsd1Token } = useTwapContext();
+  const { srcUsd1Token } = useTwapContext();
   const minChunkSizeUsd = useMinChunkSizeUsd();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
-  return useMemo(() => twapSDK.getMaxChunks(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, twapSDK]);
+  return useMemo(() => getMaxPossibleChunks(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, minChunkSizeUsd]);
 };
 
 export const useChunksPanel = () => {

@@ -1,5 +1,5 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { Order, REPERMIT_ADDRESS, RePermitAbi, TwapAbi } from "@orbs-network/twap-sdk";
+import { analytics, Order, REPERMIT_ADDRESS, RePermitAbi, TwapAbi } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { Abi } from "viem";
 import { useTwapContext } from "../context";
@@ -10,23 +10,23 @@ import { useTwapStore } from "../useTwapStore";
 import { useMemo } from "react";
 
 const useCancelOrderMutation = () => {
-  const { account, callbacks, walletClient, publicClient, twapSDK, transactions } = useTwapContext();
+  const { account, callbacks, walletClient, publicClient, transactions } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
 
   const optimisticCancelOrder = useOptimisticCancelOrder();
   const mutation = useMutation(async (order: Order) => {
     try {
-      if (!account) throw new Error("account not defined");
-      if (!walletClient) throw new Error("walletClient not defined");
-      if (!publicClient) throw new Error("publicClient not defined");
+      if (!account || !walletClient || !publicClient) {
+        throw new Error("missing required parameters");
+      }
       updateState({
         cancelOrderStatus: SwapStatus.LOADING,
         cancelOrderTxHash: undefined,
         cancelOrderError: undefined,
         cancelOrderId: order.id,
       });
-      twapSDK.analytics.onCancelOrderRequest(order.id);
+      analytics.onCancelOrderRequest(order.id);
       callbacks?.cancelOrder?.onRequest?.(order.id);
       let hash: `0x${string}` | undefined;
       if (transactions?.cancelOrder) {
@@ -52,10 +52,11 @@ const useCancelOrderMutation = () => {
         throw new Error("failed to cancel order");
       }
 
-      callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
       optimisticCancelOrder(order.id);
-      twapSDK.analytics.onCancelOrderSuccess();
       updateState({ cancelOrderStatus: SwapStatus.SUCCESS });
+      analytics.onCancelOrderSuccess(hash);
+      callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
+
       return hash;
     } catch (error) {
       console.log(`cancel error order`, error);
@@ -63,7 +64,7 @@ const useCancelOrderMutation = () => {
         updateState({ cancelOrderStatus: undefined });
       } else {
         updateState({ cancelOrderStatus: SwapStatus.FAILED });
-        twapSDK.analytics.onCancelOrderError(error);
+        analytics.onCancelOrderError(error);
         callbacks?.cancelOrder?.onFailed?.((error as Error).message);
       }
     }

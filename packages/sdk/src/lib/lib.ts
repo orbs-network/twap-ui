@@ -1,9 +1,10 @@
 import BN from "bignumber.js";
-import { EXCLUSIVITY_OVERRIDE_BPS, EXECUTOR_ADDRESS, maxUint256, MIN_FILL_DELAY_MINUTES, REACTOR_ADDRESS, REPERMIT_ADDRESS } from "./consts";
-import { Address, Config, getAskParamsProps, GetPermitDataProps, Module, RePermitTypedData, TimeDuration, TimeUnit } from "./types";
-import { findTimeUnit, getNetwork, getTimeDurationMillis, isNativeAddress, safeBNString } from "./utils";
-export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
+import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
+import { Config, Module, TimeDuration, TimeUnit } from "./types";
+import { findTimeUnit, getTimeDurationMillis } from "./utils";
+import { getOrders } from "./orders";
 
+// values calculations
 export const getDestTokenAmount = (srcAmount?: string, limitPrice?: string, srcTokenDecimals?: number) => {
   if (!srcAmount || !limitPrice || !srcTokenDecimals) return undefined;
 
@@ -53,7 +54,7 @@ export const getChunks = (maxPossibleChunks: number, module: Module, typedChunks
   return maxPossibleChunks;
 };
 
-export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, oneSrcTokenUsd?: string, minChunkSizeUsd?: number) => {
+export const getMaxPossibleChunks = (typedSrcAmount?: string, oneSrcTokenUsd?: string, minChunkSizeUsd?: number) => {
   if (!typedSrcAmount || !oneSrcTokenUsd || !minChunkSizeUsd) return 1;
   const amount = BN(oneSrcTokenUsd).times(typedSrcAmount);
 
@@ -84,215 +85,98 @@ export const getEstimatedDelayBetweenChunksMillis = (config: Config) => {
   return config.bidDelaySeconds * 1000 * 2;
 };
 
-export const getSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
+export const getSrcTokenChunkAmount = (srcAmount?: string, chunks?: number) => {
   if (!srcAmount || !chunks) return "0";
   return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed(0);
 };
 
-export const getAskParams = (config: Config, args: getAskParamsProps) => {
-  const fillDelayMillis = getTimeDurationMillis(args.fillDelay);
-  const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(config)) / 1000;
-
-  return [
-    config.exchangeAddress,
-    args.srcTokenAddress,
-    args.destTokenAddress,
-    BN(args.srcAmount).toFixed(0),
-    BN(args.srcChunkAmount).toFixed(0),
-    BN(args.destTokenMinAmount).toFixed(0),
-    BN(args.deadline).div(1000).toFixed(0),
-    BN(config.bidDelaySeconds).toFixed(0),
-    BN(fillDelaySeconds).toFixed(0),
-    [],
-  ].map((it) => it.toString());
+// errors
+export const getMaxFillDelayError = (fillDelay: TimeDuration, chunks: number) => {
+  const isDefault = fillDelay.unit === DEFAULT_FILL_DELAY.unit && fillDelay.value === DEFAULT_FILL_DELAY.value;
+  return {
+    isError: !isDefault && getTimeDurationMillis(fillDelay) * chunks > MAX_ORDER_DURATION_MILLIS,
+    value: Math.floor(MAX_ORDER_DURATION_MILLIS / chunks),
+  };
 };
 
-export const getPermitData = ({
-  chainId,
-  srcToken: _srcToken,
-  dstToken,
-  srcAmount,
-  deadlineMilliseconds,
-  fillDelayMillis,
-  slippage,
-  account,
-  srcAmountPerChunk,
-  dstMinAmountPerChunk,
-  triggerAmountPerChunk,
-}: GetPermitDataProps): RePermitTypedData => {
-  const nonce = (Date.now() * 1000).toString();
-  const epoch = safeBNString(fillDelayMillis / 1000);
-
-  const deadline = safeBNString(deadlineMilliseconds / 1000);
-  const srcToken = isNativeAddress(_srcToken) ? getNetwork(chainId)?.wToken.address : _srcToken;
-
-  if (!srcToken) {
-    throw new Error("srcToken is not defined");
+export const getStopLossPriceError = (marketPrice = "", triggerPrice = "", module: Module) => {
+  if (module === Module.STOP_LOSS) {
+    return {
+      isError: BN(triggerPrice || 0).gte(BN(marketPrice || 0)),
+      value: marketPrice,
+    };
   }
+};
 
+export const getTakeProfitPriceError = (marketPrice = "", triggerPrice = "", module: Module) => {
+  if (module === Module.TAKE_PROFIT) {
+    return {
+      isError: BN(triggerPrice || 0).lte(BN(marketPrice || 0)),
+      value: marketPrice,
+    };
+  }
+};
+
+export const getStopLossLimitPriceError = (triggerPrice = "", limitPrice = "", isMarketOrder = false, module: Module) => {
+  if (!isMarketOrder && module === Module.STOP_LOSS) {
+    return {
+      isError: BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
+      value: triggerPrice,
+    };
+  }
+};
+
+export const getTakeProfitLimitPriceError = (triggerPrice = "", limitPrice = "", isMarketOrder = false, module: Module) => {
+  if (!isMarketOrder && module === Module.TAKE_PROFIT) {
+    return {
+      isError: BN(limitPrice || 0).gte(BN(triggerPrice || 0)),
+      value: triggerPrice,
+    };
+  }
+};
+
+export const getMaxOrderDurationError = (module: Module, duration: TimeDuration) => {
+  if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
+    const max = 90 * 24 * 60 * 60 * 1000; // 3 months
+    return {
+      isError: getTimeDurationMillis(duration) > max,
+      value: max,
+    };
+  }
   return {
-    domain: {
-      name: "RePermit",
-      version: "1",
-      chainId: chainId,
-      verifyingContract: REPERMIT_ADDRESS,
-    },
-    primaryType: "RePermitWitnessTransferFrom",
-    types: {
-      RePermitWitnessTransferFrom: [
-        {
-          name: "permitted",
-          type: "TokenPermissions",
-        },
-        {
-          name: "spender",
-          type: "address",
-        },
-        {
-          name: "nonce",
-          type: "uint256",
-        },
-        {
-          name: "deadline",
-          type: "uint256",
-        },
-        {
-          name: "witness",
-          type: "Order",
-        },
-      ],
-      Input: [
-        {
-          name: "token",
-          type: "address",
-        },
-        {
-          name: "amount",
-          type: "uint256",
-        },
-        {
-          name: "maxAmount",
-          type: "uint256",
-        },
-      ],
-      Order: [
-        {
-          name: "info",
-          type: "OrderInfo",
-        },
-        {
-          name: "exclusiveFiller",
-          type: "address",
-        },
-        {
-          name: "exclusivityOverrideBps",
-          type: "uint256",
-        },
-        {
-          name: "epoch",
-          type: "uint256",
-        },
-        {
-          name: "slippage",
-          type: "uint256",
-        },
-        {
-          name: "input",
-          type: "Input",
-        },
-        {
-          name: "output",
-          type: "Output",
-        },
-      ],
-      OrderInfo: [
-        {
-          name: "reactor",
-          type: "address",
-        },
-        {
-          name: "swapper",
-          type: "address",
-        },
-        {
-          name: "nonce",
-          type: "uint256",
-        },
-        {
-          name: "deadline",
-          type: "uint256",
-        },
-        {
-          name: "additionalValidationContract",
-          type: "address",
-        },
-        {
-          name: "additionalValidationData",
-          type: "bytes",
-        },
-      ],
-      Output: [
-        {
-          name: "token",
-          type: "address",
-        },
-        {
-          name: "amount",
-          type: "uint256",
-        },
-        {
-          name: "maxAmount",
-          type: "uint256",
-        },
-        {
-          name: "recipient",
-          type: "address",
-        },
-      ],
-      TokenPermissions: [
-        {
-          name: "token",
-          type: "address",
-        },
-        {
-          name: "amount",
-          type: "uint256",
-        },
-      ],
-    },
-    message: {
-      permitted: {
-        token: srcToken as Address,
-        amount: srcAmount,
-      },
-      spender: REACTOR_ADDRESS,
-      nonce: nonce,
-      deadline: deadline,
-      witness: {
-        info: {
-          reactor: REACTOR_ADDRESS,
-          swapper: account as Address,
-          nonce: nonce,
-          deadline: deadline,
-          additionalValidationContract: EXECUTOR_ADDRESS,
-          additionalValidationData: "0x",
-        },
-        exclusiveFiller: EXECUTOR_ADDRESS,
-        exclusivityOverrideBps: EXCLUSIVITY_OVERRIDE_BPS,
-        epoch: epoch,
-        slippage: slippage.toString(),
-        input: {
-          token: srcToken as Address,
-          amount: srcAmountPerChunk,
-          maxAmount: srcAmount,
-        },
-        output: {
-          token: dstToken as Address,
-          amount: dstMinAmountPerChunk || "0",
-          maxAmount: triggerAmountPerChunk || maxUint256,
-          recipient: account as Address,
-        },
-      },
-    },
+    isError: getTimeDurationMillis(duration) > MAX_ORDER_DURATION_MILLIS,
+    value: MAX_ORDER_DURATION_MILLIS,
   };
+};
+
+export const getMinOrderDurationError = (duration: TimeDuration) => {
+  return {
+    isError: getTimeDurationMillis(duration) < MIN_ORDER_DURATION_MILLIS,
+    value: MIN_ORDER_DURATION_MILLIS,
+  };
+};
+
+export const getMinFillDelayError = (fillDelay: TimeDuration) => {
+  return {
+    isError: getTimeDurationMillis(fillDelay) < MIN_FILL_DELAY_MILLIS,
+    value: MIN_FILL_DELAY_MILLIS,
+  };
+};
+export const getMinTradeSizeError = (typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) => {
+  return {
+    isError: BN(oneSrcTokenUsd || 0)
+      .multipliedBy(typedSrcAmount || 0)
+      .isLessThan(minChunkSizeUsd),
+    value: minChunkSizeUsd,
+  };
+};
+export const getMaxChunksError = (chunks: number, maxChunks: number, module: Module) => {
+  return {
+    isError: module === Module.TWAP && BN(chunks).isGreaterThan(maxChunks),
+    value: maxChunks,
+  };
+};
+
+export const getUserOrders = async (config: Config, account: string, signal?: AbortSignal) => {
+  return getOrders({ signal, chainId: config.chainId, filters: { accounts: [account], configs: [config] } });
 };

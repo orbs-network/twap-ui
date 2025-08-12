@@ -1,6 +1,6 @@
 import { Config } from "./types";
 import BN from "bignumber.js";
-const Version = 0.4;
+const Version = 0.5;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 
@@ -24,6 +24,7 @@ interface Data {
   action?: Action;
   createOrderTxHash?: string;
   wrapTxHash?: string;
+  cancelOrderTxHash?: string;
   approvalTxHash?: string;
   walletAddress?: string;
   fromTokenAddress?: string;
@@ -61,7 +62,7 @@ const sendBI = async (data: Partial<Data>) => {
   }
 };
 
-export class Analytics {
+class Analytics {
   timeout: any = undefined;
   data: Data = {
     _id: generateId(),
@@ -82,20 +83,21 @@ export class Analytics {
     }
   }
 
-  onCancelOrder(orderId: number) {
+  onCancelOrderRequest(orderId: number) {
     this.updateAndSend({
       cancelOrderId: orderId,
       action: "cancel order",
     });
   }
 
-  onCancelOrderSuccess() {
+  onCancelOrderSuccess(hash?: string) {
     this.updateAndSend({
+      cancelOrderTxHash: hash,
       cancelOrderSuccess: true,
     });
   }
 
-  onCanelOrderError(error: any) {
+  onCancelOrderError(error: any) {
     this.onTxError(error);
   }
 
@@ -161,7 +163,7 @@ export class Analytics {
     });
   }
 
-  onConfigChange(config: Config) {
+  init(config: Config) {
     if (config.chainId !== this.data?.chainId) {
       this.data = {
         _id: generateId(),
@@ -216,3 +218,5 @@ export class Analytics {
     );
   }
 }
+
+export const analytics = new Analytics();

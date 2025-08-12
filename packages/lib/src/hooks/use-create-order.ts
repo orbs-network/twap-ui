@@ -21,19 +21,20 @@ import { useCallback } from "react";
 import { useOptimisticAddOrder, useOrders } from "./order-hooks";
 import { Token } from "../types";
 import { useDstAmount } from "./use-dst-amount";
-import { usePermitData } from "./use-permit-data";
 import { _TypedDataEncoder } from "@ethersproject/hash";
+import { analytics, EIP712_TYPES, REPERMIT_PRIMARY_TYPE, submitOrder } from "@orbs-network/twap-sdk";
+import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
 
 const useCallbacks = () => {
-  const { twapSDK, account, callbacks, srcToken, dstToken } = useTwapContext();
+  const { account, callbacks, srcToken, dstToken } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const optimisticAddOrder = useOptimisticAddOrder();
   const destTokenAmountUI = useDstAmount().amountUI;
   const { refetch: refetchOrders } = useOrders();
-  const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);
+  const onRequest = useCallback((params: string[]) => analytics.onCreateOrderRequest(params, account), [account]);
   const onSuccess = useCallback(
     async (receipt: TransactionReceipt, params: string[], srcToken: Token, orderId?: number) => {
-      twapSDK.analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
+      analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
       callbacks?.createOrder?.onSuccess?.({
         srcToken: srcToken!,
         dstToken: dstToken!,
@@ -49,15 +50,15 @@ const useCallbacks = () => {
 
       optimisticAddOrder(orderId, receipt.transactionHash, params, srcToken, dstToken!);
     },
-    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, optimisticAddOrder, refetchOrders],
+    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, optimisticAddOrder, refetchOrders]
   );
 
   const onError = useCallback(
     (error: any) => {
       callbacks?.createOrder?.onFailed?.((error as any).message);
-      twapSDK.analytics.onCreateOrderError(error);
+      analytics.onCreateOrderError(error);
     },
-    [callbacks, twapSDK],
+    [callbacks]
   );
 
   return {
@@ -67,71 +68,52 @@ const useCallbacks = () => {
   };
 };
 
+const useSignOrder = () => {
+  const { account, walletClient, chainId, dstToken } = useTwapContext();
+  const buildRePermitOrderData = useBuildRePermitOrderDataCallback();
+
+  return useMutation(async () => {
+    if (!account || !walletClient || !chainId || !dstToken) {
+      throw new Error("missing required parameters");
+    }
+
+    const { orderData, domain } = buildRePermitOrderData();
+
+    console.log({ orderData, domain });
+
+    const signature = await walletClient?.signTypedData({
+      domain,
+      types: EIP712_TYPES,
+      primaryType: REPERMIT_PRIMARY_TYPE,
+      message: orderData as Record<string, any>,
+      account: account as `0x${string}`,
+    });
+
+    return {
+      signature,
+      orderData,
+    };
+  });
+};
+
 export const useCreateOrder = () => {
-  const { account, walletClient, publicClient, chainId, dstToken, twapSDK } = useTwapContext();
+  const { account, walletClient, chainId, dstToken } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
-  const permitData = usePermitData();
+  const signOrder = useSignOrder();
 
   return useMutation(async () => {
     try {
-      if (!account) throw new Error("account is not defined");
-      if (!walletClient) throw new Error("walletClient is not defined");
-      if (!publicClient) throw new Error("publicClient is not defined");
-      if (!chainId) throw new Error("chainId is not defined");
-      if (!dstToken) throw new Error("dstToken is not defined");
-      if (!permitData) throw new Error("permit is not defined");
+      if (!account || !walletClient || !chainId || !dstToken) {
+        throw new Error("missing required parameters");
+      }
 
-      // callbacks.onRequest(orderSubmissionArgs.params);
+      const { signature, orderData } = await signOrder.mutateAsync();
+      console.log({ signature, orderData });
 
-      console.log({ permitData });
-
-      logData(permitData);
-      const { domain, types, primaryType, message } = permitData;
-
-      const signature = await walletClient?.signTypedData({
-        account: account as `0x${string}`,
-        types: types,
-        primaryType: primaryType,
-        message: message as Record<string, any>,
-        domain: domain,
-      });
-      console.log({ signature });
-
-      const { r, s, v } = parseSignature(signature);
-
-      const signatureObj = {
-        v: numberToHex(v!, { size: 1 }),
-        r: padHex(r, { size: 32 }),
-        s: padHex(s, { size: 32 }),
-      };
-      const sig = concatHex([padHex(r!, { size: 32 }), padHex(s!, { size: 32 }), numberToHex(v! === 0n || v! === 1n ? v! + 27n : v!, { size: 1 })]);
-
-      const signer = await recoverTypedDataAddress({
-        domain: domain,
-        types: types,
-        primaryType: primaryType,
-        message: message as Record<string, any>,
-        signature: sig,
-      });
-
-      console.log({ signer });
-
-      const response = await twapSDK.submitOrder(permitData, signatureObj);
+      const response = await submitOrder(orderData, signature || "");
       console.log({ response });
       updateState({ createOrderTxHash: "" });
-
-      // const receipt = await getTransactionReceipt("");
-      // if (!receipt) {
-      //   throw new Error("failed to get transaction receipt");
-      // }
-
-      // if (receipt.status === "reverted") {
-      //   throw new Error("failed to create order");
-      // }
-      // const orderId = getOrderIdFromCreateOrderEvent(receipt);
-
-      // await callbacks.onSuccess({} as TransactionReceipt, orderSubmissionArgs.params, srcToken, 100);
 
       return {
         orderId: 0,

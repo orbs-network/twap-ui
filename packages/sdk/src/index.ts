@@ -8,9 +8,12 @@ import erc20abi from "./lib/abi/erc20abi.json";
 
 export * from "./lib/types";
 export * from "./lib/consts";
-export { constructSDK, TwapSDK } from "./lib/constructSDK";
 export * from "./lib/lib";
-export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase, getConfigByExchange, isSupportedByTheGraph } from "./lib/utils";
+export * from "./lib/build-repermit-order-data";
+export * from "./lib/submit-order";
+export { analytics } from "./lib/analytics";
+
+export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase, getConfigByExchange } from "./lib/utils";
 export { networks } from "./lib/networks";
 
 export {

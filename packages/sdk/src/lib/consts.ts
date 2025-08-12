@@ -1,6 +1,6 @@
 import Configs from "@orbs-network/twap/configs.json";
 import { networks } from "./networks";
-import { Config } from "./types";
+import { Config, EIP712TypeName, TimeDuration, TimeUnit } from "./types";
 export const API_ENDPOINT = "https://order-sink.orbs.network";
 
 export const SUGGEST_CHUNK_VALUE = 100;
@@ -64,8 +64,55 @@ export const LEGACY_EXCHANGES_MAP: Record<string, string[]> = {
   [getPartnerIdentifier(Configs.SpookySwap)]: ["0x3924d62219483015f982b160d48c0fa5Fd436Cba"],
   [getPartnerIdentifier(Configs.SwapX)]: ["0xE5012eBDe5e26EE3Ea41992154731a03023CF274"],
 };
+export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
-export const REPERMIT_ADDRESS = "0xbBa2344A886D66f43AC0E9ed980Cc14c82715aEC";
+export const REPERMIT_ADDRESS = "0x1234567890123456789012345678901234567890";
 export const REACTOR_ADDRESS = "0xc19E284C8f5ccef721a761d0CA18dc8E9a612aFd";
 export const EXECUTOR_ADDRESS = "0x9B350b26B82F3c088e1C0C345a904ee5EB655E15";
 export const EXCLUSIVITY_OVERRIDE_BPS = "0";
+
+export const REPERMIT_PRIMARY_TYPE = "RePermitWitnessTransferFrom" as EIP712TypeName;
+
+export const EIP712_TYPES = {
+  RePermitWitnessTransferFrom: [
+      { name: "permitted", type: "TokenPermissions" },
+      { name: "spender", type: "address" },
+      { name: "nonce", type: "string" },
+      { name: "deadline", type: "string" },
+      { name: "witness", type: "Order" }
+  ],
+  TokenPermissions: [
+      { name: "token", type: "address" },
+      { name: "amount", type: "string" }
+  ],
+  Order: [
+      { name: "info", type: "OrderInfo" },
+      { name: "exclusiveFiller", type: "string" },
+      { name: "exclusivityOverrideBps", type: "string" },
+      { name: "input", type: "Input" },
+      { name: "output", type: "Output" },
+      { name: "epoch", type: "string" },
+      { name: "slippage", type: "string" },
+      { name: "trigger", type: "string" },
+      { name: "chainId", type: "string" }
+  ],
+  OrderInfo: [
+      { name: "reactor", type: "address" },
+      { name: "swapper", type: "address" },
+      { name: "nonce", type: "string" },
+      { name: "deadline", type: "string" },
+      { name: "additionalValidationContract", type: "address" },
+      { name: "additionalValidationData", type: "string" }
+  ],
+  Input: [
+      { name: "token", type: "address" },
+      { name: "amount", type: "string" },
+      { name: "maxAmount", type: "string" }
+  ],
+  Output: [
+      { name: "token", type: "address" },
+      { name: "amount", type: "string" },
+      { name: "recipient", type: "address" },
+      { name: "maxAmount", type: "string" }
+  ]
+};

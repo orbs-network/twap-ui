@@ -1,5 +1,5 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Module, Order, OrderType, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
+import { Config, Module, Order, OrderType, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -495,7 +495,6 @@ export interface TwapContextType extends TwapProps {
   translations: Translations;
   walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: PublicClient;
-  twapSDK: TwapSDK;
   marketPrice?: string;
   marketPriceLoading?: boolean;
   account?: `0x${string}`;
