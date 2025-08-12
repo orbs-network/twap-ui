@@ -472,7 +472,6 @@ export const getOrders = async ({
   filters?: GetOrdersFilters;
 }) => {
   const newOrders = await getOrdersNew({ chainId, signal, account: filters?.accounts?.[0] || "" });
-  console.log({ newOrders });
 
   const orders = await getCreatedOrders({ chainId, signal, page, limit, filters });
   const [fills, statuses] = await Promise.all([getFills({ chainId, orders, signal }), getStatuses({ chainId, orders, signal })]);

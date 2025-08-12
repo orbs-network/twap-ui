@@ -5,16 +5,19 @@ import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { Token } from "../types";
 import { amountUi, analytics, REPERMIT_ADDRESS } from "@orbs-network/twap-sdk";
 import { erc20Abi, maxUint256 } from "viem";
+import { ensureWrappedToken } from "../utils";
 
 export const useApproveToken = () => {
-  const { account, walletClient, publicClient, callbacks, transactions } = useTwapContext();
+  const { account, walletClient, publicClient, callbacks, transactions, chainId } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const getTransactionReceipt = useGetTransactionReceipt();
   return useMutation(
-    async (token: Token) => {
-      if (!account) throw new Error("account is not defined");
-      if (!walletClient) throw new Error("walletClient is not defined");
-      if (!publicClient) throw new Error("publicClient is not defined");
+    async (_token: Token) => {
+      if (!account || !walletClient || !publicClient || !chainId) {
+        throw new Error("missing required parameters");
+      }
+
+      const token = ensureWrappedToken(_token, chainId);
 
       callbacks?.approve?.onRequest?.(token, amountUi(token?.decimals, maxUint256.toString()));
       let hash: `0x${string}` | undefined;

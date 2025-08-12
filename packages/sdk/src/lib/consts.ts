@@ -75,44 +75,44 @@ export const REPERMIT_PRIMARY_TYPE = "RePermitWitnessTransferFrom" as EIP712Type
 
 export const EIP712_TYPES = {
   RePermitWitnessTransferFrom: [
-      { name: "permitted", type: "TokenPermissions" },
-      { name: "spender", type: "address" },
-      { name: "nonce", type: "string" },
-      { name: "deadline", type: "string" },
-      { name: "witness", type: "Order" }
+    { name: "permitted", type: "TokenPermissions" },
+    { name: "spender", type: "address" },
+    { name: "nonce", type: "string" },
+    { name: "deadline", type: "string" },
+    { name: "witness", type: "Order" },
   ],
   TokenPermissions: [
-      { name: "token", type: "address" },
-      { name: "amount", type: "string" }
+    { name: "token", type: "address" },
+    { name: "amount", type: "string" },
   ],
   Order: [
-      { name: "info", type: "OrderInfo" },
-      { name: "exclusiveFiller", type: "string" },
-      { name: "exclusivityOverrideBps", type: "string" },
-      { name: "input", type: "Input" },
-      { name: "output", type: "Output" },
-      { name: "epoch", type: "string" },
-      { name: "slippage", type: "string" },
-      { name: "trigger", type: "string" },
-      { name: "chainId", type: "string" }
+    { name: "info", type: "OrderInfo" },
+    { name: "exclusiveFiller", type: "string" },
+    { name: "exclusivityOverrideBps", type: "string" },
+    { name: "input", type: "Input" },
+    { name: "output", type: "Output" },
+    { name: "epoch", type: "string" },
+    { name: "slippage", type: "string" },
+    { name: "trigger", type: "string" },
+    { name: "chainId", type: "string" },
   ],
   OrderInfo: [
-      { name: "reactor", type: "address" },
-      { name: "swapper", type: "address" },
-      { name: "nonce", type: "string" },
-      { name: "deadline", type: "string" },
-      { name: "additionalValidationContract", type: "address" },
-      { name: "additionalValidationData", type: "string" }
+    { name: "reactor", type: "address" },
+    { name: "swapper", type: "address" },
+    { name: "nonce", type: "string" },
+    { name: "deadline", type: "string" },
+    { name: "additionalValidationContract", type: "address" },
+    { name: "additionalValidationData", type: "string" },
   ],
   Input: [
-      { name: "token", type: "address" },
-      { name: "amount", type: "string" },
-      { name: "maxAmount", type: "string" }
+    { name: "token", type: "address" },
+    { name: "amount", type: "string" },
+    { name: "maxAmount", type: "string" },
   ],
   Output: [
-      { name: "token", type: "address" },
-      { name: "amount", type: "string" },
-      { name: "recipient", type: "address" },
-      { name: "maxAmount", type: "string" }
-  ]
+    { name: "token", type: "address" },
+    { name: "amount", type: "string" },
+    { name: "recipient", type: "address" },
+    { name: "maxAmount", type: "string" },
+  ],
 };

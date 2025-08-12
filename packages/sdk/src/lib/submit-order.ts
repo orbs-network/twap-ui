@@ -10,12 +10,6 @@ function parseViemSignature(signature: string) {
   const s = "0x" + sig.slice(64, 128); // Next 32 bytes (64 hex chars)
   const v = "0x" + sig.slice(128, 130); // Last 1 byte (2 hex chars)
 
-  console.log(`Signature parsing:`);
-  console.log(`  Original: ${signature}`);
-  console.log(`  r: ${r}`);
-  console.log(`  s: ${s}`);
-  console.log(`  v: ${v}`);
-
   return { v, r, s };
 }
 
@@ -24,9 +18,9 @@ export const submitOrder = async (order: OrderData, signature: string) => {
     signature: parseViemSignature(signature),
     order,
     status: "pending",
-  }
-  console.log('body', body);
-  
+  };
+  console.log("body", body);
+
   const response = await fetch(`${API_ENDPOINT}/orders`, {
     method: "POST",
     body: JSON.stringify(body),

@@ -25,8 +25,6 @@ const katana: chains.Chain = defineChain({
   },
 });
 
-
-
 export const initiateWallet = (chainId?: number, provider?: Provider) => {
   const chain = [katana, ...Object.values(chains)].find((it: any) => it.id === chainId);
   if (!chain) {

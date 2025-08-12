@@ -47,7 +47,6 @@ const Content = (props: TwapProps) => {
   const translations = useTranslations(props.translations);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
 
-
   useEffect(() => {
     analytics.init(props.config);
   }, [props.config]);
