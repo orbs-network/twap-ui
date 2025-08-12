@@ -72,5 +72,13 @@ export function useEnsureAllowanceCallback() {
     return queryClient.ensureQueryData({ queryKey, queryFn, staleTime: 60_000 });
   }, [enabled, query.isStale, query.data, queryClient, queryKey, queryFn]);
 
-  return ensure; // call and await this where needed
+  const refetch = useCallback(async () => {
+    const result = await query.refetch();
+    return result.data || "0";
+  }, [query]);
+
+  return {
+    ensure,
+    refetch,
+  };
 }

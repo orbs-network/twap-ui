@@ -1,5 +1,5 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { isNativeAddress } from "@orbs-network/twap-sdk";
+import { isNativeAddress, submitOrder } from "@orbs-network/twap-sdk";
 import { useRef } from "react";
 import { Steps } from "../types";
 import { getTotalSteps, isTxRejected } from "../utils";
@@ -108,7 +108,8 @@ const useCreateOrder = () => {
       const { signature, orderData } = await signOrder.mutateAsync();
       console.log({ signature, orderData });
 
-      // const response = await submitOrder(orderData, signature || "");
+      const response = await submitOrder(orderData, signature || "");
+      console.log({ response });
 
       updateState({ createOrderTxHash: "" });
 
@@ -126,7 +127,7 @@ const useCreateOrder = () => {
 
 export const useSubmitOrder = () => {
   const { srcToken, dstToken, chainId } = useTwapContext();
-  const ensureAllowance = useEnsureAllowanceCallback();
+  const { ensure: ensureAllowance, refetch: refetchAllowance } = useEnsureAllowanceCallback();
   const updateState = useTwapStore((s) => s.updateState);
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
@@ -140,9 +141,12 @@ export const useSubmitOrder = () => {
         throw new Error("missing required parameters");
       }
 
-      const getHasAllowance = async () => {
-        const allowance = await ensureAllowance();
-        return BN(allowance).gte(srcAmount);
+      const getHasAllowance = async (refetch = false) => {
+        const func = refetch ? refetchAllowance : ensureAllowance;
+        const allowance = await func();
+        console.log({ allowance, srcAmount });
+
+        return BN(allowance || "0").gte(srcAmount || "0");
       };
 
       const shouldWrap = isNativeAddress(srcToken.address);
@@ -163,10 +167,21 @@ export const useSubmitOrder = () => {
       if (!haveAllowance) {
         updateState({ activeStep: Steps.APPROVE });
         await approve(srcToken);
-        // make sure the allowance was set
-        if (!(await getHasAllowance())) {
+
+        // retry allowance check up to 3 times
+        let hasAllowance = false;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          hasAllowance = await getHasAllowance(true);
+          if (hasAllowance) break;
+          if (attempt < 2) {
+            await new Promise((resolve) => setTimeout(resolve, 3000)); // 3s delay
+          }
+        }
+
+        if (!hasAllowance) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
         }
+
         stepIndex++;
         updateState({ currentStepIndex: stepIndex });
       }
@@ -176,6 +191,8 @@ export const useSubmitOrder = () => {
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;
     } catch (error) {
+      console.log({ error });
+
       if (isTxRejected(error) && !wrappedRef.current) {
         updateState({ activeStep: undefined, swapStatus: undefined, currentStepIndex: undefined });
       } else {
