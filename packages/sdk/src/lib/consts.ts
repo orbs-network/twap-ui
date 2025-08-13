@@ -87,7 +87,7 @@ export const EIP712_TYPES = {
   ],
   Order: [
     { name: "info", type: "OrderInfo" },
-    { name: "exclusiveFiller", type: "string" },
+    { name: "exclusiveFiller", type: "address" },
     { name: "exclusivityOverrideBps", type: "string" },
     { name: "input", type: "Input" },
     { name: "output", type: "Output" },
