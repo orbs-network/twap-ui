@@ -12,10 +12,7 @@ import { ErrorBoundary } from "react-error-boundary";
 const TwapFallbackUI = () => {
   return (
     <div className="twap-error-fallback">
-      <p>Something went wrong</p>
-      {/* <Button variant="contained" onClick={() => window.location.reload()}>
-        Reload
-      </Button> */}
+      <p style={{ color: "white", fontSize: 16, fontWeight: 600, textAlign: "center", width: "100%", marginTop: 40 }}>Something went wrong</p>
     </div>
   );
 };

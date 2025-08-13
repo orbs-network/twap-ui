@@ -179,5 +179,5 @@ export const getMaxChunksError = (chunks: number, maxChunks: number, module: Mod
 };
 
 export const getUserOrders = async (config: Config, account: string, signal?: AbortSignal) => {
-  return getOrders({ signal, chainId: config.chainId, filters: { accounts: [account], configs: [config] } });
+  return getOrders({ signal, chainId: config.chainId, account });
 };

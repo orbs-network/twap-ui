@@ -9,18 +9,16 @@ import { Steps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { SwapFlowComponent } from "../swap-flow";
 import { useChunks } from "../../hooks/use-chunks";
-import { useOrderName, useOrderType } from "../../hooks/order-hooks";
+import { useOrderName } from "../../hooks/order-hooks";
 import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
-import { useSrcAmount } from "../../hooks/use-src-amount";
-import { useDstAmount } from "../../hooks/use-dst-amount";
-import { useConfirmationPanel } from "../../hooks/use-confirmation";
+import { useOrderExecutionFlow } from "../../hooks/use-confirmation";
 
 const Modal = ({ children }: { children: ReactNode }) => {
   const context = useTwapContext();
-  const { isOpen, onClose } = useConfirmationPanel();
+  const { onClose, isFlowOpen } = useOrderExecutionFlow();
 
   return (
-    <context.SubmitOrderPanel isOpen={Boolean(isOpen)} onClose={onClose} title="Create order">
+    <context.SubmitOrderPanel isOpen={Boolean(isFlowOpen)} onClose={onClose} title="Create order">
       <div className="twap-create-order">{children}</div>
     </context.SubmitOrderPanel>
   );
@@ -73,9 +71,11 @@ export const SubmitOrderPanel = () => {
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const totalSteps = useTwapStore((s) => s.state.totalSteps);
   const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
-  const srcAmount = useSrcAmount().amountUI || "";
-  const { srcToken, dstToken, TransactionModal } = useTwapContext();
-  const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
+  const { TransactionModal } = useTwapContext();
+
+  const {
+    orderDetails: { srcAmount, dstAmount, srcToken, dstToken },
+  } = useOrderExecutionFlow();
 
   return (
     <Modal>
@@ -89,7 +89,7 @@ export const SubmitOrderPanel = () => {
         mainContent={<Main />}
         loadingViewContent={TransactionModal?.CreateOrder?.LoadingView && srcToken && dstToken ? <LoadingView /> : null}
         srcAmount={srcAmount}
-        dstAmount={acceptedDstAmount}
+        dstAmount={dstAmount}
         inToken={srcToken}
         outToken={dstToken}
       />
@@ -99,11 +99,10 @@ export const SubmitOrderPanel = () => {
 
 const LoadingView = () => {
   const { TransactionModal } = useTwapContext();
-  const dstAmount = useDstAmount().amountUI;
-  const srcAmount = useSrcAmount().amountUI || "";
-  const orderType = useOrderType();
+  const {
+    orderDetails: { srcAmount, dstAmount, orderType, srcToken, dstToken },
+  } = useOrderExecutionFlow();
   const step = useTwapStore((s) => s.state.activeStep);
-  const { srcToken, dstToken } = useTwapContext();
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
 
   if (TransactionModal?.CreateOrder?.LoadingView && srcToken && dstToken) {
@@ -113,8 +112,8 @@ const LoadingView = () => {
         srcToken={srcToken}
         dstToken={dstToken}
         orderType={orderType}
-        srcAmount={srcAmount}
-        dstAmount={dstAmount}
+        srcAmount={srcAmount || ""}
+        dstAmount={dstAmount || ""}
         step={step!}
       />
     );
@@ -123,22 +122,22 @@ const LoadingView = () => {
 };
 
 const SuccessContent = () => {
-  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
-  const explorerUrl = useExplorerLink(createOrderTxHash);
   const { TransactionModal, srcToken, dstToken } = useTwapContext();
   const successTitle = useTitle();
-  const orderType = useOrderType();
-  const srcAmount = useSrcAmount().amountUI || "";
-  const dstAmount = useDstAmount().amountUI;
-  const onClose = useConfirmationPanel().onClose;
+  const {
+    onClose,
+    explorerUrl,
+    createOrderTxHash,
+    orderDetails: { srcAmount, dstAmount, orderType },
+  } = useOrderExecutionFlow();
 
   if (TransactionModal?.CreateOrder?.SuccessContent && srcToken && dstToken) {
     return (
       <TransactionModal.CreateOrder.SuccessContent
         srcToken={srcToken}
         dstToken={dstToken}
-        srcAmount={srcAmount}
-        dstAmount={dstAmount}
+        srcAmount={srcAmount || ""}
+        dstAmount={dstAmount || ""}
         orderType={orderType}
         explorerUrl={explorerUrl || ""}
         txHash={createOrderTxHash}

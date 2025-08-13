@@ -204,7 +204,8 @@ const useOrdersQuery = () => {
     queryKey,
     async ({ signal }) => {
       const orders: Order[] = await getUserOrders(config, account!, signal);
-
+      console.log({orders});
+      
       handlePersistedOrders(orders);
 
       return orders.map((order) => {

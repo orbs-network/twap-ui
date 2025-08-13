@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-constant-condition */
-import { Config, LensOrder, OrderStatus, OrderType, ParsedFills, RawOrder, TwapFill } from "./types";
+import { Config, LensOrder, OrderStatus, OrderType, ParsedFills, RawOrder, TwapFill, RawOrderNew } from "./types";
 import BN from "bignumber.js";
 import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl, normalizeSubgraphList } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
@@ -113,7 +113,7 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
       dollarValueOut: acc.dollarValueOut.plus(BN(it.dollarValueOut || 0)),
       dexFee: acc.dexFee.plus(BN(it.dstFee || 0)),
     }),
-    initial,
+    initial
   );
 
   return {
@@ -195,7 +195,7 @@ export const buildOrder = ({
   dstMinAmountPerChunk: string;
   tradeDollarValueIn: string;
   blockNumber?: number;
-  id: number;
+  id: string ;
   fillDelay: number;
   createdAt: number;
   txHash: string;
@@ -458,7 +458,7 @@ export type GetOrdersFilters = {
   orderType?: "limit" | "market";
 };
 
-export const getOrders = async ({
+export const getOrdersFromGraph = async ({
   chainId,
   signal,
   page,
@@ -471,8 +471,6 @@ export const getOrders = async ({
   limit?: number;
   filters?: GetOrdersFilters;
 }) => {
-  const newOrders = await getOrdersNew({ chainId, signal, account: filters?.accounts?.[0] || "" });
-
   const orders = await getCreatedOrders({ chainId, signal, page, limit, filters });
   const [fills, statuses] = await Promise.all([getFills({ chainId, orders, signal }), getStatuses({ chainId, orders, signal })]);
 
@@ -490,7 +488,7 @@ export const getOrders = async ({
         dstMinAmountPerChunk: o.ask_dstMinAmount,
         tradeDollarValueIn: o.dollarValueIn,
         blockNumber: o.blockNumber,
-        id: Number(o.Contract_id),
+        id: o.Contract_id.toString(),
         fillDelay: o.ask_fillDelay,
         createdAt: new Date(o.timestamp).getTime(),
         txHash: o.transactionHash,
@@ -552,8 +550,35 @@ export const getOrderFillDelayMillis = (order: Order, config: Config) => {
   return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
 };
 
-const getOrdersNew = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account: string }) => {
-  const result = await fetch(`${API_ENDPOINT}/orders?swapper=${account}&chainId=${chainId}`, {
+export const getOrders = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account: string }) => {
+  const response = await fetch(`${API_ENDPOINT}/orders?swapper=${account}&chainId=${chainId}`, {
     signal,
+  });
+
+  
+  const payload = (await response.json()) as { orders: RawOrderNew[] };
+
+  return payload.orders.map(it => {
+    return buildOrder({
+      id: it.hash,
+      srcAmount: it.order.witness.input.maxAmount,
+      srcTokenAddress: it.order.witness.input.token,
+      dstTokenAddress: it.order.witness.output.token,
+      srcAmountPerChunk: it.order.witness.input.amount,
+      deadline: Number(it.order.deadline) * 1000,
+      dstMinAmountPerChunk: it.order.witness.output.maxAmount,
+      tradeDollarValueIn: '',
+      fillDelay: Number(it.order.witness.epoch),
+      createdAt: new Date(it.timestamp).getTime(),
+      txHash: it.hash,
+      maker: it.order.witness.info.swapper,
+      exchange: '',
+      twapAddress: '',
+      chainId: Number(it.order.witness.chainId),
+      status: OrderStatus.Open,
+      srcTokenSymbol: '',
+      dstTokenSymbol: '',
+      
+    })
   });
 };

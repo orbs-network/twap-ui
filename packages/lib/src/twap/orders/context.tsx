@@ -10,11 +10,11 @@ export type OrdersMenuTab = {
 };
 
 interface OrderHistoryContextType {
-  selectOrder: (id: number | undefined) => void;
+  selectOrder: (id: string | undefined) => void;
   selectedOrders: Order[];
   closePreview: () => void;
   isLoading: boolean;
-  selectedOrderId?: number;
+  selectedOrderId?: string;
   isOpen: boolean;
   onClose: () => void;
   onOpen: () => void;
@@ -40,7 +40,7 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
 
   const [status, setStatus] = useState<OrderStatus | undefined>(undefined);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | undefined>(undefined);
   const selectedOrders = !orders ? [] : !status ? orders.all : orders[status.toUpperCase() as keyof typeof orders];
 
   useEffect(() => {

@@ -255,3 +255,56 @@ export type ParsedFills = {
   filledDollarValueOut: string;
   dexFee: string;
 };
+
+
+
+export type RawOrderNew = {
+  hash: string;
+  order: {
+    permitted: {
+      token: string;
+      amount: string;
+    };
+    spender: string;
+    nonce: string;
+    deadline: string;
+    witness: {
+      info: {
+        reactor: string;
+        swapper: string;
+        nonce: string;
+        deadline: string;
+        additionalValidationContract: string;
+        additionalValidationData: string;
+      };
+      exclusiveFiller: string;
+      exclusivityOverrideBps: string;
+      input: {
+        token: string;
+        amount: string;
+        maxAmount: string;
+      };
+      output: {
+        token: string;
+        amount: string;
+        recipient: string;
+        maxAmount: string;
+      };
+      epoch: string;
+      slippage: string;
+      trigger: string;
+      chainId: string;
+    };
+  };
+  signature: {
+    v: string;
+    r: string;
+    s: string;
+  };
+  timestamp: string;
+  metadata: {
+    nextEligibleTime: string;
+    lastEligibleCheck: string;
+    status: "eligible";
+  };
+};

@@ -8,7 +8,7 @@ import { DEFAULT_DURATION_OPTIONS } from "./consts";
 import { Portal } from "../components/Portal";
 import { useResetState } from "../useTwapStore";
 import { useFieldsErrors } from "../hooks/use-fields-errors";
-import { useConfirmationPanel } from "../hooks/use-confirmation";
+import { useOrderExecutionFlow } from "../hooks/use-confirmation";
 import { useInvertTrade } from "../hooks/use-invert-trade";
 import { useMarketPricePanel } from "../hooks/use-market-price-panel";
 import { useLimitPricePanel } from "../hooks/use-limit-price";
@@ -38,7 +38,6 @@ export {
   OrdersPortal as OrderHistory,
   useOrders,
   useMarketPricePanel,
-  useConfirmationPanel,
   useTokenPanel,
   useLimitPriceToggle,
   useFillDelayPanel,
@@ -54,6 +53,7 @@ export {
   useTriggerPricePanel,
   useInvertTrade,
   useTriggerPriceWarning,
+  useOrderExecutionFlow,
   ORBS_WEBSITE_URL,
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,

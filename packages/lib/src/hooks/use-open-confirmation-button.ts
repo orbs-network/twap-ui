@@ -3,12 +3,33 @@ import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { useShouldUnwrap, useShouldOnlyWrap } from "./helper-hooks";
 import { useBalanceError } from "./use-balance-error";
-import { useOnOpenConfirmationModal } from "./use-confirmation";
 import { useFieldsErrors } from "./use-fields-errors";
 import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { useUnwrapToken } from "./use-unwrap";
 import { useWrapOnly } from "./use-wrap-only";
 import BN from "bignumber.js";
+import { useDstAmount } from "./use-dst-amount";
+import { useCallback } from "react";
+
+const useConfirm = () => {
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const updateState = useTwapStore((s) => s.updateState);
+  const dstAmount = useDstAmount().amountUI;
+
+  return useCallback(() => {
+    updateState({ showConfirmation: true });
+    if (swapStatus === SwapStatus.LOADING) {
+      return;
+    }
+   
+    if (swapStatus === SwapStatus.FAILED) {
+      updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
+    }
+    updateState({
+      acceptedDstAmount: dstAmount,
+    });
+  }, [updateState, dstAmount, swapStatus]);
+};
 
 export const useOnOpenConfirmationButton = () => {
   const { srcUsd1Token, translations: t, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity, account } = useTwapContext();
@@ -21,7 +42,7 @@ export const useOnOpenConfirmationButton = () => {
   const inputsError = useFieldsErrors();
   const disabled = Boolean(balanceError || inputsError);
 
-  const onOpen = useOnOpenConfirmationModal();
+  const onConfirm = useConfirm();
   const shouldUnwrap = useShouldUnwrap();
   const shouldOnlyWrap = useShouldOnlyWrap();
 
@@ -69,7 +90,7 @@ export const useOnOpenConfirmationButton = () => {
 
   const swapButton = makeButton(
     getSwapText(),
-    onOpen,
+    onConfirm,
     isButtonLoading,
     Boolean(swapStatus !== SwapStatus.LOADING && (zeroMarketPrice || isButtonLoading || disabled || zeroSrcAmount)),
   );

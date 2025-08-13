@@ -1,5 +1,5 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../context";
 import { useTradePrice } from "../twap/submit-order-modal/usePrice";
 import { useTwapStore } from "../useTwapStore";
@@ -8,73 +8,79 @@ import { useDeadline } from "./use-deadline";
 import { useSrcChunkAmount } from "./use-src-chunk-amount";
 import { useFillDelay } from "./use-fill-delay";
 import { useChunks } from "./use-chunks";
-import { useUsdAmount } from "./helper-hooks";
-import { useDstAmount } from "./use-dst-amount";
+import { useExplorerLink, useUsdAmount } from "./helper-hooks";
 import { useFees } from "./use-fees";
 import { useDstMinAmountPerChunk } from "./use-dst-min-amount-out-per-chunk";
 import { useSubmitOrder } from "./use-submit-order";
+import { useTriggerAmountPerChunk } from "./use-trigger-amount-per-chunk";
 
-export const useOnOpenConfirmationModal = () => {
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const updateState = useTwapStore((s) => s.updateState);
-  const dstAmount = useDstAmount().amountUI;
-  return useCallback(() => {
-    updateState({ showConfirmation: true });
-    if (swapStatus === SwapStatus.LOADING) return;
-    updateState({
-      swapStatus: undefined,
-      acceptedDstAmount: dstAmount,
-    });
-  }, [updateState, dstAmount, swapStatus]);
-};
-
-export const useOnCloseConfirmationModal = () => {
-  const updateState = useTwapStore((s) => s.updateState);
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const resetState = useTwapStore((s) => s.resetState);
-
-  return useCallback(() => {
-    updateState({ showConfirmation: false });
-    if (swapStatus === SwapStatus.SUCCESS) {
-      resetState();
-    }
-
-    if (swapStatus === SwapStatus.FAILED) {
-      updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
-    }
-  }, [resetState, updateState, swapStatus]);
-};
-
-export const useConfirmationPanel = () => {
+const useOrderDetails = () => {
   const { dstUsd1Token, srcUsd1Token, account, srcToken, dstToken } = useTwapContext();
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
-  const onClose = useOnCloseConfirmationModal();
   const deadline = useDeadline();
   const srcChunkAmount = useSrcChunkAmount().amountUI;
   const chunks = useChunks().chunks;
   const { fillDelay } = useFillDelay();
-  const destMinAmountOut = useDstMinAmountPerChunk().amountUI;
+  const destMinAmountOutPerChunk = useDstMinAmountPerChunk().amountUI;
+  const triggerPricePerChunk = useTriggerAmountPerChunk().amountUI;
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const fee = useFees();
-  const { mutateAsync, isLoading: mutationLoading } = useSubmitOrder();
+  const _fee = useFees();
   const srcUsdAmount = useUsdAmount(srcAmount, srcUsd1Token);
   const dstUsdAmount = useUsdAmount(acceptedDstAmount, dstUsd1Token);
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const tradePrice = useTradePrice();
+
+  const fee = useMemo(() => {
+    if (!_fee) return "";
+    return {
+      amount: _fee.amountUI,
+      percent: _fee,
+    };
+  }, [_fee, acceptedDstAmount]);
+
+  const orderType = useMemo(() => {
+    return getOrderType(Boolean(isMarketOrder), chunks);
+  }, [isMarketOrder, chunks]);
+
+  return {
+    orderType,
+    srcToken,
+    dstToken,
+    srcAmount: srcAmount || "",
+    dstAmount: acceptedDstAmount || "",
+    srcChunkAmount,
+    chunks,
+    fillDelay: fillDelay.value * fillDelay.unit,
+    destMinAmountOutPerChunk,
+    triggerPricePerChunk,
+    deadline,
+    fee,
+    srcUsdAmount,
+    dstUsdAmount,
+    recipient: account,
+    tradePrice,
+  };
+};
+
+export const useOrderExecutionFlow = () => {
+  const { mutateAsync, isLoading: mutationLoading } = useSubmitOrder();
+  const resetState = useTwapStore((s) => s.resetState);
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
   const currentStep = useTwapStore((s) => s.state.activeStep);
   const swapError = useTwapStore((s) => s.state.swapError);
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const stepsCount = useTwapStore((s) => s.state.totalSteps);
+  const totalSteps = useTwapStore((s) => s.state.totalSteps);
   const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
   const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
-  const showConfirmation = useTwapStore((s) => s.state.showConfirmation);
-  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const unwrapTxHash = useTwapStore((s) => s.state.unwrapTxHash);
   const wrapTxHash = useTwapStore((s) => s.state.wrapTxHash);
   const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
   const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
   const updateState = useTwapStore((s) => s.updateState);
   const isLoading = mutationLoading || swapStatus === SwapStatus.LOADING || fetchingAllowance;
-  const tradePrice = useTradePrice();
+  const isOpen = useTwapStore((s) => s.state.showConfirmation);
+  const explorerUrl = useExplorerLink(createOrderTxHash);
+  const orderDetails = useOrderDetails();
 
   const setDisclaimerAccepted = useCallback(
     (accepted: boolean) => {
@@ -83,46 +89,38 @@ export const useConfirmationPanel = () => {
     [updateState],
   );
 
-  const submitOrder = useCallback(() => mutateAsync(), [mutateAsync]);
+  const onSubmitOrder = useCallback(() => mutateAsync(), [mutateAsync]);
+
+  const onClose = useCallback(() => {
+    updateState({ showConfirmation: false });
+    if (swapStatus === SwapStatus.SUCCESS) {
+      resetState();
+    }
+  }, [updateState, swapStatus, resetState]);
+
+  const onReset = useCallback(() => {
+    resetState();
+  }, [resetState]);
 
   return {
-    onClose,
-    isOpen: Boolean(showConfirmation),
-    setDisclaimerAccepted,
     disclaimerAccepted,
-    orderDetails: {
-      orderType: getOrderType(Boolean(isMarketOrder), chunks),
-      srcToken,
-      dstToken,
-      srcAmount,
-      dstAmount: acceptedDstAmount,
-      srcChunkAmount,
-      chunks,
-      fillDelay,
-      destMinAmountOut,
-      orderDeadline: deadline,
-      fee,
-      srcUsdAmount,
-      dstUsdAmount,
-      recipient: account,
-      tradePrice,
-    },
-    swap: {
-      isLoading,
-      disabled: !disclaimerAccepted || isLoading,
-      onSubmit: submitOrder,
-      currentStep: {
-        type: currentStep,
-        index: currentStepIndex,
-      },
-      error: swapError,
-      status: swapStatus,
-      stepsCount,
-      submitted: Boolean(swapStatus),
-      unwrapTxHash,
-      wrapTxHash,
-      approveTxHash,
-      createOrderTxHash,
-    },
+    onDisclaimerChange: setDisclaimerAccepted,
+    isLoading,
+    onSubmitOrder,
+    currentStep,
+    currentStepIndex,
+    error: swapError,
+    status: swapStatus,
+    totalSteps,
+    submitted: Boolean(swapStatus),
+    unwrapTxHash,
+    wrapTxHash,
+    approveTxHash,
+    createOrderTxHash,
+    onClose,
+    isFlowOpen: isOpen,
+    onReset,
+    explorerUrl,
+    orderDetails,
   };
 };

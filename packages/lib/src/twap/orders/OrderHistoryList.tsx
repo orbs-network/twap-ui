@@ -36,7 +36,7 @@ export const OrderHistoryList = () => {
   );
 };
 
-const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
+const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: string) => void }) => {
   const context = useTwapContext();
   const { callback: cancelOrder } = useCancelOrder();
 
@@ -97,7 +97,7 @@ const ListItemHeader = ({ order }: { order: Order }) => {
   return (
     <div className="twap-orders__list-item-header">
       <p className="twap-orders__list-item-header-title">
-        {`#${order.id}`} {name} <span>{`(${formattedDate})`}</span>
+        {name} <span>{`(${formattedDate})`}</span>
       </p>
       <p className="twap-orders__list-item-header-status">{status}</p>
     </div>

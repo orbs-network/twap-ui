@@ -28,12 +28,12 @@ import {
   Module,
   useTriggerPricePanel,
   Token,
-  useConfirmationPanel,
   useFieldsErrors,
   useMarketPricePanel,
   useInvertTrade,
   useTriggerPriceWarning,
   SelectMeuItem,
+  useOrderExecutionFlow,
 } from "@orbs-network/twap-ui";
 import { Config, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -67,11 +67,7 @@ const OrderHistoryModal = (props: OrdersHistoryProps) => {
 };
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
-  const {
-    swap: { onSubmit, submitted, disabled, isLoading },
-    setDisclaimerAccepted,
-    disclaimerAccepted,
-  } = useConfirmationPanel();
+  const { onSubmitOrder, onDisclaimerChange, disclaimerAccepted, isLoading, submitted } = useOrderExecutionFlow();
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
       {props.children}
@@ -84,9 +80,9 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
                 Disclaimer
               </a>
             </Flex>
-            <Switch checked={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+            <Switch checked={disclaimerAccepted} onChange={() => onDisclaimerChange(!disclaimerAccepted)} />
           </Flex>
-          <StyledButton onClick={onSubmit} disabled={disabled}>
+          <StyledButton onClick={onSubmitOrder} disabled={isLoading}>
             <p>{isLoading ? "Loading..." : "Confirm"}</p>
           </StyledButton>
         </>

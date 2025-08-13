@@ -163,9 +163,9 @@ export type SelectMenuProps = {
 
 export type OrderHistoryListOrderProps = {
   order: Order;
-  selectOrder: (orderId: number) => void;
+  selectOrder: (orderId: string) => void;
   children: ReactNode;
-  cancelOrder: (orderId: number) => Promise<string>;
+  cancelOrder: (orderId: string) => Promise<string>;
 };
 
 export type LimitPanelInvertButtonProps = {
@@ -576,3 +576,4 @@ export interface State {
 }
 
 export { SwapStatus };
+
