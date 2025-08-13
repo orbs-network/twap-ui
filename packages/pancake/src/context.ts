@@ -37,6 +37,7 @@ export interface AdapterProps extends TWAPProps {
     inputCurrency: any;
     outputCurrency: any;
   }>;
+  t?: (key: string, data?: any) => string;
 }
 
 export type ToastProps = { title: string; message: ReactNode; autoCloseMillis?: number; variant: "success" | "warning" | "error" | "info" };

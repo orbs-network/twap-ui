@@ -45,6 +45,7 @@ import { configs } from "./config";
 import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
 import { BackBody, ChangeIcon, CloseIcon, InfoIcon } from "./icons";
 import { SwapModal } from "./OrderSubmitModal";
+import { useTranslation } from "./use-translation";
 
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const context = useAdapterContext();
@@ -324,6 +325,7 @@ const TwapPanel = memo(() => {
   const onCancelOrderSuccess = useOnCancelOrderSuccess();
 
   const parsedTokens = useParsedTokens();
+  const translations = useTranslation();
 
   return (
     <div className="twap-adapter-wrapper">
@@ -332,7 +334,7 @@ const TwapPanel = memo(() => {
         config={config}
         maxFeePerGas={context.maxFeePerGas}
         priorityFeePerGas={context.priorityFeePerGas}
-        translations={context.translations as Translations}
+        translations={translations as Translations}
         provider={context.provider}
         account={context.account}
         srcToken={srcToken}
