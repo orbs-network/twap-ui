@@ -145,7 +145,7 @@ export const getMaxOrderDurationError = (module: Module, duration: TimeDuration)
     };
   }
   return {
-    isError: getTimeDurationMillis(duration) > MAX_ORDER_DURATION_MILLIS,
+    isError: getTimeDurationMillis(duration) > MAX_ORDER_DURATION_MILLIS, // 365 days
     value: MAX_ORDER_DURATION_MILLIS,
   };
 };

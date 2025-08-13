@@ -2,13 +2,38 @@ import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { amountBN, analytics } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType, Translations, Components } from "./types";
-
-import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
 import { initiateWallet } from "./lib";
 import { useDefaultsUpdater } from "./hooks/use-default-values";
 import { useTwapStore } from "./useTwapStore";
 import { useAllowanceListener } from "./hooks/use-allowance";
+import { ErrorBoundary } from "react-error-boundary";
+
+const TwapFallbackUI = () => {
+  return (
+    <div className="twap-error-fallback">
+      <p>Something went wrong</p>
+      {/* <Button variant="contained" onClick={() => window.location.reload()}>
+        Reload
+      </Button> */}
+    </div>
+  );
+};
+
+function ErrorWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <ErrorBoundary
+      onError={(error) => {
+        // You can also log the error to an error reporting service like AppSignal
+        // logErrorToMyService(error, errorInfo);
+        console.error(error);
+      }}
+      FallbackComponent={TwapFallbackUI}
+    >
+      <>{children}</>
+    </ErrorBoundary>
+  );
+}
 
 export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
@@ -49,7 +74,7 @@ const Content = (props: TwapProps) => {
 
   useEffect(() => {
     analytics.init(props.config);
-  }, [props.config]);
+  }, [props.config.chainId]);
 
   return (
     <TwapContext.Provider
@@ -68,7 +93,7 @@ const Content = (props: TwapProps) => {
       }}
     >
       <Listeners />
-      <TwapErrorWrapper>{props.children}</TwapErrorWrapper>
+      <ErrorWrapper>{props.children}</ErrorWrapper>
     </TwapContext.Provider>
   );
 };
