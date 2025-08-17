@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
-import { TwapContextUIPreferences, TwapLibProps } from "./types";
+import { Translations, TwapContextUIPreferences, TwapLibProps } from "./types";
 import { useInitLib, useMaxPossibleChunks, useMaxPossibleChunksReady, usePriceUSD, useSetChunks, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
@@ -94,8 +94,19 @@ const WrappedTwap = (props: TwapLibProps) => {
   );
 };
 
+function removeEmptyValues<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(Object.entries(obj).filter(([_, value]) => value != null && value !== "")) as Partial<T>;
+}
+
 export const TwapAdapter = (props: TwapLibProps) => {
-  const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
+  const translations = useMemo((): Translations => {
+    try {
+      const cleanTr = (removeEmptyValues(props.translations) || {}) as Translations;
+      return { ...defaultTranlations, ...cleanTr };
+    } catch (error) {
+      return defaultTranlations as Translations;
+    }
+  }, [props.translations]);
 
   return (
     <QueryClientProvider client={queryClient}>

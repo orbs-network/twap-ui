@@ -197,6 +197,9 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
           inputCurrency={isSrcToken ? inputCurrency : outputCurrency}
           outputCurrency={isSrcToken ? outputCurrency : inputCurrency}
         />
+        <div className="twap-src-input-warning" style={{ marginTop: "10px" }}>
+          {isSrcToken && <SrcInputWarning />}
+        </div>
       </StyledContainerPadding>
     );
   }
