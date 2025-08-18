@@ -24,13 +24,13 @@ const useCancelOrderMutation = () => {
         cancelOrderStatus: SwapStatus.LOADING,
         cancelOrderTxHash: undefined,
         cancelOrderError: undefined,
-        cancelOrderId: order.id,
+        // cancelOrderId: order.id,
       });
-      analytics.onCancelOrderRequest(order.id);
-      callbacks?.cancelOrder?.onRequest?.(order.id);
+      // analytics.onCancelOrderRequest(order.id);
+      // callbacks?.cancelOrder?.onRequest?.(order.id);
       let hash: `0x${string}` | undefined;
       if (transactions?.cancelOrder) {
-        hash = await transactions.cancelOrder({ contractAddress: order.twapAddress, abi: TwapAbi as Abi, functionName: "cancel", args: [order.id], orderId: order.id });
+        // hash = await transactions.cancelOrder({ contractAddress: order.twapAddress, abi: TwapAbi as Abi, functionName: "cancel", args: [order.id], orderId: order.id });
       } else {
         hash = await walletClient.writeContract({
           account: account as `0x${string}`,
@@ -42,7 +42,7 @@ const useCancelOrderMutation = () => {
         });
       }
       updateState({ cancelOrderTxHash: hash });
-      const receipt = await getTransactionReceipt(hash);
+      const receipt = await getTransactionReceipt(hash!);
 
       if (!receipt) {
         throw new Error("failed to get transaction receipt");
@@ -52,10 +52,10 @@ const useCancelOrderMutation = () => {
         throw new Error("failed to cancel order");
       }
 
-      optimisticCancelOrder(order.id);
+      // optimisticCancelOrder(order.id);
       updateState({ cancelOrderStatus: SwapStatus.SUCCESS });
       analytics.onCancelOrderSuccess(hash);
-      callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
+      // callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
 
       return hash;
     } catch (error) {

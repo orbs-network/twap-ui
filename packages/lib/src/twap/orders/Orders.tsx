@@ -77,7 +77,7 @@ const CancelOrderFlow = () => {
   );
 };
 
-const LoadingView = ({ orderId }: { orderId: number }) => {
+const LoadingView = ({ orderId }: { orderId: string }) => {
   const { TransactionModal, srcToken, dstToken } = useTwapContext();
   if (TransactionModal?.CancelOrder?.LoadingView && srcToken && dstToken) {
     return <TransactionModal.CancelOrder.LoadingView srcToken={srcToken} dstToken={dstToken} orderId={orderId} />;
@@ -85,7 +85,7 @@ const LoadingView = ({ orderId }: { orderId: number }) => {
   return <SwapFlow.Main />;
 };
 
-const SuccessContent = ({ explorerUrl, orderId }: { explorerUrl: string; orderId: number }) => {
+const SuccessContent = ({ explorerUrl, orderId }: { explorerUrl: string; orderId: string }) => {
   const { TransactionModal, srcToken, dstToken, translations: t } = useTwapContext();
   if (TransactionModal?.CancelOrder?.SuccessContent && srcToken && dstToken) {
     return <TransactionModal.CancelOrder.SuccessContent explorerUrl={explorerUrl} srcToken={srcToken} dstToken={dstToken} orderId={orderId} />;
@@ -93,7 +93,7 @@ const SuccessContent = ({ explorerUrl, orderId }: { explorerUrl: string; orderId
   return <SwapFlow.Success title={t.orderCancelled} explorerUrl={explorerUrl} />;
 };
 
-const FailedContent = ({ error, orderId }: { error: string; orderId: number }) => {
+const FailedContent = ({ error, orderId }: { error: string; orderId: string }) => {
   const { TransactionModal, srcToken, dstToken } = useTwapContext();
   if (TransactionModal?.CancelOrder?.ErrorContent && srcToken && dstToken) {
     return <TransactionModal.CancelOrder.ErrorContent orderId={orderId} error={error} srcToken={srcToken} dstToken={dstToken} />;

@@ -101,7 +101,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
   const dstToken = useToken?.(order?.dstTokenAddress);
   const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcAmountPerChunk);
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmountPerChunk);
-  
+
   const fillDelayMillis = getOrderFillDelayMillis(order, config);
 
   return (

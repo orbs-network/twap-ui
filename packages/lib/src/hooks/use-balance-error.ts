@@ -8,11 +8,13 @@ export const useBalanceError = () => {
   const { translations: t, srcBalance } = useTwapContext();
   const srcAmountWei = useSrcAmount().amountWei;
 
-  return useMemo(() => {
-    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
+  // return useMemo(() => {
+  //   const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
 
-    if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
-      return t.insufficientFunds;
-    }
-  }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
+  //   if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+  //     return t.insufficientFunds;
+  //   }
+  // }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
+
+  return undefined;
 };

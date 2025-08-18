@@ -21,7 +21,7 @@ const useConfirm = () => {
     if (swapStatus === SwapStatus.LOADING) {
       return;
     }
-   
+
     if (swapStatus === SwapStatus.FAILED) {
       updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
     }

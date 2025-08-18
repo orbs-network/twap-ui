@@ -113,7 +113,7 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
       dollarValueOut: acc.dollarValueOut.plus(BN(it.dollarValueOut || 0)),
       dexFee: acc.dexFee.plus(BN(it.dstFee || 0)),
     }),
-    initial
+    initial,
   );
 
   return {
@@ -195,7 +195,7 @@ export const buildOrder = ({
   dstMinAmountPerChunk: string;
   tradeDollarValueIn: string;
   blockNumber?: number;
-  id: string ;
+  id: string;
   fillDelay: number;
   createdAt: number;
   txHash: string;
@@ -555,10 +555,9 @@ export const getOrders = async ({ chainId, signal, account }: { chainId: number;
     signal,
   });
 
-  
   const payload = (await response.json()) as { orders: RawOrderNew[] };
 
-  return payload.orders.map(it => {
+  return payload.orders.map((it) => {
     return buildOrder({
       id: it.hash,
       srcAmount: it.order.witness.input.maxAmount,
@@ -567,18 +566,17 @@ export const getOrders = async ({ chainId, signal, account }: { chainId: number;
       srcAmountPerChunk: it.order.witness.input.amount,
       deadline: Number(it.order.deadline) * 1000,
       dstMinAmountPerChunk: it.order.witness.output.maxAmount,
-      tradeDollarValueIn: '',
+      tradeDollarValueIn: "",
       fillDelay: Number(it.order.witness.epoch),
       createdAt: new Date(it.timestamp).getTime(),
       txHash: it.hash,
       maker: it.order.witness.info.swapper,
-      exchange: '',
-      twapAddress: '',
+      exchange: "",
+      twapAddress: "",
       chainId: Number(it.order.witness.chainId),
       status: OrderStatus.Open,
-      srcTokenSymbol: '',
-      dstTokenSymbol: '',
-      
-    })
+      srcTokenSymbol: "",
+      dstTokenSymbol: "",
+    });
   });
 };

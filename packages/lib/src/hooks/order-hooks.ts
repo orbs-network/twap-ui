@@ -81,8 +81,8 @@ export const usePersistedOrdersStore = () => {
   );
   const deleteCreatedOrder = useCallback(
     (id: number) => {
-      const orders = getCreatedOrders().filter((order) => order.id !== id);
-      localStorage.setItem(ordersKey, JSON.stringify(orders));
+      // const orders = getCreatedOrders().filter((order) => order.id !== id);
+      // localStorage.setItem(ordersKey, JSON.stringify(orders));
     },
     [getCreatedOrders, ordersKey],
   );
@@ -120,7 +120,7 @@ export const useOptimisticAddOrder = () => {
         dstMinAmountPerChunk: params[5],
         tradeDollarValueIn: "",
         blockNumber: 0,
-        id: orderId,
+        id: "",
         fillDelay: Number(params[8]),
         createdAt: moment().utc().valueOf(),
         txHash,
@@ -153,9 +153,9 @@ export const useOptimisticCancelOrder = () => {
       queryClient.setQueryData(queryKey, (orders?: Order[]) => {
         if (!orders) return [];
         return orders.map((order) => {
-          if (order.id === orderId) {
-            return { ...order, status: OrderStatus.Canceled };
-          }
+          // if (order.id === orderId) {
+          //   return { ...order, status: OrderStatus.Canceled };
+          // }
           return order;
         });
       });
@@ -172,7 +172,7 @@ const useHandlePersistedOrders = () => {
       getCreatedOrders().forEach((localStorageOrder) => {
         if (orders.some((order) => order.id.toString() === localStorageOrder.id.toString())) {
           console.log(`removing order: ${localStorageOrder.id}`);
-          deleteCreatedOrder(localStorageOrder.id);
+          // deleteCreatedOrder(localStorageOrder.id);
         } else {
           console.log(`adding order: ${localStorageOrder.id}`);
           orders.unshift(localStorageOrder);
@@ -187,7 +187,7 @@ const useHandlePersistedOrders = () => {
             orders[index] = { ...order, status: OrderStatus.Canceled };
           } else {
             console.log(`Removing cancelled ID for already-cancelled order: ${order.id}`);
-            deleteCancelledOrderId(order.id);
+            // deleteCancelledOrderId(order.id);
           }
         }
       });
@@ -204,8 +204,8 @@ const useOrdersQuery = () => {
     queryKey,
     async ({ signal }) => {
       const orders: Order[] = await getUserOrders(config, account!, signal);
-      console.log({orders});
-      
+      console.log({ orders });
+
       handlePersistedOrders(orders);
 
       return orders.map((order) => {

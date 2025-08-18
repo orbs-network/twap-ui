@@ -256,8 +256,6 @@ export type ParsedFills = {
   dexFee: string;
 };
 
-
-
 export type RawOrderNew = {
   hash: string;
   order: {

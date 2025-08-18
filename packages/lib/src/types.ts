@@ -283,20 +283,20 @@ export type TransactionModalCancelOrderSuccessProps = {
   explorerUrl: string;
   srcToken: Token;
   dstToken: Token;
-  orderId: number;
+  orderId: string;
 };
 
 export type TransactionModalCancelOrderErrorProps = {
   error: string;
   srcToken: Token;
   dstToken: Token;
-  orderId: number;
+  orderId: string;
 };
 
 export type TransactionModalCancelOrderLoadingViewProps = {
   srcToken: Token;
   dstToken: Token;
-  orderId: number;
+  orderId: string;
 };
 
 export interface Components {
@@ -576,4 +576,3 @@ export interface State {
 }
 
 export { SwapStatus };
-
