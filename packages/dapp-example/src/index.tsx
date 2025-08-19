@@ -31,7 +31,7 @@ const Root = () => {
 };
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+  <WagmiProvider config={wagmiConfig}>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <QueryParamProvider adapter={ReactRouter6Adapter}>

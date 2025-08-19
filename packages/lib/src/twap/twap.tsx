@@ -20,6 +20,7 @@ import { useChunkSizeMessage, useDisclaimerMessage, useTriggerPriceWarning } fro
 import { useChunksPanel } from "../hooks/use-chunks";
 import { useOnOpenConfirmationButton } from "../hooks/use-open-confirmation-button";
 import { useTriggerPricePanel } from "../hooks/use-trigger-price";
+import { useTranslation } from "../hooks/use-translation";
 
 const TWAP = (props: TwapProps) => {
   return (
@@ -54,6 +55,7 @@ export {
   useInvertTrade,
   useTriggerPriceWarning,
   useOrderExecutionFlow,
+  useTranslation,
   ORBS_WEBSITE_URL,
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,

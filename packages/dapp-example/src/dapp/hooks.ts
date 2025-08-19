@@ -1,10 +1,11 @@
-import { Config, eqIgnoreCase } from "@orbs-network/twap-sdk";
+import { Config, eqIgnoreCase, Module } from "@orbs-network/twap-sdk";
 import { useTokenList } from "../hooks";
 import { useCallback } from "react";
 import { StringParam, useQueryParam } from "use-query-params";
 
 export const useAppParams = () => {
   const [partner, setPartner] = useQueryParam("partner", StringParam);
+  const [module, setModule] = useQueryParam("module", StringParam);
 
   const partnerSelect = useCallback(
     (config: Config) => {
@@ -13,8 +14,17 @@ export const useAppParams = () => {
     [setPartner],
   );
 
+  const onModuleSelect = useCallback(
+    (module: Module) => {
+      setModule(module);
+    },
+    [setPartner],
+  );
+
   return {
     partner,
+    module: (module || Module.TWAP) as Module,
+    onModuleSelect,
     partnerSelect,
   };
 };

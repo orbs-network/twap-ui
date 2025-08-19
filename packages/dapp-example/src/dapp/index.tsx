@@ -34,6 +34,7 @@ import {
   useTriggerPriceWarning,
   SelectMeuItem,
   useOrderExecutionFlow,
+  useTranslation,
 } from "@orbs-network/twap-ui";
 import { Config, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -236,14 +237,9 @@ const useTokens = () => {
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const { input, usd, balance, token, isLoading } = useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
-  const { panel } = useDappContext();
   const { setSrcToken, setDstToken } = useDappStore();
-
+  const translation = useTranslation();
   const onSelect = isSrcToken ? setSrcToken : setDstToken;
-
-  const toTitle = useMemo(() => {
-    return "To";
-  }, [panel]);
 
   return (
     <Section>
@@ -254,7 +250,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         token={token}
         onInputChange={input.onChange}
         value={input.value}
-        title={isSrcToken ? "From" : toTitle}
+        title={isSrcToken ? translation.from : translation.to}
         disabled={isSrcToken ? false : true}
         isLoading={isLoading}
       />
@@ -319,12 +315,12 @@ const LimitPanel = () => {
   const { onChange, isActive, price, usd, onPercentageChange, marketDiffPercentage, onReset, selectedPercentage, srcToken, dstToken } = useLimitPricePanel();
   const { onInvert, isInverted } = useInvertTrade();
   const { setSrcToken, setDstToken } = useDappStore();
-  const { panel } = useDappContext();
+  const { module } = useDappContext();
   const onSelect = isInverted ? setSrcToken : setDstToken;
   const prefix = isInverted ? "-" : "+";
   const showReset = marketDiffPercentage && marketDiffPercentage !== selectedPercentage;
 
-  if (!isActive || (panel !== Module.TWAP && panel !== Module.LIMIT)) return null;
+  if (!isActive || (module !== Module.TWAP && module !== Module.LIMIT)) return null;
   return (
     <Section>
       <Flex vertical gap={10} align="center" style={{ width: "100%" }}>
@@ -459,8 +455,8 @@ const FillDelay = ({ className }: { className?: string }) => {
 const TriggerPriceToggle = () => {
   const { isMarketOrder, setIsMarketOrder } = useLimitPriceToggle();
   const { label, tooltip } = useLimitPricePanel();
-  const { panel } = useDappContext();
-  if (panel !== Module.STOP_LOSS && panel !== Module.TAKE_PROFIT) return null;
+  const { module } = useDappContext();
+  if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) return null;
   return (
     <div className="flex flex-row gap-2 items-center flex-1">
       <div className="flex flex-row gap-2 items-center">
@@ -620,9 +616,9 @@ const CancelOrderButton = (props: CancelOrderButtonProps) => {
 
 const LimitPriceToggle = () => {
   const { isMarketOrder, setIsMarketOrder } = useLimitPriceToggle();
-  const { panel } = useDappContext();
+  const { module } = useDappContext();
 
-  if (panel !== Module.TWAP) return null;
+  if (module !== Module.TWAP) return null;
   return (
     <Flex gap={10} align="center" justify="flex-end" style={{ width: "100%" }}>
       <Typography>Limit Price</Typography>
@@ -633,8 +629,8 @@ const LimitPriceToggle = () => {
 
 const WarningMessage = () => {
   const { text } = useDisclaimerMessage();
-  const { panel } = useDappContext();
-  if (panel === Module.STOP_LOSS || panel === Module.TAKE_PROFIT) return null;
+  const { module } = useDappContext();
+  if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) return null;
   return (
     <div className="flex flex-row gap-2 items-start justify-center w-full  bg-[rgba(255,255,255,0.1)] rounded-[12px] px-3 py-2">
       <RiErrorWarningLine style={{ color: "white", width: 16, height: 16, position: "relative", top: 2 }} />
@@ -661,9 +657,9 @@ const PoweredByOrbs = () => {
 const DEFAULT_LIMIT_DURATION = { unit: TimeUnit.Days, value: 7 };
 const DEFAULT_TRIGGER_PRICE_DURATION = { unit: TimeUnit.Days, value: 30 };
 const PanelInputs = () => {
-  const { panel } = useDappContext();
+  const { module } = useDappContext();
 
-  if (panel === Module.TWAP) {
+  if (module === Module.TWAP) {
     return (
       <div className="flex flex-row gap-[10px] items-stretch justify-between w-full">
         <FillDelay className="flex-1" />
@@ -672,11 +668,11 @@ const PanelInputs = () => {
     );
   }
 
-  if (panel === Module.LIMIT) {
+  if (module === Module.LIMIT) {
     return <OrderDuration defaultDuration={DEFAULT_LIMIT_DURATION} />;
   }
 
-  if (panel === Module.STOP_LOSS || panel === Module.TAKE_PROFIT) {
+  if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
     return (
       <>
         <TriggerPrice />
@@ -690,11 +686,11 @@ const PanelInputs = () => {
 
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
-  const { config, panel, slippage } = useDappContext();
+  const { config, module, slippage } = useDappContext();
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
-  const twap = panel === Module.TWAP;
+  const twap = module === Module.TWAP;
 
   return (
     <>
@@ -706,7 +702,7 @@ export const Dapp = () => {
         provider={client.data?.transport}
         srcToken={srcToken}
         dstToken={dstToken}
-        module={panel}
+        module={module}
         srcUsd1Token={useUSD(srcToken?.address)}
         dstUsd1Token={useUSD(dstToken?.address)}
         srcBalance={useTokenBalance(srcToken).data?.wei}

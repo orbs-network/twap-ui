@@ -1,5 +1,5 @@
 import BN from "bignumber.js";
-import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
+import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, maxUint256, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
 import { Config, Module, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
 import { getOrders } from "./orders";
@@ -22,12 +22,16 @@ export const getDestTokenMinAmountPerChunk = (srcChunkAmount?: string, limitPric
   return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0);
 };
 
-export const getTriggerPricePerChunk = (srcChunkAmount?: string, triggerPrice?: string, srcTokenDecimals?: number) => {
+export const getTriggerPricePerChunk = (module: Module, srcChunkAmount?: string, triggerPrice?: string, srcTokenDecimals?: number) => {
+  if (module === Module.TWAP || module === Module.LIMIT) {
+    return "0";
+  }
+
   if (!srcTokenDecimals || !srcChunkAmount || !triggerPrice) return;
   const result = BN(srcChunkAmount).times(BN(triggerPrice));
   const decimalAdjustment = BN(10).pow(srcTokenDecimals);
   const adjustedResult = result.div(decimalAdjustment);
-  return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0);
+  return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0) || maxUint256;
 };
 
 export const getDuration = (module: Module, chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
@@ -50,7 +54,7 @@ export const getDuration = (module: Module, chunks: number, fillDelay: TimeDurat
 };
 
 export const getChunks = (maxPossibleChunks: number, module: Module, typedChunks?: number) => {
-  if (module === Module.STOP_LOSS || module === Module.LIMIT) return 1;
+  if (module !== Module.TWAP) return 1;
   if (typedChunks !== undefined) return typedChunks;
   return maxPossibleChunks;
 };

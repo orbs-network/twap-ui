@@ -1,4 +1,4 @@
-import { EXCLUSIVITY_OVERRIDE_BPS, EXECUTOR_ADDRESS, maxUint256, REACTOR_ADDRESS, REPERMIT_ADDRESS } from "./consts";
+import { EXCLUSIVITY_OVERRIDE_BPS, EXECUTOR_ADDRESS, REACTOR_ADDRESS, REPERMIT_ADDRESS } from "./consts";
 import { Address, BuildRePermitOrderDataProps, OrderData } from "./types";
 import { safeBNString } from "./utils";
 
@@ -47,13 +47,13 @@ export const buildRePermitOrderData = ({
       output: {
         token: dstToken as Address,
         amount: dstMinAmountPerChunk || "0",
-        maxAmount: triggerAmountPerChunk || maxUint256,
+        maxAmount: triggerAmountPerChunk || "",
         recipient: account as Address,
       },
 
       epoch,
       slippage: slippage.toString(),
-      trigger: triggerAmountPerChunk || maxUint256,
+      trigger: triggerAmountPerChunk || "",
       chainId: chainId.toString(),
     },
   };
@@ -64,6 +64,8 @@ export const buildRePermitOrderData = ({
     chainId: chainId,
     verifyingContract: REPERMIT_ADDRESS as Address,
   };
+
+  console.log({ orderData });
 
   return {
     domain,

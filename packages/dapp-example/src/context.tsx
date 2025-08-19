@@ -9,10 +9,10 @@ interface ContextProps {
   setConfig: (config: Config) => void;
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
-  panel: Module;
-  setPanel: (panel: Module) => void;
   slippage: number;
   setSlippage: (slippage: number) => void;
+  module: Module;
+  onModuleSelect: (module: Module) => void;
 }
 type ThemeMode = "light" | "dark";
 const Context = createContext({} as ContextProps);
@@ -61,9 +61,9 @@ const useConfig = () => {
 
 export const DappProvider = ({ children }: { children: React.ReactNode }) => {
   const { config, setConfig } = useConfig();
-  const [panel, setPanel] = useState(Module.STOP_LOSS);
   const [theme, _setTheme] = useState<ThemeMode>((localStorage.getItem("theme") as ThemeMode) || "dark");
   const [slippage, setSlippage] = useState(0.5);
+  const { module, onModuleSelect } = useAppParams();
   const setTheme = useCallback(
     (theme: ThemeMode) => {
       _setTheme(theme);
@@ -72,7 +72,7 @@ export const DappProvider = ({ children }: { children: React.ReactNode }) => {
     [_setTheme],
   );
 
-  return <Context.Provider value={{ config, setConfig, theme, setTheme, panel, setPanel, slippage, setSlippage }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ config, setConfig, theme, setTheme, module, onModuleSelect, slippage, setSlippage }}>{children}</Context.Provider>;
 };
 
 export const useDappContext = () => useContext(Context);

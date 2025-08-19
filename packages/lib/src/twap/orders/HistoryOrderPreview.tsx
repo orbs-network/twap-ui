@@ -13,7 +13,6 @@ import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { SwapStatus, TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../components/order-details";
 import { useCancelOrder } from "../../hooks/use-cancel-order";
-import { makeElipsisAddress } from "../../utils";
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
@@ -106,9 +105,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
 
   return (
     <OrderDetails>
-      <OrderDetails.DetailRow title="ID">
-        <p>{makeElipsisAddress(order.id)}</p>
-      </OrderDetails.DetailRow>
+      <OrderDetails.OrderID id={order.id} />
       <LimitPrice order={order} />
       <CreatedAt order={order} />
       <OrderDetails.Expiry deadline={order?.deadline} />
@@ -118,7 +115,6 @@ const OrderInfo = ({ order }: { order: Order }) => {
       <OrderDetails.MinDestAmount totalChunks={order?.chunks} dstToken={dstToken} dstMinAmountOut={dstMinAmountOutUi} />
       <OrderDetails.TradeInterval chunks={order.chunks} fillDelayMillis={fillDelayMillis} />
       <OrderDetails.Recipient />
-      <OrderDetails.TxHash txHash={order?.txHash} />
     </OrderDetails>
   );
 };

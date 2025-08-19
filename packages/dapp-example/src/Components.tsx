@@ -303,14 +303,14 @@ const SettingsModal = ({ className }: { className?: string }) => {
 };
 
 export const PanelToggle = () => {
-  const { setPanel, panel } = useDappContext();
+  const { onModuleSelect, module } = useDappContext();
 
   return (
     <div className="flex items-center gap-2 mb-[20px]">
       <div className="panel-selector">
         {Object.values(Module).map((it) => {
           return (
-            <button className={`${panel === it ? "panel-selector-btn-selected" : ""} panel-selector-btn`} key={it} onClick={() => setPanel(it)}>
+            <button className={`${module === it ? "panel-selector-btn-selected" : ""} panel-selector-btn`} key={it} onClick={() => onModuleSelect(it)}>
               {it.replace("_", " ")}
             </button>
           );

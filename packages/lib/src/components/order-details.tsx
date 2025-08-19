@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo } from "react";
+import React, { CSSProperties, ReactNode, useMemo } from "react";
 import moment from "moment";
 import { fillDelayText, makeElipsisAddress } from "../utils";
 import { Token } from "../types";
@@ -7,6 +7,7 @@ import { Label } from "./Label";
 import { useTwapContext } from "../context";
 import { useAmountBN, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
+import { useCopyToClipboard } from "../hooks/use-copy";
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
   const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
@@ -119,31 +120,36 @@ const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; 
   );
 };
 
-const DetailRow = ({ title, tooltip, children, className = "" }: { title: string; tooltip?: string; children?: React.ReactNode; className?: string }) => {
+const DetailRow = ({
+  title,
+  tooltip,
+  children,
+  className = "",
+  onClick,
+  style,
+}: {
+  title: string;
+  tooltip?: string;
+  children?: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  style?: CSSProperties;
+}) => {
   return (
-    <div className={`${className} twap-order-details__detail-row`}>
+    <div className={`${className} twap-order-details__detail-row`} onClick={onClick} style={style}>
       <Label text={title} tooltip={tooltip} className="twap-order-details__detail-row-label" />
       <div className="twap-order-details__detail-row-value">{children}</div>
     </div>
   );
 };
 
-const TxHash = ({ txHash }: { txHash?: string }) => {
+const OrderID = ({ id }: { id: string }) => {
   const { translations: t } = useTwapContext();
-  const txHashAddress = makeElipsisAddress(txHash);
-  const explorerUrl = useNetwork()?.explorer;
-
-  if (!txHash) return null;
+  const copy = useCopyToClipboard();
 
   return (
-    <DetailRow title={t.txHash}>
-      {!explorerUrl ? (
-        txHashAddress
-      ) : (
-        <a href={`${explorerUrl}/tx/${txHash}`} target="_blank">
-          {txHashAddress}
-        </a>
-      )}
+    <DetailRow title="ID" onClick={() => copy(id)} style={{ cursor: "pointer" }}>
+      {makeElipsisAddress(id)}
     </DetailRow>
   );
 };
@@ -171,7 +177,7 @@ OrderDetails.ChunksAmount = ChunksAmount;
 OrderDetails.Recipient = Recipient;
 OrderDetails.TradeInterval = TradeInterval;
 OrderDetails.DetailRow = DetailRow;
-OrderDetails.TxHash = TxHash;
 OrderDetails.FillDelaySummary = FillDelaySummary;
 OrderDetails.TriggerPrice = TriggerPrice;
 OrderDetails.LimitPrice = LimitPrice;
+OrderDetails.OrderID = OrderID;
