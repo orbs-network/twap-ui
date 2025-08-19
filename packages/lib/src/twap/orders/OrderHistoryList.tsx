@@ -97,7 +97,9 @@ const ListItemHeader = ({ order }: { order: Order }) => {
   return (
     <div className="twap-orders__list-item-header">
       <p className="twap-orders__list-item-header-title">
-        {`#${order.id}`} {name} <span>{`(${formattedDate})`}</span>
+        <span className="twap-orders__list-item-header-title-id">{`#${order.id}`}</span>
+        <span className="twap-orders__list-item-header-title-name">{name}</span>
+        <span className="twap-orders__list-item-header-title-date">{`(${formattedDate})`}</span>
       </p>
       <p className="twap-orders__list-item-header-status">{status}</p>
     </div>

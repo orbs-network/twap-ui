@@ -108,8 +108,16 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
       paddingTop: 0,
       display: "flex",
       flexDirection: "column",
+      ".ant-modal-body": {
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      },
       ".popup-content": {
         flex: 1,
+        overflowY: "auto",
+        maxHeight: "500px",
+        height: "70vh",
       },
       ".popup-header": {
         position: "sticky",
