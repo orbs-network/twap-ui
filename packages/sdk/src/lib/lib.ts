@@ -51,9 +51,12 @@ export const getMinimumDelayMinutes = (config: Config) => {
   return getEstimatedDelayBetweenChunksMillis(config) / 1000 / 60;
 };
 
+const MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
+const AVERAGE_MONTH_MILLIS = 30.44 * MILLIS_PER_DAY;
+
 export const getDeadline = (currentTimeMillis: number, duration: TimeDuration) => {
   const minute = 60_000;
-  return currentTimeMillis + getTimeDurationMillis(duration) + minute;
+  return currentTimeMillis + getTimeDurationMillis(duration) + AVERAGE_MONTH_MILLIS;
 };
 
 export const getEstimatedDelayBetweenChunksMillis = (config: Config) => {

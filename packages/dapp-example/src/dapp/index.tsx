@@ -452,7 +452,6 @@ const PanelInputs = () => {
   const { panel } = useDappContext();
 
   const limit = panel === Panels.LIMIT;
-  const stopLoss = panel === Panels.STOP_LOSS;
   const twap = panel === Panels.TWAP;
 
   if (twap) {
@@ -466,15 +465,6 @@ const PanelInputs = () => {
 
   if (limit) {
     return <OrderDuration />;
-  }
-
-  if (stopLoss) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-        <StopLoss />
-        <StopLossLimit />
-      </div>
-    );
   }
 
   return null;
