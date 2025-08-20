@@ -17,6 +17,7 @@ import {
   useOnOpenConfirmationModal,
   useOrderDuration,
   useOrderDurationError,
+  useOrderName,
   usePriceDiffFromMarketPercent,
   useShouldOnlyWrap,
   useShouldUnwrap,
@@ -132,8 +133,9 @@ export const useLimitPricePercentSelect = () => {
     const resetButton = {
       text: isReset ? `${prefix}${priceDiffFromMarket}%` : "0%",
       selected: isReset || !selectedPricePercent ? true : false,
-      onClick: () => onPercent("0"),
+      onClick: () => onPercent(""),
       isReset,
+      isMarket: true,
     };
     const buttons = options.map((option) => {
       return {
@@ -141,6 +143,7 @@ export const useLimitPricePercentSelect = () => {
         selected: isSelected(Number(option)),
         onClick: () => onPercent(option),
         isReset: false,
+        isMarket: BN(option || 0).isZero(),
       };
     });
 
@@ -548,7 +551,18 @@ export const useShowOrderConfirmationModalButton = () => {
 export const useOrderHistoryPanel = () => {
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const cancelOrder = useCancelOrder();
-  const { isOpen, onClose, onOpen } = useOrderHistoryContext();
+  const { isOpen, onClose, onOpen, selectedOrderId, selectOrder } = useOrderHistoryContext();
+
+  const selectedOrder = useMemo(() => {
+    if (!selectedOrderId) return;
+    return orders?.all.find((it) => it.id === selectedOrderId);
+  }, [orders, selectedOrderId]);
+
+  const closeSelectedOrder = useCallback(() => {
+    selectOrder(undefined);
+  }, [selectOrder]);
+
+  const selectedOrderTitle = useOrderName(selectedOrder?.isMarketOrder, selectedOrder?.chunks);
 
   return {
     orders,
@@ -564,5 +578,8 @@ export const useOrderHistoryPanel = () => {
     cancelOrderTxHash: cancelOrder.txHash,
     cancelOrderError: cancelOrder.error,
     cancelOrderId: cancelOrder.orderId,
+    selectedOrder,
+    selectedOrderTitle,
+    closeSelectedOrder,
   };
 };
