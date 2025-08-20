@@ -142,15 +142,14 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
   if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
-    <context.OrderHistory.CancelOrderButton
-      order={order}
-      isLoading={cancelOrder.status === SwapStatus.LOADING}
-      error={cancelOrder.error}
-      txHash={cancelOrder.txHash}
-      status={cancelOrder.status}
+    <context.components.Button
+      loading={cancelOrder.status === SwapStatus.LOADING}
       onClick={onCancelOrder}
+      disabled={cancelOrder.status === SwapStatus.LOADING}
       className="twap-cancel-order"
-    />
+    >
+      Cancel
+    </context.components.Button>
   );
 };
 

@@ -13,6 +13,23 @@ const getColors = (isDarkMode?: boolean) => {
 export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDarkMode }) => {
   const colors = getColors(isDarkMode);
   return {
+    ".twap-failed-unwrap": {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      "&-title": {
+        fontSize: 22,
+      },
+      "&-text": {
+        fontSize: 17,
+      },
+      button: {
+        width: "fit-content",
+      },
+    },
     p: {
       color: colors.text.main,
     },

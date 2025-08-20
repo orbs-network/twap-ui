@@ -108,6 +108,7 @@ export interface Translations {
   unwrap: string;
   balance: string;
   wrapAction: string;
+  unwrapAction: string;
   approveAction: string;
   createOrderAction: string;
   orderModalConfirmOrder: string;
@@ -248,6 +249,7 @@ export type TransactionModalCreateOrderErrorProps = {
   srcAmount: string;
   dstAmount: string;
   orderType: OrderType;
+  shouldUnwrap: boolean;
 };
 
 export type TransactionModalCreateOrderLoadingViewProps = {
@@ -304,7 +306,7 @@ export interface Components {
   Tooltip?: FC<TooltipProps>;
   Label?: FC<LabelProps>;
   TokenLogo?: FC<TokenLogoProps>;
-  Button?: FC<ButtonProps>;
+  Button: FC<ButtonProps>;
 }
 
 interface CreateOrderCallbackArgs {
@@ -438,7 +440,7 @@ export interface TwapProps {
   srcBalance?: string;
   dstBalance?: string;
   children?: React.ReactNode;
-  components?: Components;
+  components: Components;
   SubmitOrderPanel: FC<SubmitOrderPanelProps>;
   slippage: number;
   module: Module;
@@ -467,7 +469,6 @@ export interface TwapProps {
     Panel: FC<OrdersHistoryProps>;
     ShowOrdersButton?: FC<OrdersButtonProps>;
     ListLoader?: ReactNode;
-    CancelOrderButton: FC<CancelOrderButtonProps>;
   };
   askDataParams?: any[];
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
@@ -540,6 +541,7 @@ export enum Steps {
   WRAP = "wrap",
   APPROVE = "approve",
   CREATE = "create",
+  UNWRAP = "unwrap",
 }
 
 export interface State {

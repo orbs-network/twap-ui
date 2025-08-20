@@ -92,6 +92,7 @@
   "excecutionSummary": "Execution summary",
   "orderInfo": "Order info",
   "wrapAction": "Wrap {symbol}",
+  "unwrapAction": "Unwrap {symbol}",
   "approveAction": "Approve {symbol}",
   "createOrderAction": "Create {name} order",
   "orderModalConfirmOrder": "Confirm order",

@@ -35,6 +35,8 @@ import {
   SelectMeuItem,
   useOrderExecutionFlow,
   useTranslation,
+  TwapProps,
+  ButtonProps,
 } from "@orbs-network/twap-ui";
 import { Config, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -610,8 +612,12 @@ const TradeAmount = ({ className }: { className?: string }) => {
   );
 };
 
-const CancelOrderButton = (props: CancelOrderButtonProps) => {
-  return <StyledButton onClick={props.onClick}>Cancel</StyledButton>;
+const TwapButton = (props: ButtonProps) => {
+  return (
+    <StyledButton loading={props.loading} disabled={props.disabled} onClick={props.onClick}>
+      {props.children}
+    </StyledButton>
+  );
 };
 
 const LimitPriceToggle = () => {
@@ -715,11 +721,11 @@ export const Dapp = () => {
         OrderHistory={{
           Panel: OrderHistoryModal,
           SelectMenu: SelectMenu,
-          CancelOrderButton,
         }}
         SubmitOrderPanel={SubmitOrderPanel}
         components={{
           Tooltip: CustomTooltip,
+          Button: TwapButton,
         }}
         useToken={useToken}
         fee={0.25}

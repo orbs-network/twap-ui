@@ -2,65 +2,17 @@ import { SwapStatus } from "@orbs-network/swap-ui";
 import { isNativeAddress, submitOrder } from "@orbs-network/twap-sdk";
 import { useRef } from "react";
 import { Steps } from "../types";
-import { getTotalSteps, isTxRejected } from "../utils";
+import { isTxRejected } from "../utils";
 import { useApproveToken } from "./use-approve-token";
 import { useWrapToken } from "./use-wrap";
 import { useSrcAmount } from "./use-src-amount";
 import { useEnsureAllowanceCallback } from "./use-allowance";
 import BN from "bignumber.js";
 import { useMutation } from "@tanstack/react-query";
-import { TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
-import { useCallback } from "react";
-import { useOptimisticAddOrder, useOrders } from "./order-hooks";
-import { Token } from "../types";
-import { useDstAmount } from "./use-dst-amount";
 import { analytics, EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/twap-sdk";
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
-
-const useCallbacks = () => {
-  const { account, callbacks, srcToken, dstToken } = useTwapContext();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const optimisticAddOrder = useOptimisticAddOrder();
-  const destTokenAmountUI = useDstAmount().amountUI;
-  const { refetch: refetchOrders } = useOrders();
-  const onRequest = useCallback((params: string[]) => analytics.onCreateOrderRequest(params, account), [account]);
-  const onSuccess = useCallback(
-    async (receipt: TransactionReceipt, params: string[], srcToken: Token, orderId?: number) => {
-      analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
-      callbacks?.createOrder?.onSuccess?.({
-        srcToken: srcToken!,
-        dstToken: dstToken!,
-        orderId,
-        srcAmount: typedSrcAmount || "0",
-        dstAmount: destTokenAmountUI,
-        receipt,
-      });
-
-      if (orderId === undefined || orderId === null) {
-        return await refetchOrders();
-      }
-
-      optimisticAddOrder(orderId, receipt.transactionHash, params, srcToken, dstToken!);
-    },
-    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, optimisticAddOrder, refetchOrders],
-  );
-
-  const onError = useCallback(
-    (error: any) => {
-      callbacks?.createOrder?.onFailed?.((error as any).message);
-      analytics.onCreateOrderError(error);
-    },
-    [callbacks],
-  );
-
-  return {
-    onRequest,
-    onSuccess,
-    onError,
-  };
-};
 
 const useSignOrder = () => {
   const { account, walletClient, chainId } = useTwapContext();
@@ -96,7 +48,6 @@ const useSignOrder = () => {
 const useCreateOrder = () => {
   const { account, walletClient, chainId, dstToken } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
-  const callbacks = useCallbacks();
   const signOrder = useSignOrder();
 
   return useMutation(async () => {
@@ -109,7 +60,7 @@ const useCreateOrder = () => {
       console.log({ signature, orderData });
 
       const response = await submitOrder(orderData, signature || "");
-      console.log({ response });
+      // analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
 
       updateState({ createOrderTxHash: "" });
 
@@ -119,7 +70,7 @@ const useCreateOrder = () => {
       };
     } catch (error) {
       console.error(error);
-      callbacks.onError(error);
+      analytics.onCreateOrderError(error);
       throw error;
     }
   });
@@ -127,73 +78,58 @@ const useCreateOrder = () => {
 
 export const useSubmitOrder = () => {
   const { srcToken, dstToken, chainId } = useTwapContext();
-  const { ensure: ensureAllowance, refetch: refetchAllowance } = useEnsureAllowanceCallback();
+  const { ensure: ensureAllowance } = useEnsureAllowanceCallback();
   const updateState = useTwapStore((s) => s.updateState);
-  const approve = useApproveToken().mutateAsync;
-  const wrapToken = useWrapToken().mutateAsync;
-  const createOrder = useCreateOrder().mutateAsync;
+  const approveCallback = useApproveToken().mutateAsync;
+  const wrapCallback = useWrapToken().mutateAsync;
+  const createOrderCallback = useCreateOrder().mutateAsync;
   const srcAmount = useSrcAmount().amountWei;
-  const wrappedRef = useRef(false);
 
   return useMutation(async () => {
+    const wrapRequired = isNativeAddress(srcToken?.address || " ");
+    let wrapSuccess = false;
+
     try {
       if (!srcToken || !dstToken || !chainId) {
         throw new Error("missing required parameters");
       }
-
-      const getHasAllowance = async (refetch = false) => {
-        const func = refetch ? refetchAllowance : ensureAllowance;
-        const allowance = await func();
-        console.log({ allowance, srcAmount });
-
-        return BN(allowance || "0").gte(srcAmount || "0");
-      };
-
-      const shouldWrap = isNativeAddress(srcToken.address);
+      // analytics.onCreateOrderRequest(params, account)
 
       updateState({ fetchingAllowance: true });
-      const haveAllowance = await getHasAllowance();
+      const allowance = await ensureAllowance();
+
+      const approvalRequired = BN(srcAmount || "0").gt(allowance || "0");
 
       let stepIndex = 0;
-      updateState({ swapStatus: SwapStatus.LOADING, totalSteps: getTotalSteps(shouldWrap, !haveAllowance), fetchingAllowance: false });
+      let totalSteps = 1;
+      if (wrapRequired) totalSteps++;
+      if (approvalRequired) totalSteps++;
 
-      if (shouldWrap) {
+      updateState({ swapStatus: SwapStatus.LOADING, totalSteps, fetchingAllowance: false });
+
+      if (wrapRequired) {
         updateState({ activeStep: Steps.WRAP });
-        await wrapToken(srcAmount);
+        await wrapCallback(srcAmount);
         stepIndex++;
         updateState({ currentStepIndex: stepIndex });
+        wrapSuccess = true;
       }
 
-      if (!haveAllowance) {
+      if (approvalRequired) {
         updateState({ activeStep: Steps.APPROVE });
-        await approve(srcToken);
-
-        // retry allowance check up to 3 times
-        let hasAllowance = false;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          hasAllowance = await getHasAllowance(true);
-          if (hasAllowance) break;
-          if (attempt < 2) {
-            await new Promise((resolve) => setTimeout(resolve, 3000)); // 3s delay
-          }
-        }
-
-        if (!hasAllowance) {
-          throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
-        }
-
+        await approveCallback({ token: srcToken, amount: srcAmount });
         stepIndex++;
         updateState({ currentStepIndex: stepIndex });
       }
       updateState({ activeStep: Steps.CREATE });
-      const order = await createOrder();
+      const order = await createOrderCallback();
 
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;
     } catch (error) {
-      console.log({ error });
-
-      if (isTxRejected(error) && !wrappedRef.current) {
+      if (wrapSuccess) {
+        updateState({ activeStep: Steps.UNWRAP, swapStatus: SwapStatus.FAILED, currentStepIndex: undefined });
+      } else if (isTxRejected(error)) {
         updateState({ activeStep: undefined, swapStatus: undefined, currentStepIndex: undefined });
       } else {
         updateState({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message });

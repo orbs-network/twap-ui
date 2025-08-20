@@ -40,13 +40,23 @@ const useStep = () => {
   const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
   const network = useNetwork();
   const wrapExplorerUrl = useExplorerLink(wrapTxHash);
+  const unwrapExplorerUrl = useExplorerLink(wrapTxHash);
+
   const approveExplorerUrl = useExplorerLink(approveTxHash);
   const createOrderExplorerUrl = useExplorerLink(createOrderTxHash);
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
+  const wSymbol = network?.wToken.symbol;
   const swapTitle = useTitle();
 
   return useMemo((): Step | undefined => {
+    if (activeStep === Steps.UNWRAP) {
+      return {
+        title: t.unwrapAction.replace("{symbol}", wSymbol || ""),
+        explorerUrl: unwrapExplorerUrl,
+        hideTokens: true,
+      };
+    }
     if (activeStep === Steps.WRAP) {
       return {
         title: t.wrapAction.replace("{symbol}", symbol),
@@ -63,7 +73,7 @@ const useStep = () => {
       title: swapTitle,
       explorerUrl: createOrderExplorerUrl,
     };
-  }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl]);
+  }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol]);
 };
 
 export const SubmitOrderPanel = () => {
