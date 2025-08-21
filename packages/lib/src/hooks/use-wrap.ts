@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { useNetwork } from "./helper-hooks";
 
 export const useWrapToken = () => {
-  const { account, walletClient, publicClient, callbacks, transactions } = useTwapContext();
+  const { account, walletClient, publicClient, callbacks, overrides } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const wToken = useNetwork()?.wToken;
   const getTransactionReceipt = useGetTransactionReceipt();
@@ -25,8 +25,8 @@ export const useWrapToken = () => {
       const amountUI = amountUi(wToken?.decimals, amount);
 
       let hash: `0x${string}` | undefined;
-      if (transactions?.wrap) {
-        hash = await transactions.wrap(amountWei);
+      if (overrides?.wrap) {
+        hash = await overrides.wrap(amountWei);
       } else {
         hash = await walletClient.writeContract({
           abi: iwethabi,

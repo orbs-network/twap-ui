@@ -11,7 +11,8 @@ const addressMap = {
 };
 
 export const useMinChunkSizeUsd = () => {
-  const { config, publicClient, customMinChunkSizeUsd } = useTwapContext();
+  const { config, publicClient, overrides } = useTwapContext();
+  const customMinChunkSizeUsd = overrides?.minChunkSizeUsd;
   const address = addressMap[config.chainId] as `0x${string}`;
   const query = useQuery({
     queryKey: ["useMinChunkSizeUsd", config.chainId],

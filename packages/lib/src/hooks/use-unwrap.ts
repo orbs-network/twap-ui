@@ -8,7 +8,7 @@ import BN from "bignumber.js";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 
 export const useUnwrapToken = () => {
-  const { account, walletClient, publicClient, transactions } = useTwapContext();
+  const { account, walletClient, publicClient, overrides } = useTwapContext();
   const resetState = useTwapStore((s) => s.resetState);
   const updateState = useTwapStore((s) => s.updateState);
   const wTokenAddress = useNetwork()?.wToken.address;
@@ -24,8 +24,8 @@ export const useUnwrapToken = () => {
       const value = BigInt(BN(amountWei).decimalPlaces(0).toFixed());
 
       let hash: `0x${string}` | undefined;
-      if (transactions?.unwrap) {
-        hash = await transactions.unwrap(value);
+      if (overrides?.unwrap) {
+        hash = await overrides.unwrap(value);
       } else {
         hash = await walletClient.writeContract({
           abi: iwethabi,

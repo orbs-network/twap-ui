@@ -202,8 +202,7 @@ const useOrdersQuery = () => {
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
-      const orders: Order[] = await getUserOrders(config, account!, signal);
-      console.log({ orders });
+      const orders = await getUserOrders({ signal, config, account: account! });
 
       handlePersistedOrders(orders);
 

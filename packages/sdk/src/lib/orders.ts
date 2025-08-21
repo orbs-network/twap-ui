@@ -113,7 +113,7 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
       dollarValueOut: acc.dollarValueOut.plus(BN(it.dollarValueOut || 0)),
       dexFee: acc.dexFee.plus(BN(it.dstFee || 0)),
     }),
-    initial,
+    initial
   );
 
   return {
@@ -470,7 +470,7 @@ export const getOrdersFromGraph = async ({
   page?: number;
   limit?: number;
   filters?: GetOrdersFilters;
-}) => {
+}): Promise<Order[]> => {
   const orders = await getCreatedOrders({ chainId, signal, page, limit, filters });
   const [fills, statuses] = await Promise.all([getFills({ chainId, orders, signal }), getStatuses({ chainId, orders, signal })]);
 
@@ -550,7 +550,8 @@ export const getOrderFillDelayMillis = (order: Order, config: Config) => {
   return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
 };
 
-export const getOrders = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account: string }) => {
+export const getApiOrders = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account?: string }): Promise<Order[]> => {
+  if (!account) return [];
   const response = await fetch(`${API_ENDPOINT}/orders?swapper=${account}&chainId=${chainId}`, {
     signal,
   });
@@ -578,5 +579,11 @@ export const getOrders = async ({ chainId, signal, account }: { chainId: number;
       srcTokenSymbol: "",
       dstTokenSymbol: "",
     });
+  });
+};
+
+export const getUserOrders = ({ signal, page, limit, config, account }: { signal?: AbortSignal; page?: number; limit?: number; config: Config; account: string }) => {
+  return Promise.all([getOrdersFromGraph({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }), getApiOrders({ chainId: config.chainId, signal, account })]).then(([graphOrders, apiOrders]) => {
+    return [...graphOrders, ...apiOrders];
   });
 };

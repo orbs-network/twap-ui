@@ -24,7 +24,7 @@ export {
   buildOrder,
   getOrderFillDelayMillis,
   getOrderProgress,
-  getOrders,
+  getUserOrders,
   type GetOrdersFilters,
 } from "./lib/orders";
 export { Configs, TwapAbi, iwethabi, erc20abi, LensAbi, RePermitAbi };

@@ -10,7 +10,7 @@ import { useTwapStore } from "../useTwapStore";
 import { useMemo } from "react";
 
 const useCancelOrderMutation = () => {
-  const { account, callbacks, walletClient, publicClient, transactions } = useTwapContext();
+  const { account, callbacks, walletClient, publicClient, overrides } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
 
@@ -29,7 +29,7 @@ const useCancelOrderMutation = () => {
       // analytics.onCancelOrderRequest(order.id);
       // callbacks?.cancelOrder?.onRequest?.(order.id);
       let hash: `0x${string}` | undefined;
-      if (transactions?.cancelOrder) {
+      if (overrides?.cancelOrder) {
         // hash = await transactions.cancelOrder({ contractAddress: order.twapAddress, abi: TwapAbi as Abi, functionName: "cancel", args: [order.id], orderId: order.id });
       } else {
         hash = await walletClient.writeContract({

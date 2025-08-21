@@ -2,7 +2,7 @@ import BN from "bignumber.js";
 import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, maxUint256, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
 import { Config, Module, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
-import { getOrders } from "./orders";
+import { getUserOrders as _getUserOrders } from "./orders";
 
 // values calculations
 
@@ -183,5 +183,5 @@ export const getMaxChunksError = (chunks: number, maxChunks: number, module: Mod
 };
 
 export const getUserOrders = async (config: Config, account: string, signal?: AbortSignal) => {
-  return getOrders({ signal, chainId: config.chainId, account });
+  return _getUserOrders({ signal, config: config, account });
 };

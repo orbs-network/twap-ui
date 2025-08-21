@@ -66,7 +66,7 @@ const Listeners = () => {
 };
 
 const Content = (props: TwapProps) => {
-  const translations = useTranslations(props.translations);
+  const translations = useTranslations(props.overrides?.translations);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
 
   useEffect(() => {

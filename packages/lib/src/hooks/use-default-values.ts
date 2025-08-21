@@ -34,7 +34,8 @@ export const useDefaultLimitPricePercent = () => {
 export const useDefaultsUpdater = () => {
   const updateStore = useTwapStore((s) => s.updateState);
   const resetState = useTwapStore((s) => s.resetState);
-  const { module, stateDefaults, srcToken, dstToken } = useTwapContext();
+  const { module, overrides, srcToken, dstToken } = useTwapContext();
+  const stateDefaults = overrides?.stateDefaults;
   const isMarketOrderByDefault = stateDefaults?.isMarketOrder;
   const disclaimerAcceptedByDefault = stateDefaults?.disclaimerAccepted;
 

@@ -704,9 +704,8 @@ export const Dapp = () => {
         dstUsd1Token={useUSD(dstToken?.address)}
         srcBalance={useTokenBalance(srcToken).data?.wei}
         dstBalance={useTokenBalance(dstToken).data?.wei}
-        customMinChunkSizeUsd={5}
-        stateDefaults={{
-          disclaimerAccepted: true,
+        overrides={{
+          minChunkSizeUsd: 5,
         }}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
         account={account}

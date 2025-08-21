@@ -10,7 +10,7 @@ import { useEnsureAllowanceCallback } from "./use-allowance";
 import BN from "bignumber.js";
 
 export const useApproveToken = () => {
-  const { account, walletClient, publicClient, callbacks, transactions, chainId } = useTwapContext();
+  const { account, walletClient, publicClient, callbacks, overrides, chainId } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const getTransactionReceipt = useGetTransactionReceipt();
   const { refetch: refetchAllowance } = useEnsureAllowanceCallback();
@@ -25,8 +25,8 @@ export const useApproveToken = () => {
 
       callbacks?.approve?.onRequest?.(token, amountUi(token?.decimals, maxUint256.toString()));
       let hash: `0x${string}` | undefined;
-      if (transactions?.approveOrder) {
-        hash = await transactions.approveOrder({ tokenAddress: token.address, spenderAddress: REPERMIT_ADDRESS, amount: maxUint256 });
+      if (overrides?.approveOrder) {
+        hash = await overrides.approveOrder({ tokenAddress: token.address, spenderAddress: REPERMIT_ADDRESS, amount: maxUint256 });
       } else {
         hash = await walletClient.writeContract({
           abi: erc20Abi,

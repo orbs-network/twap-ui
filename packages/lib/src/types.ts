@@ -401,9 +401,8 @@ export type CancelOrderProps = {
   orderId: number;
 };
 
-export type HasApprovalCallbackProps = {
+export type GetAllowanceProps = {
   tokenAddress: string;
-  amount: string;
   spenderAddress: string;
 };
 
@@ -449,7 +448,6 @@ export interface TwapProps {
   enableQueryParams?: boolean;
   feesDisabled?: boolean;
   config: Config;
-  translations?: Partial<Translations>;
   srcToken?: Token;
   dstToken?: Token;
   srcUsd1Token?: string;
@@ -459,18 +457,19 @@ export interface TwapProps {
   slippage: number;
   module: Module;
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
-  customMinChunkSizeUsd?: number;
   callbacks?: Callbacks;
   numberFormat?: (value: number | string) => string;
-  stateDefaults?: Partial<StateDefaults>;
   onInputAmountChange?: (amountWei: string, amountUI: string) => void;
-  transactions?: {
+  overrides?: {
     wrap?: (amount: bigint) => Promise<`0x${string}`>;
     unwrap?: (amount: bigint) => Promise<`0x${string}`>;
     approveOrder?: (props: ApproveProps) => Promise<`0x${string}`>;
     createOrder?: (props: CreateOrderProps) => Promise<`0x${string}`>;
     cancelOrder?: (props: CancelOrderProps) => Promise<`0x${string}`>;
-    hasApprovalCallback?: (props: HasApprovalCallbackProps) => Promise<boolean>;
+    getAllowance?: (props: GetAllowanceProps) => Promise<string>;
+    stateDefaults?: Partial<StateDefaults>;
+    minChunkSizeUsd?: number;
+    translations?: Partial<Translations>;
   };
 }
 
