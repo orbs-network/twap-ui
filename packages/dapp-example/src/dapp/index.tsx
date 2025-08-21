@@ -5,7 +5,6 @@ import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar 
 import {
   TooltipProps,
   TWAP,
-  SubmitOrderPanelProps,
   SelectMenuProps,
   useFormatNumber,
   useLimitPriceToggle,
@@ -20,8 +19,6 @@ import {
   useDisclaimerMessage,
   ORBS_LOGO,
   ORBS_WEBSITE_URL,
-  CancelOrderButtonProps,
-  OrdersHistoryProps,
   DISCLAIMER_URL,
   useChunksPanel,
   useOrderHistoryPanel,
@@ -37,6 +34,8 @@ import {
   useTranslation,
   TwapProps,
   ButtonProps,
+  SubmitOrderPanel,
+  LabelProps,
 } from "@orbs-network/twap-ui";
 import { Config, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -55,12 +54,12 @@ import styled from "styled-components";
 import { abbreviate } from "../utils";
 import clsx from "clsx";
 
-const OrderHistoryModal = (props: OrdersHistoryProps) => {
+const OrderHistoryModal = () => {
   const { isOpen, onClose, onOpen, isLoading, openOrdersCount } = useOrderHistoryPanel();
   return (
     <>
-      <Popup isOpen={isOpen} onClose={onClose}>
-        {props.children}
+      <Popup isOpen={Boolean(isOpen)} onClose={onClose}>
+        <OrderHistory SelectMenu={SelectMenu} />
       </Popup>
       <button onClick={onOpen} className="twap-orders__button">
         {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Orders</Typography>}
@@ -69,27 +68,26 @@ const OrderHistoryModal = (props: OrdersHistoryProps) => {
   );
 };
 
-const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
-  const { onSubmitOrder, onDisclaimerChange, disclaimerAccepted, isLoading, submitted } = useOrderExecutionFlow();
+const SubmitOrderPanelModal = () => {
+  const { onDisclaimerChange, disclaimerAccepted, isOpen, onClose } = useOrderExecutionFlow();
   return (
-    <Popup isOpen={props.isOpen} onClose={props.onClose}>
-      {props.children}
-      {!submitted && (
-        <>
-          <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
-            <Flex align="center" gap={6}>
-              Accept{" "}
-              <a href={DISCLAIMER_URL} target="_blank" rel="noreferrer">
-                Disclaimer
-              </a>
+    <Popup isOpen={isOpen} onClose={onClose}>
+      <SubmitOrderPanel
+        Label={Label}
+        reviewDetails={
+          <>
+            <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
+              <Flex align="center" gap={6}>
+                Accept{" "}
+                <a href={DISCLAIMER_URL} target="_blank" rel="noreferrer">
+                  Disclaimer
+                </a>
+              </Flex>
+              <Switch checked={disclaimerAccepted} onChange={() => onDisclaimerChange(!disclaimerAccepted)} />
             </Flex>
-            <Switch checked={disclaimerAccepted} onChange={() => onDisclaimerChange(!disclaimerAccepted)} />
-          </Flex>
-          <StyledButton onClick={onSubmitOrder} disabled={isLoading}>
-            <p>{isLoading ? "Loading..." : "Confirm"}</p>
-          </StyledButton>
-        </>
-      )}
+          </>
+        }
+      />
     </Popup>
   );
 };
@@ -173,7 +171,7 @@ export const useSwitchChain = () => {
     (config: Config) => {
       (walletClient as any)?.switchChain({ id: config.chainId });
     },
-    [walletClient],
+    [walletClient]
   );
 };
 
@@ -370,10 +368,10 @@ const TradeAmountMessage = () => {
     </Typography>
   );
 };
-const Label = ({ label, tooltip }: { label: string; tooltip?: string }) => {
+const Label = ({ text, tooltip }: LabelProps) => {
   return (
     <Flex align="center" gap={4}>
-      <Typography style={{ fontSize: 14, color: "white" }}>{label}</Typography>
+      <Typography style={{ fontSize: 14, color: "white" }}>{text}</Typography>
       {tooltip && (
         <Tooltip title={tooltip} arrow>
           <Info size={14} color="white" />
@@ -392,7 +390,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
       setIsCustom(value);
       setDuration(defaultDuration);
     },
-    [setDuration, isCustom, defaultDuration],
+    [setDuration, isCustom, defaultDuration]
   );
 
   const customSelected = SELECT_DURATION_OPTIONS.find((it) => {
@@ -402,7 +400,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
   return (
     <Section className="order-delay twap-input-panel">
       <div className="flex flex-row gap-2 items-center justify-between">
-        <Label label={title} tooltip={tooltip} />
+        <Label text={title} tooltip={tooltip} />
         <div className="flex flex-row gap-2 items-center justify-between">
           <p className="text-sm text-white ">Custom</p>
           <Switch checked={isCustom} onChange={onCustomChange} />
@@ -445,7 +443,7 @@ const FillDelay = ({ className }: { className?: string }) => {
 
   return (
     <Section className={className}>
-      <Label label={title} tooltip={tooltip} />
+      <Label text={title} tooltip={tooltip} />
       <div className="flex flex-row gap-2 items-center justify-between">
         <NumberInput onChange={onInputChange} value={fillDelay.value} className="h-[40px]" />
         <SelectMenu items={DEFAULT_DURATION_OPTIONS} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
@@ -463,7 +461,7 @@ const TriggerPriceToggle = () => {
     <div className="flex flex-row gap-2 items-center flex-1">
       <div className="flex flex-row gap-2 items-center">
         <Switch checked={!isMarketOrder} onChange={() => setIsMarketOrder(!isMarketOrder)} className="w-fit" />
-        <Label label={label} tooltip={tooltip} />
+        <Label text={label} tooltip={tooltip} />
       </div>
       {isMarketOrder && <MarketPriceDisplay />}
     </div>
@@ -511,7 +509,7 @@ const SymbolInput = ({ token, onChange, value, error, isLoading }: { token?: Tok
     <div
       className={clsx(
         "flex flex-row gap-1 justify-between items-center  bg-[rgba(255,255,255,0.05)] rounded-[12px] border border-solid px-3 py-2 flex-1",
-        error ? "border-[#FF0000]" : "border-transparent",
+        error ? "border-[#FF0000]" : "border-transparent"
       )}
     >
       <p className="text-[14px] text-white font-medium">{token?.symbol}</p>
@@ -585,7 +583,7 @@ const TriggerPrice = () => {
       </div>
       <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
         <div className="flex flex-row gap-2 justify-between items-center w-full">
-          <Label label={label} tooltip={tooltip} />
+          <Label text={label} tooltip={tooltip} />
           <ResetButton onClick={onSetMarketRate} text="set market rate" />
         </div>
         <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
@@ -603,7 +601,7 @@ const TradeAmount = ({ className }: { className?: string }) => {
 
   return (
     <Section className={clsx(`trade-amount twap-input-panel ${className}`)}>
-      <Label label={label} tooltip={tooltip} />
+      <Label text={label} tooltip={tooltip} />
       <div className="flex flex-row gap-2 items-center justify-between bg-[rgba(255,255,255,0.05)] rounded-[12px] px-2 py-0 h-[40px]">
         <NumberInput onChange={(value) => onChange(Number(value))} value={trades} className="bg-transparent flex-1" />
         <Typography>Orders</Typography>
@@ -718,15 +716,6 @@ export const Dapp = () => {
           disclaimerAccepted: true,
         }}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
-        OrderHistory={{
-          Panel: OrderHistoryModal,
-          SelectMenu: SelectMenu,
-        }}
-        SubmitOrderPanel={SubmitOrderPanel}
-        components={{
-          Tooltip: CustomTooltip,
-          Button: TwapButton,
-        }}
         useToken={useToken}
         fee={0.25}
         account={account}
@@ -744,8 +733,8 @@ export const Dapp = () => {
           {twap && <TradeAmountMessage />}
           <InputsError />
           <ConfirmationButton />
-
-          <OrderHistory />
+          <SubmitOrderPanelModal />
+          <OrderHistoryModal />
           <WarningMessage />
           <PoweredByOrbs />
         </div>

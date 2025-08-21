@@ -1,5 +1,5 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Module, Order, OrderType, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, Module, Order, OrderStatus, OrderType, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -128,13 +128,6 @@ export interface Translations {
 
 export type MessageVariant = "error" | "warning" | "info";
 
-export type SubmitOrderPanelProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children?: ReactNode;
-};
-
 export type OrderHistoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -165,7 +158,6 @@ export type SelectMenuProps = {
 export type OrderHistoryListOrderProps = {
   order: Order;
   selectOrder: (orderId: string) => void;
-  children: ReactNode;
   cancelOrder: (orderId: string) => Promise<string>;
 };
 
@@ -203,12 +195,6 @@ export type OrdersButtonProps = {
   onClick: () => void;
   openOrdersCount: number;
   isLoading: boolean;
-};
-
-export type OrdersHistoryProps = {
-  children?: ReactNode;
-  isOpen: boolean;
-  onClose: () => void;
 };
 
 export type LinkProps = {
@@ -303,7 +289,6 @@ export type TransactionModalCancelOrderLoadingViewProps = {
 
 export interface Components {
   // shared
-  Tooltip?: FC<TooltipProps>;
   Label?: FC<LabelProps>;
   TokenLogo?: FC<TokenLogoProps>;
   Button: FC<ButtonProps>;
@@ -347,8 +332,7 @@ export enum InputErrors {
   EMPTY_TRIGGER_PRICE,
 }
 
-export type Callbacks = {
-  onSubmitOrderRequest?: (args: CreateOrderCallbackArgs) => void;
+export type Callbacks = {st?: (args: CreateOrderCallbackArgs) => void;
   createOrder?: {
     onRequest?: (args: CreateOrderCallbackArgs) => void;
     onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
@@ -427,7 +411,15 @@ type StateDefaults = {
   disclaimerAccepted?: boolean;
 };
 
+export type OrderHistoryProps = {
+  SelectMenu: FC<SelectMenuProps>;
+  ListOrder?: FC<OrderHistoryListOrderProps>;
+  SelectedOrder?: FC<OrderHistorySelectedOrderProps>;
+  listLoader?: ReactNode;
+};
+
 export interface TwapProps {
+  children?: React.ReactNode;
   provider?: Provider;
   enableQueryParams?: boolean;
   fee?: number;
@@ -439,37 +431,8 @@ export interface TwapProps {
   dstUsd1Token?: string;
   srcBalance?: string;
   dstBalance?: string;
-  children?: React.ReactNode;
-  components: Components;
-  SubmitOrderPanel: FC<SubmitOrderPanelProps>;
   slippage: number;
   module: Module;
-  TransactionModal?: {
-    Spinner?: ReactNode;
-    SuccessIcon?: ReactNode;
-    ErrorIcon?: ReactNode;
-    Link?: FC<LinkProps>;
-    USD?: FC<USDProps>;
-    CreateOrder?: {
-      SuccessContent?: FC<TransactionModalCreateOrderSuccessProps>;
-      ErrorContent?: FC<TransactionModalCreateOrderErrorProps>;
-      ReviewOrderContent?: FC<CreateOrderReviewOrderContentProps>;
-      LoadingView?: FC<TransactionModalCreateOrderLoadingViewProps>;
-    };
-    CancelOrder?: {
-      SuccessContent?: FC<TransactionModalCancelOrderSuccessProps>;
-      ErrorContent?: FC<TransactionModalCancelOrderErrorProps>;
-      LoadingView?: FC<TransactionModalCancelOrderLoadingViewProps>;
-    };
-  };
-  OrderHistory: {
-    SelectMenu?: FC<SelectMenuProps>;
-    ListOrder?: FC<OrderHistoryListOrderProps>;
-    SelectedOrder?: FC<OrderHistorySelectedOrderProps>;
-    Panel: FC<OrdersHistoryProps>;
-    ShowOrdersButton?: FC<OrdersButtonProps>;
-    ListLoader?: ReactNode;
-  };
   askDataParams?: any[];
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   customMinChunkSizeUsd?: number;
@@ -575,6 +538,10 @@ export interface State {
   cancelOrderTxHash?: string;
   cancelOrderError?: string;
   cancelOrderId?: number;
+
+  selectedOrderID?: string;
+  showOrderHistory?: boolean;
+  orderHIstoryStatusFilter?: OrderStatus;
 }
 
 export { SwapStatus };

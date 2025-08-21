@@ -1,9 +1,8 @@
-import React, { CSSProperties, ReactNode, useMemo } from "react";
+import React, { CSSProperties, createContext, ReactNode, useMemo, FC, useContext } from "react";
 import moment from "moment";
 import { fillDelayText, makeElipsisAddress } from "../utils";
-import { Token } from "../types";
+import { LabelProps, Token } from "../types";
 import { useFormatNumber } from "../hooks/useFormatNumber";
-import { Label } from "./Label";
 import { useTwapContext } from "../context";
 import { useAmountBN, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
@@ -135,16 +134,16 @@ const DetailRow = ({
   onClick?: () => void;
   style?: CSSProperties;
 }) => {
+  const { Label } = useContext(OrderDetailsContext);
   return (
     <div className={`${className} twap-order-details__detail-row`} onClick={onClick} style={style}>
-      <Label text={title} tooltip={tooltip} className="twap-order-details__detail-row-label" />
+      <Label text={title} tooltip={tooltip} />
       <div className="twap-order-details__detail-row-value">{children}</div>
     </div>
   );
 };
 
 const OrderID = ({ id }: { id: string }) => {
-  const { translations: t } = useTwapContext();
   const copy = useCopyToClipboard();
 
   return (
@@ -170,6 +169,17 @@ const FillDelaySummary = ({ chunks, fillDelayMillis }: { chunks: number; fillDel
   );
 };
 
+
+const OrderDetailsContext = createContext({} as {
+  Label: FC<LabelProps>;
+})
+
+
+
+const OrderDetailsContainer = ({ children, Label }: { children: ReactNode, Label: FC<LabelProps> }) => {
+  return <OrderDetailsContext.Provider value={{ Label }}>{children}</OrderDetailsContext.Provider>
+};
+
 OrderDetails.Expiry = Expiry;
 OrderDetails.ChunkSize = ChunkSize;
 OrderDetails.MinDestAmount = MinDestAmount;
@@ -181,3 +191,4 @@ OrderDetails.FillDelaySummary = FillDelaySummary;
 OrderDetails.TriggerPrice = TriggerPrice;
 OrderDetails.LimitPrice = LimitPrice;
 OrderDetails.OrderID = OrderID;
+OrderDetails.Container = OrderDetailsContainer;

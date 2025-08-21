@@ -1,37 +1,53 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
 import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate, getOrderFillDelayMillis } from "@orbs-network/twap-sdk";
-import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
-import { Token } from "../../types";
+import { OrderHistorySelectedOrderProps, Token } from "../../types";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 import { useAmountUi } from "../../hooks/helper-hooks";
-import { useOrderName } from "../../hooks/order-hooks";
+import { useOrderName, useOrders } from "../../hooks/order-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { SwapStatus, TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../components/order-details";
 import { useCancelOrder } from "../../hooks/use-cancel-order";
+import { useTwapStore } from "../../useTwapStore";
 
-export const HistoryOrderPreview = () => {
+export const useSelectedOrder = () => {
+  const { orders } = useOrders();
+
+  const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
+
+  return useMemo(() => {
+    if (!orders || selectedOrderID === undefined) return;
+    return orders.all.find((it) => it.id === selectedOrderID);
+  }, [orders, selectedOrderID]);
+};
+
+export const HistoryOrderPreview = ({ SelectedOrder }: { SelectedOrder?: FC<OrderHistorySelectedOrderProps> }) => {
   const order = useSelectedOrder();
   const context = useTwapContext();
   const { useToken, translations: t, config, components } = context;
-  const { selectedOrderId, closePreview } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
+  const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
+  const updateState = useTwapStore((s) => s.updateState);
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
 
   useEffect(() => {
     setExpanded("panel1");
-  }, [selectedOrderId]);
+  }, [selectedOrderID]);
 
   const handleChange = (panel: string) => {
     setExpanded(expanded === panel ? false : panel);
   };
 
   const name = useOrderName(order?.type === OrderType.TWAP_MARKET, order?.chunks);
+
+  const closePreview = useCallback(() => {
+    updateState({ selectedOrderID: undefined });
+  }, [updateState]);
 
   if (!order) return null;
 
@@ -70,11 +86,11 @@ export const HistoryOrderPreview = () => {
     </div>
   );
 
-  if (context?.OrderHistory?.SelectedOrder) {
+  if (SelectedOrder) {
     return (
-      <context.OrderHistory.SelectedOrder order={order} onBackClick={closePreview}>
+      <SelectedOrder order={order} onBackClick={closePreview}>
         {component}
-      </context.OrderHistory.SelectedOrder>
+      </SelectedOrder>
     );
   }
 

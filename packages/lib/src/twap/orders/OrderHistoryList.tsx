@@ -1,50 +1,69 @@
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { Order, OrderType } from "@orbs-network/twap-sdk";
-import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import { useTwapContext } from "../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
-import { useOrderName } from "../../hooks/order-hooks";
+import { useOrderName, useOrders } from "../../hooks/order-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
 import TokenLogo from "../../components/TokenLogo";
 import { useCancelOrder } from "../../hooks/use-cancel-order";
+import { FC, ReactNode } from "react";
+import { OrderHistoryListOrderProps, OrderHistoryProps } from "../../types";
+import { useTwapStore } from "../../useTwapStore";
 
-const ListLoader = () => {
-  const context = useTwapContext();
-  return <div className="twap-orders__loader">{context?.OrderHistory?.ListLoader || <p>Loading...</p>}</div>;
+const ListLoader = ({ loader }: { loader?: ReactNode }) => {
+  return <div className="twap-orders__loader">{loader || <p>Loading...</p>}</div>;
 };
 
-export const OrderHistoryList = () => {
-  const { selectOrder, selectedOrders, isLoading, selectedOrderId } = useOrderHistoryContext();
+export const OrderHistoryList = (props: OrderHistoryProps) => {
+  const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
+  const status = useTwapStore((s) => s.state.orderHIstoryStatusFilter);
+  const updateState = useTwapStore((s) => s.updateState);
+  const selectOrder = React.useCallback(
+    (id?: string) => {
+      updateState({ selectedOrderID: id });
+    },
+    [updateState],
+  );
 
-  if (selectedOrderId !== undefined) return null;
+  const { orders, isLoading } = useOrders();
+  const selectedOrders = !orders ? [] : !status ? orders.all : orders[status.toUpperCase() as keyof typeof orders];
+
+  if (selectedOrderID !== undefined) return null;
 
   return (
     <>
-      <OrderHistoryMenu />
+      <OrderHistoryMenu SelectMenu={props.SelectMenu} />
       {isLoading ? (
-        <ListLoader />
+        <ListLoader loader={props.listLoader} />
       ) : !selectedOrders.length ? (
         <EmptyList />
       ) : (
         <div className="twap-orders__list">
-          <Virtuoso style={{ height: "100%" }} data={selectedOrders} itemContent={(index, order) => <ListOrder key={index} selectOrder={selectOrder} order={order} />} />
+          <Virtuoso
+            style={{ height: "100%" }}
+            data={selectedOrders}
+            itemContent={(index, order) => <ListOrder key={index} selectOrder={selectOrder} order={order} CustomListOrder={props.ListOrder} />}
+          />
         </div>
       )}
     </>
   );
 };
 
-const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: string) => void }) => {
-  const context = useTwapContext();
+const ListOrder = ({ order, selectOrder, CustomListOrder }: { order: Order; selectOrder: (id?: string) => void; CustomListOrder?: FC<OrderHistoryListOrderProps> }) => {
   const { callback: cancelOrder } = useCancelOrder();
 
   const handleCancelOrder = React.useCallback(() => {
     return cancelOrder(order);
   }, [cancelOrder, order]);
 
-  const component = (
+  if (CustomListOrder) {
+    return <CustomListOrder order={order} selectOrder={selectOrder} cancelOrder={handleCancelOrder} />;
+  }
+
+  return (
     <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
@@ -55,20 +74,10 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: st
       </div>
     </div>
   );
-
-  if (context.OrderHistory?.ListOrder) {
-    return (
-      <context.OrderHistory.ListOrder order={order} selectOrder={selectOrder} cancelOrder={handleCancelOrder}>
-        {component}
-      </context.OrderHistory.ListOrder>
-    );
-  }
-
-  return component;
 };
 
 const EmptyList = () => {
-  const status = useOrderHistoryContext().status;
+  const status = useTwapStore((s) => s.state.orderHIstoryStatusFilter);
   const t = useTwapContext().translations;
   const name = React.useMemo(() => {
     if (!status) {

@@ -1,6 +1,5 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { isNativeAddress, submitOrder } from "@orbs-network/twap-sdk";
-import { useRef } from "react";
 import { Steps } from "../types";
 import { isTxRejected } from "../utils";
 import { useApproveToken } from "./use-approve-token";

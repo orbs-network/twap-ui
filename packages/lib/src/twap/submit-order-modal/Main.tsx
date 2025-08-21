@@ -6,7 +6,6 @@ import { useTwapStore } from "../../useTwapStore";
 import { useChunks } from "../../hooks/use-chunks";
 import { useFillDelay } from "../../hooks/use-fill-delay";
 import { useAmountUi, useUsdAmount } from "../../hooks/helper-hooks";
-import { useOrderType } from "../../hooks/order-hooks";
 import { useDstMinAmountPerChunk } from "../../hooks/use-dst-min-amount-out-per-chunk";
 import { useDeadline } from "../../hooks/use-deadline";
 import { useSrcChunkAmount } from "../../hooks/use-src-chunk-amount";
@@ -15,6 +14,9 @@ import { Module } from "@orbs-network/twap-sdk";
 import { useTriggerPrice } from "../../hooks/use-trigger-price";
 import { useTradePrice } from "../../hooks/use-trade-price";
 import { useLimitPrice } from "../../hooks/use-limit-price";
+import { FC, ReactNode } from "react";
+import { LabelProps, USDProps } from "../../types";
+import { useOrderExecutionFlow } from "../twap";
 
 const Price = () => {
   const { srcToken, dstToken, translations: t } = useTwapContext();
@@ -39,44 +41,33 @@ const FillDelaySummary = () => {
   return <OrderDetails.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
 };
 
-export const Main = () => {
-  const { translations, srcUsd1Token, dstUsd1Token, srcToken, dstToken, account, TransactionModal } = useTwapContext();
+export const Main = ({
+  component,
+  USD,
+  reviewDetails,
+  onSubmitOrder,
+  isLoading,
+  Label,
+}: {
+  component?: ReactNode;
+  USD?: FC<USDProps>;
+  reviewDetails?: ReactNode;
+  onSubmitOrder: () => void;
+  isLoading: boolean;
+  Label: FC<LabelProps>;
+}) => {
+  const { translations, srcUsd1Token, dstUsd1Token } = useTwapContext();
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
   const srcAmountUsd = useUsdAmount(srcAmount, srcUsd1Token);
   const dstAmountUsd = useUsdAmount(acceptedDstAmount, dstUsd1Token);
-  const orderType = useOrderType();
-  const fee = useFees();
-  const chunks = useChunks().chunks;
-  const { fillDelay } = useFillDelay();
-  const dstMinAmountOut = useDstMinAmountPerChunk().amountUI;
-  const deadline = useDeadline();
-  const tradePrice = useTradePrice();
-  const srcChunkAmount = useSrcChunkAmount().amountUI;
+  const Button = useTwapContext().components.Button;
 
   const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });
-  if (TransactionModal?.CreateOrder?.ReviewOrderContent && srcToken && dstToken) {
-    return (
-      <TransactionModal.CreateOrder.ReviewOrderContent
-        srcToken={srcToken}
-        dstToken={dstToken}
-        orderType={orderType}
-        srcAmount={srcAmount || ""}
-        dstAmount={acceptedDstAmount || ""}
-        srcUsdAmount={srcAmountUsd}
-        dstUsdAmount={dstAmountUsd}
-        fee={fee.amountUI}
-        chunks={chunks}
-        fillDelay={fillDelay.value}
-        destMinAmountOut={dstMinAmountOut}
-        orderDeadline={deadline}
-        tradePrice={tradePrice}
-        recipient={account || ""}
-        srcChunkAmount={srcChunkAmount}
-      />
-    );
+  if (component) {
+    return component;
   }
 
   return (
@@ -84,32 +75,38 @@ export const Main = () => {
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
-        inUsd={TransactionModal?.USD ? <TransactionModal.USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
-        outUsd={TransactionModal?.USD ? <TransactionModal.USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
+        inUsd={USD ? <USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
+        outUsd={USD ? <USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
       />
       {!swapStatus && (
         <div className="twap-create-order-bottom">
           <FillDelaySummary />
-          <Details />
+          <Details Label={Label} />
+          {reviewDetails}
+          <Button loading={isLoading} disabled={isLoading} onClick={onSubmitOrder}>
+            {translations.confirmOrder}
+          </Button>
         </div>
       )}
     </>
   );
 };
 
-const Details = () => {
+const Details = ({ Label }: { Label: FC<LabelProps> }) => {
   const fee = useFees();
   const { dstToken } = useTwapContext();
 
   const feeAmountF = useFormatNumber({ value: fee.amountUI, decimalScale: 2 });
   return (
-    <div className="twap-create-order-details">
-      <Price />
-      <LimitModuleDetails />
-      <StopLossModuleDetails />
-      <TwapModuleDetails />
-      {fee.percent && <OrderDetails.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
-    </div>
+    <OrderDetails.Container Label={Label}>
+      <div className="twap-create-order-details">
+        <Price />
+        <LimitModuleDetails />
+        <StopLossModuleDetails />
+        <TwapModuleDetails />
+        {fee.percent && <OrderDetails.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
+      </div>
+    </OrderDetails.Container>
   );
 };
 

@@ -1,5 +1,4 @@
-import { Orders, OrdersPortal } from "./orders/Orders";
-import { SubmitOrderPanel } from "./submit-order-modal/SubmitOrderModal";
+import { SubmitOrderPanel } from "./submit-order-modal/submit-order-panel";
 import { TwapProvider } from "../context";
 import { TwapProps } from "../types";
 import { DISCLAIMER_URL, ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
@@ -21,22 +20,20 @@ import { useChunksPanel } from "../hooks/use-chunks";
 import { useOnOpenConfirmationButton } from "../hooks/use-open-confirmation-button";
 import { useTriggerPricePanel } from "../hooks/use-trigger-price";
 import { useTranslation } from "../hooks/use-translation";
+import { OrderHistory } from "./orders/Orders";
 
 const TWAP = (props: TwapProps) => {
   return (
     <TwapProvider {...props}>
-      <>
-        <Orders />
-        <SubmitOrderPanel />
-        {props.children}
-      </>
+      <>{props.children}</>
     </TwapProvider>
   );
 };
 
 export {
+  SubmitOrderPanel,
   TWAP,
-  OrdersPortal as OrderHistory,
+  OrderHistory,
   useOrders,
   useMarketPricePanel,
   useTokenPanel,

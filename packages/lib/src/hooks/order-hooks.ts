@@ -9,7 +9,6 @@ import { useCancelOrder } from "./use-cancel-order";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderType } from "../utils";
 import { useChunks } from "./use-chunks";
-import { useOrderHistoryContext } from "../twap/orders/context";
 
 export const useOrderType = () => {
   const { chunks } = useChunks();
@@ -256,7 +255,20 @@ const filterAndSortOrders = (orders: Order[], status: OrderStatus) => {
 export const useOrderHistoryPanel = () => {
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const cancelOrder = useCancelOrder();
-  const { isOpen, onClose, onOpen } = useOrderHistoryContext();
+  const updateState = useTwapStore((s) => s.updateState);
+  const isOpen = useTwapStore((s) => s.state.showOrderHistory);
+
+  const onClose = useCallback(() => {
+    updateState({ showOrderHistory: false });
+  }, [updateState]);
+
+  const onOpen = useCallback(() => {
+    updateState({ showOrderHistory: true });
+  }, [updateState]);
+
+  const onClosePreview = useCallback(() => {
+    updateState({ selectedOrderID: undefined });
+  }, [updateState]);
 
   return {
     orders,
@@ -266,6 +278,7 @@ export const useOrderHistoryPanel = () => {
     isOpen,
     onClose,
     onOpen,
+    onClosePreview,
     cancelOrder: cancelOrder.callback,
     openOrdersCount: orders?.OPEN?.length || 0,
     cancelOrderStatus: cancelOrder.status,

@@ -118,7 +118,7 @@ export const useOrderExecutionFlow = () => {
     approveTxHash,
     createOrderTxHash,
     onClose,
-    isFlowOpen: isOpen,
+    isOpen: Boolean(isOpen),
     onReset,
     explorerUrl,
     orderDetails,

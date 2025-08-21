@@ -1,14 +1,13 @@
-import React from "react";
+import React, { FC, ReactNode } from "react";
 import { Step, SwapFlow, SwapStatus } from "@orbs-network/swap-ui";
-import { useTwapContext } from "../context";
-import { Token } from "../types";
+import { LinkProps, Token } from "../types";
 import { useFormatNumber } from "../hooks/useFormatNumber";
 
 export function SwapFlowComponent({
   failedContent,
   successContent,
   mainContent,
-  loadingViewContent,
+  LoadingView,
   totalSteps,
   currentStep,
   currentStepIndex,
@@ -18,11 +17,16 @@ export function SwapFlowComponent({
   outToken,
   srcAmount,
   dstAmount,
+  TokenLogo,
+  Spinner,
+  SuccessIcon,
+  FailedIcon,
+  Link,
 }: {
   failedContent: React.ReactNode;
   successContent?: React.ReactNode;
   mainContent?: React.ReactNode;
-  loadingViewContent?: React.ReactNode;
+  LoadingView?: React.ReactNode;
   totalSteps?: number;
   currentStep?: Step;
   currentStepIndex?: number;
@@ -32,8 +36,12 @@ export function SwapFlowComponent({
   outToken?: Token;
   srcAmount?: string;
   dstAmount?: string;
+  TokenLogo?: FC<{ token?: Token }>;
+  Spinner?: ReactNode;
+  SuccessIcon?: ReactNode;
+  FailedIcon?: ReactNode;
+  Link?: FC<LinkProps>;
 }) {
-  const { components, TransactionModal } = useTwapContext();
   const srcAmountF = useFormatNumber({ value: srcAmount, decimalScale: 2 });
   const outAmountF = useFormatNumber({ value: dstAmount, decimalScale: 2 });
   return (
@@ -48,16 +56,16 @@ export function SwapFlowComponent({
       inToken={inToken}
       outToken={outToken}
       components={{
-        SrcTokenLogo: components.TokenLogo && <components.TokenLogo token={inToken} />,
-        DstTokenLogo: components.TokenLogo && <components.TokenLogo token={outToken} />,
+        SrcTokenLogo: TokenLogo && <TokenLogo token={inToken} />,
+        DstTokenLogo: TokenLogo && <TokenLogo token={outToken} />,
         Failed: failedContent,
         Success: successContent,
         Main: mainContent,
-        Loader: TransactionModal?.Spinner,
-        SuccessIcon: TransactionModal?.SuccessIcon,
-        FailedIcon: TransactionModal?.ErrorIcon,
-        Link: TransactionModal?.Link,
-        LoadingView: loadingViewContent,
+        Loader: Spinner,
+        SuccessIcon: SuccessIcon,
+        FailedIcon: FailedIcon,
+        Link: Link,
+        LoadingView,
       }}
     />
   );

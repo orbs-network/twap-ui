@@ -1,15 +1,12 @@
-import { isNativeBalanceError, isTxRejected } from "../../utils";
+import { isTxRejected } from "../../utils";
 import { SwapFlow, SwapStatus } from "@orbs-network/swap-ui";
 import { useTwapContext } from "../../context";
-import { useSrcAmount } from "../../hooks/use-src-amount";
 import { useNetwork } from "../../hooks/helper-hooks";
-import { useOrderType } from "../../hooks/order-hooks";
 import { useTwapStore } from "../../useTwapStore";
 import { useUnwrapToken } from "../../hooks/use-unwrap";
-import { Steps } from "../../types";
-import { useCallback } from "react";
+import { ReactNode, useCallback } from "react";
 
-const TxError = () => {
+const TxError = ({ error }: { error?: any }) => {
   const activeStep = useTwapStore((s) => s.state.activeStep);
   const { mutateAsync: unwrap, isLoading } = useUnwrapToken();
   const network = useNetwork();
@@ -34,7 +31,7 @@ const TxError = () => {
 
   return (
     <div className="twap-failed-unwrap">
-      <h2 className="twap-failed-unwrap-title">Transaction failed</h2>
+      <h2 className="twap-failed-unwrap-title">{error ? error : `Transaction failed`}</h2>
       <p className="twap-failed-unwrap-text">
         Notice: {network?.native.symbol} was wrapped to {network?.wToken.symbol}
       </p>
@@ -51,28 +48,10 @@ const TxError = () => {
   );
 };
 
-export function Failed(props: { error?: any }) {
-  const { translations: t, TransactionModal, srcToken, dstToken } = useTwapContext();
-  const symbol = useNetwork()?.native.symbol || "Native token";
-  const srcAmount = useSrcAmount().amountUI || "";
-  const dstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
-  const orderType = useOrderType();
-  const error = isNativeBalanceError(props.error) ? t.CreateOrderModalNativeBalanceError.replace("{nativeToken}", symbol) : props.error;
-  const activeStep = useTwapStore((s) => s.state.activeStep);
-
-  if (TransactionModal?.CreateOrder?.ErrorContent && srcToken && dstToken) {
-    return (
-      <TransactionModal.CreateOrder.ErrorContent
-        shouldUnwrap={activeStep === Steps.UNWRAP}
-        error={error}
-        srcToken={srcToken}
-        dstToken={dstToken}
-        srcAmount={srcAmount}
-        dstAmount={dstAmount || ""}
-        orderType={orderType}
-      />
-    );
+export function Failed({ error, component }: { error?: any; component?: ReactNode }) {
+  if (component) {
+    return component;
   }
 
-  return <SwapFlow.Failed error={<TxError />} link={`https://www.orbs.com/dtwap-and-dlimit-faq/`} />;
+  return <SwapFlow.Failed error={<TxError error={error} />} link={`https://www.orbs.com/dtwap-and-dlimit-faq/`} />;
 }
