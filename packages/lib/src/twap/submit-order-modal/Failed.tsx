@@ -1,17 +1,19 @@
 import { isTxRejected } from "../../utils";
 import { SwapFlow, SwapStatus } from "@orbs-network/swap-ui";
-import { useTwapContext } from "../../context";
 import { useNetwork } from "../../hooks/helper-hooks";
 import { useTwapStore } from "../../useTwapStore";
 import { useUnwrapToken } from "../../hooks/use-unwrap";
-import { ReactNode, useCallback } from "react";
+import { useCallback } from "react";
+import { useTwapContext } from "../../context";
+import { useSubmitOrderPanelContext } from "./context";
 
 const TxError = ({ error }: { error?: any }) => {
   const activeStep = useTwapStore((s) => s.state.activeStep);
   const { mutateAsync: unwrap, isLoading } = useUnwrapToken();
   const network = useNetwork();
-  const { components } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
+  const t = useTwapContext().translations;
+  const { Button } = useSubmitOrderPanelContext();
 
   const onUnwrap = useCallback(async () => {
     try {
@@ -35,22 +37,17 @@ const TxError = ({ error }: { error?: any }) => {
       <p className="twap-failed-unwrap-text">
         Notice: {network?.native.symbol} was wrapped to {network?.wToken.symbol}
       </p>
-      {components.Button ? (
-        <components.Button disabled={isLoading} loading={isLoading} onClick={onUnwrap}>
-          Unwrap {network?.wToken.symbol}
-        </components.Button>
-      ) : (
-        <button className="twap-failed-unwrap-button" onClick={onUnwrap}>
-          Unwrap {network?.wToken.symbol}
-        </button>
-      )}
+      <Button disabled={isLoading} loading={isLoading} onClick={onUnwrap}>
+        {t.unwrapAction.replace("{symbol}", network?.wToken.symbol || "")}
+      </Button>
     </div>
   );
 };
 
-export function Failed({ error, component }: { error?: any; component?: ReactNode }) {
-  if (component) {
-    return component;
+export function Failed({ error }: { error?: any }) {
+  const { ErrorView } = useSubmitOrderPanelContext();
+  if (ErrorView) {
+    return ErrorView;
   }
 
   return <SwapFlow.Failed error={<TxError error={error} />} link={`https://www.orbs.com/dtwap-and-dlimit-faq/`} />;

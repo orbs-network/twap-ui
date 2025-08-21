@@ -9,14 +9,16 @@ import moment from "moment";
 import TokenLogo from "../../components/TokenLogo";
 import { useCancelOrder } from "../../hooks/use-cancel-order";
 import { FC, ReactNode } from "react";
-import { OrderHistoryListOrderProps, OrderHistoryProps } from "../../types";
+import { OrderHistoryListOrderProps, OrderHistoryProps, Token, TokenLogoProps, UseToken } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
+import { useOrderHistoryContext } from "./context";
 
-const ListLoader = ({ loader }: { loader?: ReactNode }) => {
-  return <div className="twap-orders__loader">{loader || <p>Loading...</p>}</div>;
+const ListLoader = () => {
+  const { listLoader } = useOrderHistoryContext();
+  return <div className="twap-orders__loader">{listLoader || <p>Loading...</p>}</div>;
 };
 
-export const OrderHistoryList = (props: OrderHistoryProps) => {
+export const OrderHistoryList = () => {
   const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
   const status = useTwapStore((s) => s.state.orderHIstoryStatusFilter);
   const updateState = useTwapStore((s) => s.updateState);
@@ -34,26 +36,23 @@ export const OrderHistoryList = (props: OrderHistoryProps) => {
 
   return (
     <>
-      <OrderHistoryMenu SelectMenu={props.SelectMenu} />
+      <OrderHistoryMenu />
       {isLoading ? (
-        <ListLoader loader={props.listLoader} />
+        <ListLoader />
       ) : !selectedOrders.length ? (
         <EmptyList />
       ) : (
         <div className="twap-orders__list">
-          <Virtuoso
-            style={{ height: "100%" }}
-            data={selectedOrders}
-            itemContent={(index, order) => <ListOrder key={index} selectOrder={selectOrder} order={order} CustomListOrder={props.ListOrder} />}
-          />
+          <Virtuoso style={{ height: "100%" }} data={selectedOrders} itemContent={(index, order) => <ListOrder key={index} selectOrder={selectOrder} order={order} />} />
         </div>
       )}
     </>
   );
 };
 
-const ListOrder = ({ order, selectOrder, CustomListOrder }: { order: Order; selectOrder: (id?: string) => void; CustomListOrder?: FC<OrderHistoryListOrderProps> }) => {
+const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: string) => void }) => {
   const { callback: cancelOrder } = useCancelOrder();
+  const { useToken, ListOrder: CustomListOrder } = useOrderHistoryContext();
 
   const handleCancelOrder = React.useCallback(() => {
     return cancelOrder(order);
@@ -68,9 +67,9 @@ const ListOrder = ({ order, selectOrder, CustomListOrder }: { order: Order; sele
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
       <div className="twap-orders__list-item-tokens">
-        <TokenDisplay address={order.srcTokenAddress} />
+        <TokenDisplay address={order.srcTokenAddress} useToken={useToken} />
         <HiArrowRight className="twap-orders__list-item-tokens-arrow" />
-        <TokenDisplay address={order.dstTokenAddress} />
+        <TokenDisplay address={order.dstTokenAddress} useToken={useToken} />
       </div>
     </div>
   );
@@ -95,7 +94,7 @@ const EmptyList = () => {
 
 const ListItemHeader = ({ order }: { order: Order }) => {
   const status = order && order.status;
-  const { dateFormat } = useTwapContext();
+  const { dateFormat } = useOrderHistoryContext();
   const name = useOrderName(order.type === OrderType.TWAP_MARKET, order.chunks);
   const formattedDate = React.useMemo(() => {
     if (!order.createdAt) return "";
@@ -113,9 +112,8 @@ const ListItemHeader = ({ order }: { order: Order }) => {
   );
 };
 
-const TokenDisplay = ({ address }: { address?: string; amount?: string }) => {
-  const { useToken, components } = useTwapContext();
-  const token = useToken?.(address);
+const TokenDisplay = (props: { address?: string; amount?: string; TokenLogo?: FC<TokenLogoProps>; useToken: UseToken }) => {
+  const token = props.useToken?.(props.address);
 
   return (
     <div className="twap-orders__list-item-token">
@@ -123,7 +121,7 @@ const TokenDisplay = ({ address }: { address?: string; amount?: string }) => {
         <div />
       ) : (
         <>
-          <div className="twap-orders__list-item-token-logo">{components.TokenLogo ? <components.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}</div>
+          <div className="twap-orders__list-item-token-logo">{props.TokenLogo ? <props.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}</div>
           <p className="twap-orders__list-item-token-symbol">{token?.symbol}</p>
         </>
       )}

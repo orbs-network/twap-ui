@@ -15,8 +15,9 @@ import { useTriggerPrice } from "../../hooks/use-trigger-price";
 import { useTradePrice } from "../../hooks/use-trade-price";
 import { useLimitPrice } from "../../hooks/use-limit-price";
 import { FC, ReactNode } from "react";
-import { LabelProps, USDProps } from "../../types";
+import { ButtonProps, LabelProps, USDProps } from "../../types";
 import { useOrderExecutionFlow } from "../twap";
+import { useSubmitOrderPanelContext } from "./context";
 
 const Price = () => {
   const { srcToken, dstToken, translations: t } = useTwapContext();
@@ -41,33 +42,19 @@ const FillDelaySummary = () => {
   return <OrderDetails.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
 };
 
-export const Main = ({
-  component,
-  USD,
-  reviewDetails,
-  onSubmitOrder,
-  isLoading,
-  Label,
-}: {
-  component?: ReactNode;
-  USD?: FC<USDProps>;
-  reviewDetails?: ReactNode;
-  onSubmitOrder: () => void;
-  isLoading: boolean;
-  Label: FC<LabelProps>;
-}) => {
+export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; isLoading: boolean }) => {
   const { translations, srcUsd1Token, dstUsd1Token } = useTwapContext();
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
   const srcAmountUsd = useUsdAmount(srcAmount, srcUsd1Token);
   const dstAmountUsd = useUsdAmount(acceptedDstAmount, dstUsd1Token);
-  const Button = useTwapContext().components.Button;
 
   const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });
-  if (component) {
-    return component;
+  const { Label, USD, reviewDetails, Button, MainView } = useSubmitOrderPanelContext();
+  if (MainView) {
+    return MainView;
   }
 
   return (
@@ -104,7 +91,7 @@ const Details = ({ Label }: { Label: FC<LabelProps> }) => {
         <LimitModuleDetails />
         <StopLossModuleDetails />
         <TwapModuleDetails />
-        {fee.percent && <OrderDetails.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
+        {fee && <OrderDetails.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
       </div>
     </OrderDetails.Container>
   );

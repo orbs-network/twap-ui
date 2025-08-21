@@ -59,7 +59,7 @@ const OrderHistoryModal = () => {
   return (
     <>
       <Popup isOpen={Boolean(isOpen)} onClose={onClose}>
-        <OrderHistory SelectMenu={SelectMenu} />
+        <OrderHistory SelectMenu={SelectMenu} Label={Label} Button={TwapButton} useToken={useToken} />
       </Popup>
       <button onClick={onOpen} className="twap-orders__button">
         {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Orders</Typography>}
@@ -73,6 +73,7 @@ const SubmitOrderPanelModal = () => {
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
       <SubmitOrderPanel
+        Button={TwapButton}
         Label={Label}
         reviewDetails={
           <>
@@ -104,14 +105,6 @@ const StyledButton = styled(Button)`
 const useUSD = (address?: string) => {
   const res = usePriceUSD(address);
   return !res ? "" : BN(res).toFixed();
-};
-
-const CustomTooltip = (props: TooltipProps) => {
-  return (
-    <Tooltip title={props.tooltipText} arrow>
-      <span>{props.children}</span>
-    </Tooltip>
-  );
 };
 
 const useToken = (addressOrSymbol?: string) => {
@@ -171,7 +164,7 @@ export const useSwitchChain = () => {
     (config: Config) => {
       (walletClient as any)?.switchChain({ id: config.chainId });
     },
-    [walletClient]
+    [walletClient],
   );
 };
 
@@ -390,7 +383,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
       setIsCustom(value);
       setDuration(defaultDuration);
     },
-    [setDuration, isCustom, defaultDuration]
+    [setDuration, isCustom, defaultDuration],
   );
 
   const customSelected = SELECT_DURATION_OPTIONS.find((it) => {
@@ -509,7 +502,7 @@ const SymbolInput = ({ token, onChange, value, error, isLoading }: { token?: Tok
     <div
       className={clsx(
         "flex flex-row gap-1 justify-between items-center  bg-[rgba(255,255,255,0.05)] rounded-[12px] border border-solid px-3 py-2 flex-1",
-        error ? "border-[#FF0000]" : "border-transparent"
+        error ? "border-[#FF0000]" : "border-transparent",
       )}
     >
       <p className="text-[14px] text-white font-medium">{token?.symbol}</p>
@@ -716,8 +709,6 @@ export const Dapp = () => {
           disclaimerAccepted: true,
         }}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
-        useToken={useToken}
-        fee={0.25}
         account={account}
       >
         <div className="flex flex-col gap-4 justify-center items-center max-w-[450px] w-full">

@@ -58,7 +58,7 @@ const useCreateOrder = () => {
       const { signature, orderData } = await signOrder.mutateAsync();
       console.log({ signature, orderData });
 
-      const response = await submitOrder(orderData, signature || "");
+      await submitOrder(orderData, signature || "");
       // analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
 
       updateState({ createOrderTxHash: "" });

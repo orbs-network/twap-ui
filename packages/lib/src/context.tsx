@@ -85,7 +85,6 @@ const Content = (props: TwapProps) => {
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,
         noLiquidity: props.marketReferencePrice.noLiquidity,
-        components: props.components || ({} as Components),
         numberFormat: props.numberFormat,
       }}
     >

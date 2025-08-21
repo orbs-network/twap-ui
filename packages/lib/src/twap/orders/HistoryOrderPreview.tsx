@@ -3,7 +3,7 @@ import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
 import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate, getOrderFillDelayMillis } from "@orbs-network/twap-sdk";
 import moment from "moment";
-import { OrderHistorySelectedOrderProps, Token } from "../../types";
+import { ButtonProps, LabelProps, OrderHistorySelectedOrderProps, Token, TokenLogoProps } from "../../types";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 import { useAmountUi } from "../../hooks/helper-hooks";
@@ -13,6 +13,7 @@ import { SwapStatus, TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../components/order-details";
 import { useCancelOrder } from "../../hooks/use-cancel-order";
 import { useTwapStore } from "../../useTwapStore";
+import { useOrderHistoryContext } from "./context";
 
 export const useSelectedOrder = () => {
   const { orders } = useOrders();
@@ -25,13 +26,14 @@ export const useSelectedOrder = () => {
   }, [orders, selectedOrderID]);
 };
 
-export const HistoryOrderPreview = ({ SelectedOrder }: { SelectedOrder?: FC<OrderHistorySelectedOrderProps> }) => {
+export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
   const context = useTwapContext();
-  const { useToken, translations: t, config, components } = context;
+  const { translations: t, config } = context;
   const [expanded, setExpanded] = useState<string | false>("panel1");
   const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
   const updateState = useTwapStore((s) => s.updateState);
+  const { useToken, TokenLogo, Label, Button, SelectedOrder } = useOrderHistoryContext();
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
 
@@ -62,27 +64,29 @@ export const HistoryOrderPreview = ({ SelectedOrder }: { SelectedOrder?: FC<Orde
         </p>
       </div>
       <TokensDisplay
-        SrcTokenLogo={components.TokenLogo && <components.TokenLogo token={srcToken} />}
-        DstTokenLogo={components.TokenLogo && <components.TokenLogo token={dstToken} />}
+        SrcTokenLogo={TokenLogo && <TokenLogo token={srcToken} />}
+        DstTokenLogo={TokenLogo && <TokenLogo token={dstToken} />}
         fromTitle={t.from}
         inToken={srcToken}
         toTitle={t.to}
         outToken={dstToken}
       />
 
-      <div className="twap-orders__selected-order-bottom">
-        <OrderDetails.FillDelaySummary chunks={order.chunks} fillDelayMillis={getOrderFillDelayMillis(order, config)} />
+      <OrderDetails.Container Label={Label}>
+        <div className="twap-orders__selected-order-bottom">
+          <OrderDetails.FillDelaySummary chunks={order.chunks} fillDelayMillis={getOrderFillDelayMillis(order, config)} />
 
-        <div className="twap-orders__selected-order-accordions">
-          <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
-            <ExcecutionSummary order={order} />
-          </AccordionContainer>
-          <AccordionContainer title={t.orderInfo} expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
-            <OrderInfo order={order} />
-          </AccordionContainer>
+          <div className="twap-orders__selected-order-accordions">
+            <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
+              <ExcecutionSummary order={order} />
+            </AccordionContainer>
+            <AccordionContainer title={t.orderInfo} expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
+              <OrderInfo order={order} />
+            </AccordionContainer>
+          </div>
+          <CancelOrderButton order={order} Button={Button} />
         </div>
-        <CancelOrderButton order={order} />
-      </div>
+      </OrderDetails.Container>
     </div>
   );
 
@@ -110,7 +114,8 @@ const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: 
 };
 
 const OrderInfo = ({ order }: { order: Order }) => {
-  const { useToken, config } = useTwapContext();
+  const { config } = useTwapContext();
+  const { useToken } = useOrderHistoryContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
@@ -147,7 +152,7 @@ const ExcecutionSummary = ({ order }: { order: Order }) => {
   );
 };
 
-export const CancelOrderButton = ({ order }: { order: Order }) => {
+export const CancelOrderButton = ({ order, Button }: { order: Order; Button: FC<ButtonProps> }) => {
   const context = useTwapContext();
   const cancelOrder = useCancelOrder();
 
@@ -158,19 +163,15 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
   if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
-    <context.components.Button
-      loading={cancelOrder.status === SwapStatus.LOADING}
-      onClick={onCancelOrder}
-      disabled={cancelOrder.status === SwapStatus.LOADING}
-      className="twap-cancel-order"
-    >
+    <Button loading={cancelOrder.status === SwapStatus.LOADING} onClick={onCancelOrder} disabled={cancelOrder.status === SwapStatus.LOADING} className="twap-cancel-order">
       Cancel
-    </context.components.Button>
+    </Button>
   );
 };
 
 const CreatedAt = ({ order }: { order: Order }) => {
-  const { dateFormat, translations: t } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const { dateFormat } = useOrderHistoryContext();
   const createdAtUi = useMemo(() => {
     if (!order?.createdAt) return "";
     if (dateFormat) return dateFormat(order?.createdAt);
@@ -185,7 +186,9 @@ const CreatedAt = ({ order }: { order: Order }) => {
 };
 
 const AmountOutFilled = ({ order }: { order: Order }) => {
-  const { useToken, translations: t } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const { useToken } = useOrderHistoryContext();
+
   const dstToken = useToken?.(order?.dstTokenAddress);
   const dstAmountUi = useAmountUi(dstToken?.decimals, order.filledDstAmount);
   const amount = useFormatNumber({ value: dstAmountUi, decimalScale: 3 });
@@ -202,9 +205,10 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
 };
 
 const AmountIn = ({ order }: { order: Order }) => {
-  const { useToken, translations: t } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const { useToken } = useOrderHistoryContext();
 
-  const srcToken = useToken?.(order?.srcTokenAddress);
+  const srcToken = useToken(order?.srcTokenAddress);
   const srcAmountUi = useAmountUi(srcToken?.decimals, order.srcAmount);
   const amount = useFormatNumber({ value: srcAmountUi, decimalScale: 3 });
 
@@ -218,9 +222,10 @@ const AmountIn = ({ order }: { order: Order }) => {
 };
 
 const AmountInFilled = ({ order }: { order: Order }) => {
-  const { useToken, translations: t } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const { useToken } = useOrderHistoryContext();
 
-  const srcToken = useToken?.(order?.srcTokenAddress);
+  const srcToken = useToken(order?.srcTokenAddress);
   const srcFilledAmountUi = useAmountUi(srcToken?.decimals, order.filledSrcAmount);
   const amount = useFormatNumber({ value: srcFilledAmountUi, decimalScale: 3 });
 
@@ -255,9 +260,10 @@ const Progress = ({ order }: { order: Order }) => {
 };
 
 const LimitPrice = ({ order }: { order: Order }) => {
-  const { useToken, translations: t } = useTwapContext();
-  const srcToken = useToken?.(order.srcTokenAddress);
-  const dstToken = useToken?.(order.dstTokenAddress);
+  const { translations: t } = useTwapContext();
+  const { useToken } = useOrderHistoryContext();
+  const srcToken = useToken(order.srcTokenAddress);
+  const dstToken = useToken(order.dstTokenAddress);
 
   const limitPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
@@ -269,9 +275,10 @@ const LimitPrice = ({ order }: { order: Order }) => {
 };
 
 const AvgExcecutionPrice = ({ order }: { order: Order }) => {
-  const { translations: t, useToken } = useTwapContext();
-  const srcToken = useToken?.(order.srcTokenAddress);
-  const dstToken = useToken?.(order.dstTokenAddress);
+  const { translations: t } = useTwapContext();
+  const { useToken } = useOrderHistoryContext();
+  const srcToken = useToken(order.srcTokenAddress);
+  const dstToken = useToken(order.dstTokenAddress);
 
   if (order.filledDstAmount === undefined) return null;
 

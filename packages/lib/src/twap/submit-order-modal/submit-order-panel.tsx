@@ -1,16 +1,17 @@
-import { Main } from "./Main";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
-import { Failed } from "./Failed";
 import { FC, ReactNode, useMemo } from "react";
 import { useTwapContext } from "../../context";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
-import { LabelProps, LinkProps, Steps, USDProps } from "../../types";
+import { Steps, SubmitOrderPanelProps, USDProps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { SwapFlowComponent } from "../swap-flow";
 import { useChunks } from "../../hooks/use-chunks";
 import { useOrderName } from "../../hooks/order-hooks";
 import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
 import { useOrderExecutionFlow } from "../../hooks/use-confirmation";
+import { SubmitOrderContextProvider, useSubmitOrderPanelContext } from "./context";
+import { Failed } from "./failed";
+import { Main } from "./main";
 
 const useTitle = () => {
   const { translations: t } = useTwapContext();
@@ -64,24 +65,11 @@ const useStep = () => {
   }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol]);
 };
 
-type Props = {
-  SuccessView?: ReactNode;
-  ErrorView?: ReactNode;
-  MainView?: ReactNode;
-  LoadingView?: ReactNode;
-  Spinner?: ReactNode;
-  SuccessIcon?: ReactNode;
-  FailedIcon?: ReactNode;
-  Link?: FC<LinkProps>;
-  USD?: FC<USDProps>;
-  reviewDetails?: ReactNode;
-  Label: FC<LabelProps>;
-};
-
-const SubmitOrderPanel = ({ SuccessView, ErrorView, MainView, LoadingView, Spinner, SuccessIcon, FailedIcon, Link, USD, reviewDetails, Label }: Props) => {
+const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const totalSteps = useTwapStore((s) => s.state.totalSteps);
   const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
+  const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link } = props;
 
   const {
     orderDetails: { srcAmount, dstAmount, srcToken, dstToken },
@@ -91,32 +79,36 @@ const SubmitOrderPanel = ({ SuccessView, ErrorView, MainView, LoadingView, Spinn
   } = useOrderExecutionFlow();
 
   return (
-    <SwapFlowComponent
-      swapStatus={swapStatus}
-      totalSteps={totalSteps}
-      currentStep={useStep()}
-      currentStepIndex={currentStepIndex}
-      failedContent={<Failed component={ErrorView} />}
-      successContent={<SuccessContent explorerUrl={explorerUrl} component={SuccessView} />}
-      mainContent={<Main Label={Label} isLoading={Boolean(isLoading)} onSubmitOrder={onSubmitOrder} component={MainView} USD={USD} reviewDetails={reviewDetails} />}
-      LoadingView={LoadingView}
-      srcAmount={srcAmount}
-      dstAmount={dstAmount}
-      inToken={srcToken}
-      outToken={dstToken}
-      Spinner={Spinner}
-      SuccessIcon={SuccessIcon}
-      FailedIcon={FailedIcon}
-      Link={Link}
-    />
+    <SubmitOrderContextProvider {...props}>
+      <SwapFlowComponent
+        swapStatus={swapStatus}
+        totalSteps={totalSteps}
+        currentStep={useStep()}
+        currentStepIndex={currentStepIndex}
+        failedContent={<Failed />}
+        successContent={<SuccessContent explorerUrl={explorerUrl} />}
+        mainContent={<Main isLoading={Boolean(isLoading)} onSubmitOrder={onSubmitOrder} />}
+        LoadingView={LoadingView}
+        srcAmount={srcAmount}
+        dstAmount={dstAmount}
+        inToken={srcToken}
+        outToken={dstToken}
+        Spinner={Spinner}
+        SuccessIcon={SuccessIcon}
+        FailedIcon={ErrorIcon}
+        Link={Link}
+      />
+    </SubmitOrderContextProvider>
   );
 };
 
-const SuccessContent = ({ component, explorerUrl }: { component?: ReactNode; explorerUrl?: string }) => {
+const SuccessContent = ({ explorerUrl }: { explorerUrl?: string }) => {
   const successTitle = useTitle();
 
-  if (component) {
-    return component;
+  const { SuccessView } = useSubmitOrderPanelContext();
+
+  if (SuccessView) {
+    return SuccessView;
   }
   return <SwapFlow.Success title={successTitle} explorerUrl={explorerUrl} />;
 };

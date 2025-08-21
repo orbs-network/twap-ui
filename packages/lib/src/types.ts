@@ -332,7 +332,8 @@ export enum InputErrors {
   EMPTY_TRIGGER_PRICE,
 }
 
-export type Callbacks = {st?: (args: CreateOrderCallbackArgs) => void;
+export type Callbacks = {
+  st?: (args: CreateOrderCallbackArgs) => void;
   createOrder?: {
     onRequest?: (args: CreateOrderCallbackArgs) => void;
     onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
@@ -411,18 +412,42 @@ type StateDefaults = {
   disclaimerAccepted?: boolean;
 };
 
+export type UseToken = (value?: string) => Token | undefined;
+
+export type SubmitOrderPanelProps = {
+  SuccessView?: ReactNode;
+  ErrorView?: ReactNode;
+  MainView?: ReactNode;
+  LoadingView?: ReactNode;
+  Spinner?: ReactNode;
+  SuccessIcon?: ReactNode;
+  ErrorIcon?: ReactNode;
+  Link?: FC<LinkProps>;
+  USD?: FC<USDProps>;
+  reviewDetails?: ReactNode;
+  Label: FC<LabelProps>;
+  Button: FC<ButtonProps>;
+};
+
 export type OrderHistoryProps = {
   SelectMenu: FC<SelectMenuProps>;
   ListOrder?: FC<OrderHistoryListOrderProps>;
   SelectedOrder?: FC<OrderHistorySelectedOrderProps>;
   listLoader?: ReactNode;
+  TokenLogo?: FC<TokenLogoProps>;
+  Label: FC<LabelProps>;
+  Button: FC<ButtonProps>;
+  useToken: UseToken;
+  dateFormat?: (date: number) => string;
 };
 
 export interface TwapProps {
   children?: React.ReactNode;
   provider?: Provider;
+  chainId?: number;
+  account?: string;
   enableQueryParams?: boolean;
-  fee?: number;
+  feesDisabled?: boolean;
   config: Config;
   translations?: Partial<Translations>;
   srcToken?: Token;
@@ -433,15 +458,10 @@ export interface TwapProps {
   dstBalance?: string;
   slippage: number;
   module: Module;
-  askDataParams?: any[];
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   customMinChunkSizeUsd?: number;
-  useToken?: (value?: string) => Token | undefined;
   callbacks?: Callbacks;
-  chainId?: number;
-  dateFormat?: (date: number) => string;
   numberFormat?: (value: number | string) => string;
-  account?: string;
   stateDefaults?: Partial<StateDefaults>;
   onInputAmountChange?: (amountWei: string, amountUI: string) => void;
   transactions?: {
@@ -463,7 +483,6 @@ export interface TwapContextType extends TwapProps {
   marketPriceLoading?: boolean;
   account?: `0x${string}`;
   noLiquidity?: boolean;
-  components: Components;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };

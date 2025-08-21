@@ -169,15 +169,14 @@ const FillDelaySummary = ({ chunks, fillDelayMillis }: { chunks: number; fillDel
   );
 };
 
+const OrderDetailsContext = createContext(
+  {} as {
+    Label: FC<LabelProps>;
+  },
+);
 
-const OrderDetailsContext = createContext({} as {
-  Label: FC<LabelProps>;
-})
-
-
-
-const OrderDetailsContainer = ({ children, Label }: { children: ReactNode, Label: FC<LabelProps> }) => {
-  return <OrderDetailsContext.Provider value={{ Label }}>{children}</OrderDetailsContext.Provider>
+const OrderDetailsContainer = ({ children, Label }: { children: ReactNode; Label: FC<LabelProps> }) => {
+  return <OrderDetailsContext.Provider value={{ Label }}>{children}</OrderDetailsContext.Provider>;
 };
 
 OrderDetails.Expiry = Expiry;
