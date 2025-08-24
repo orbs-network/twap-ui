@@ -1,5 +1,5 @@
 import { AddressPadding, OrderType, Token } from "./types";
-import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration, TimeUnit, TwapAbi } from "@orbs-network/twap-sdk";
 import { decodeEventLog, TransactionReceipt } from "viem";
 export { getOrderLimitPriceRate } from "@orbs-network/twap-sdk";
 
@@ -198,3 +198,17 @@ export const shouldUnwrapOnly = (srcToken?: Token, dstToken?: Token, chainId?: n
 };
 
 export { eqIgnoreCase, isNativeAddress };
+
+export const formatDuration = (ms?: number): TimeDuration | undefined => {
+  const units = Object.values(TimeUnit) as number[];
+  if (!ms) return;
+
+  for (const unit of units) {
+    if (ms >= unit) {
+      const value = Math.round(ms / unit);
+      return { value, unit };
+    }
+  }
+
+  return { value: ms, unit: TimeUnit.Minutes };
+};

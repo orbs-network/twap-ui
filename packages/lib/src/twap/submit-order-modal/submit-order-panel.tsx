@@ -10,8 +10,8 @@ import { useOrderName } from "../../hooks/order-hooks";
 import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
 import { useOrderExecutionFlow } from "../../hooks/use-confirmation";
 import { SubmitOrderContextProvider, useSubmitOrderPanelContext } from "./context";
-import { Failed } from "./failed";
-import { Main } from "./main";
+import { Failed } from "./Failed";
+import { Main } from "./Main";
 
 const useTitle = () => {
   const { translations: t } = useTwapContext();

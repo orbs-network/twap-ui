@@ -32,7 +32,7 @@ import {
   SelectMeuItem,
   useOrderExecutionFlow,
   useTranslation,
-  TwapProps,
+  Overrides,
   ButtonProps,
   SubmitOrderPanel,
   LabelProps,
@@ -691,6 +691,10 @@ export const Dapp = () => {
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
   const twap = module === Module.TWAP;
 
+  const marketReferencePrice = useMemo(() => {
+    return { value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false };
+  }, [marketPrice, marketPriceLoading]);
+
   return (
     <>
       <GlobalStyles isDarkMode={true} />
@@ -706,10 +710,7 @@ export const Dapp = () => {
         dstUsd1Token={useUSD(dstToken?.address)}
         srcBalance={useTokenBalance(srcToken).data?.wei}
         dstBalance={useTokenBalance(dstToken).data?.wei}
-        overrides={{
-          minChunkSizeUsd: 5,
-        }}
-        marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
+        marketReferencePrice={marketReferencePrice}
         account={account}
       >
         <div className="flex flex-col gap-4 justify-center items-center max-w-[450px] w-full">

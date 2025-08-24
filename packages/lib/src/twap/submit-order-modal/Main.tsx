@@ -14,9 +14,8 @@ import { Module } from "@orbs-network/twap-sdk";
 import { useTriggerPrice } from "../../hooks/use-trigger-price";
 import { useTradePrice } from "../../hooks/use-trade-price";
 import { useLimitPrice } from "../../hooks/use-limit-price";
-import { FC, ReactNode } from "react";
-import { ButtonProps, LabelProps, USDProps } from "../../types";
-import { useOrderExecutionFlow } from "../twap";
+import { FC } from "react";
+import { LabelProps } from "../../types";
 import { useSubmitOrderPanelContext } from "./context";
 
 const Price = () => {

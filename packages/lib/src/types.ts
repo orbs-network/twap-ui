@@ -333,6 +333,12 @@ export enum InputErrors {
 }
 
 export type Callbacks = {
+  onInputAmountChange?: (weiValue: string, uiValue: string) => void;
+  onTradePriceChange?: (weiValue: string, uiValue: string) => void;
+  onDurationChange?: (value?: number) => void;
+  onChunksChange?: (value?: number) => void;
+  onFillDelayChange?: (value: number) => void;
+  onTriggerPriceChange?: (weiValue: string, uiValue: string) => void;
   createOrder?: {
     onRequest?: (args: CreateOrderCallbackArgs) => void;
     onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
@@ -405,9 +411,15 @@ export type GetAllowanceProps = {
   spenderAddress: string;
 };
 
-type StateDefaults = {
+export type InitialState = {
   isMarketOrder?: boolean;
   disclaimerAccepted?: boolean;
+  inputAmount?: string;
+  chunks?: number;
+  fillDelay?: number;
+  duration?: number;
+  limitPrice?: string;
+  triggerPrice?: string;
 };
 
 export type UseToken = (value?: string) => Token | undefined;
@@ -439,6 +451,20 @@ export type OrderHistoryProps = {
   dateFormat?: (date: number) => string;
 };
 
+export type Overrides = {
+  wrap?: (amount: bigint) => Promise<`0x${string}`>;
+  unwrap?: (amount: bigint) => Promise<`0x${string}`>;
+  approveOrder?: (props: ApproveProps) => Promise<`0x${string}`>;
+  createOrder?: (props: CreateOrderProps) => Promise<`0x${string}`>;
+  cancelOrder?: (props: CancelOrderProps) => Promise<`0x${string}`>;
+  getAllowance?: (props: GetAllowanceProps) => Promise<string>;
+  state?: Partial<InitialState>;
+  minChunkSizeUsd?: number;
+  translations?: Partial<Translations>;
+  numberFormat?: (value: number | string) => string;
+  feesDisabled?: boolean;
+};
+
 export interface TwapProps {
   children?: React.ReactNode;
   provider?: Provider;
@@ -456,20 +482,7 @@ export interface TwapProps {
   module: Module;
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   callbacks?: Callbacks;
-  onInputAmountChange?: (amountWei: string, amountUI: string) => void;
-  overrides?: {
-    wrap?: (amount: bigint) => Promise<`0x${string}`>;
-    unwrap?: (amount: bigint) => Promise<`0x${string}`>;
-    approveOrder?: (props: ApproveProps) => Promise<`0x${string}`>;
-    createOrder?: (props: CreateOrderProps) => Promise<`0x${string}`>;
-    cancelOrder?: (props: CancelOrderProps) => Promise<`0x${string}`>;
-    getAllowance?: (props: GetAllowanceProps) => Promise<string>;
-    stateDefaults?: Partial<StateDefaults>;
-    minChunkSizeUsd?: number;
-    translations?: Partial<Translations>;
-    numberFormat?: (value: number | string) => string;
-    feesDisabled?: boolean;
-  };
+  overrides?: Overrides;
 }
 
 export interface TwapContextType extends TwapProps {

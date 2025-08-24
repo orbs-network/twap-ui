@@ -582,7 +582,19 @@ export const getApiOrders = async ({ chainId, signal, account }: { chainId: numb
   });
 };
 
-export const getUserOrders = ({ signal, page, limit, config, account }: { signal?: AbortSignal; page?: number; limit?: number; config: Config; account: string }) => {
+export const getUserOrders = async ({
+  signal,
+  page,
+  limit,
+  config,
+  account,
+}: {
+  signal?: AbortSignal;
+  page?: number;
+  limit?: number;
+  config: Config;
+  account: string;
+}): Promise<Order[]> => {
   return Promise.all([
     getOrdersFromGraph({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }),
     getApiOrders({ chainId: config.chainId, signal, account }),

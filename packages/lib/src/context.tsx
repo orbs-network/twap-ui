@@ -1,13 +1,18 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { amountBN, analytics } from "@orbs-network/twap-sdk";
-import { TwapProps, TwapContextType, Translations, Components } from "./types";
+import { TwapProps, TwapContextType, Translations } from "./types";
 import defaultTranslations from "./i18n/en.json";
 import { initiateWallet } from "./lib";
-import { useDefaultsUpdater } from "./hooks/use-default-values";
+import { useListener } from "./hooks/use-default-values";
 import { useTwapStore } from "./useTwapStore";
 import { useAllowanceListener } from "./hooks/use-allowance";
 import { ErrorBoundary } from "react-error-boundary";
+import { useDuration } from "./hooks/use-duration";
+import { useChunks } from "./hooks/use-chunks";
+import { useFillDelay } from "./hooks/use-fill-delay";
+import { useTriggerPrice } from "./hooks/use-trigger-price";
+import { useLimitPrice } from "./hooks/use-limit-price";
 
 const TwapFallbackUI = () => {
   return (
@@ -52,15 +57,8 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
 };
 
 const Listeners = () => {
-  const { onInputAmountChange, srcToken } = useTwapContext();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  useDefaultsUpdater();
+  useListener();
   useAllowanceListener();
-  useEffect(() => {
-    if (onInputAmountChange) {
-      onInputAmountChange(typedSrcAmount || "", amountBN(srcToken?.decimals, typedSrcAmount));
-    }
-  }, [typedSrcAmount, srcToken?.decimals, onInputAmountChange]);
 
   return null;
 };
@@ -85,7 +83,6 @@ const Content = (props: TwapProps) => {
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,
         noLiquidity: props.marketReferencePrice.noLiquidity,
-        numberFormat: props.numberFormat,
       }}
     >
       <Listeners />
