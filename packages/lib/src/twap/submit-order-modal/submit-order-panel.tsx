@@ -1,8 +1,8 @@
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
-import { FC, ReactNode, useMemo } from "react";
+import { useMemo } from "react";
 import { useTwapContext } from "../../context";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
-import { Steps, SubmitOrderPanelProps, USDProps } from "../../types";
+import { Steps, SubmitOrderPanelProps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { SwapFlowComponent } from "../swap-flow";
 import { useChunks } from "../../hooks/use-chunks";

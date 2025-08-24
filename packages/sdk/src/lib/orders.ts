@@ -113,7 +113,7 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
       dollarValueOut: acc.dollarValueOut.plus(BN(it.dollarValueOut || 0)),
       dexFee: acc.dexFee.plus(BN(it.dstFee || 0)),
     }),
-    initial
+    initial,
   );
 
   return {
@@ -583,7 +583,10 @@ export const getApiOrders = async ({ chainId, signal, account }: { chainId: numb
 };
 
 export const getUserOrders = ({ signal, page, limit, config, account }: { signal?: AbortSignal; page?: number; limit?: number; config: Config; account: string }) => {
-  return Promise.all([getOrdersFromGraph({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }), getApiOrders({ chainId: config.chainId, signal, account })]).then(([graphOrders, apiOrders]) => {
+  return Promise.all([
+    getOrdersFromGraph({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }),
+    getApiOrders({ chainId: config.chainId, signal, account }),
+  ]).then(([graphOrders, apiOrders]) => {
     return [...graphOrders, ...apiOrders];
   });
 };

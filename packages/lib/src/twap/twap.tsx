@@ -4,7 +4,6 @@ import { TwapProps } from "../types";
 import { DISCLAIMER_URL, ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
 import { useOrderHistoryPanel, useOrders } from "../hooks/order-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "./consts";
-import { Portal } from "../components/Portal";
 import { useResetState } from "../useTwapStore";
 import { useFieldsErrors } from "../hooks/use-fields-errors";
 import { useOrderExecutionFlow } from "../hooks/use-confirmation";
@@ -57,5 +56,4 @@ export {
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,
   DISCLAIMER_URL,
-  Portal,
 };

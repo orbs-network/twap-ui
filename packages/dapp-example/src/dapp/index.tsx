@@ -350,8 +350,10 @@ const LimitPanel = () => {
 };
 
 const TradeAmountMessage = () => {
-  const { usdAmount, tokenAmount, token, error } = useChunkSizeMessage();
+  const { usdAmount, tokenAmount, token, error, hide } = useChunkSizeMessage();
   const tokenAmountF = useFormatNumber({ value: tokenAmount });
+
+  if (hide) return null;
 
   return (
     <Typography className={`trade-amount-message ${error ? "trade-amount-message-error" : ""}`}>

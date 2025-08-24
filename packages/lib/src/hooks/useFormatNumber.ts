@@ -9,7 +9,8 @@ export const useFormatDecimals = (value?: string | number, decimalPlaces?: numbe
 
 export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
   const _value = useFormatDecimals(value, decimalScale);
-  const { numberFormat } = useTwapContext();
+  const { overrides } = useTwapContext();
+  const numberFormat = overrides?.numberFormat;
 
   const result = useNumericFormat({
     allowLeadingZeros: true,

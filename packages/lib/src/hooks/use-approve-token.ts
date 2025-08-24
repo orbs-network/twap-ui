@@ -48,7 +48,7 @@ export const useApproveToken = () => {
         throw new Error("failed to approve token");
       }
 
-      let hasAllowance = false;
+      const hasAllowance = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         const allowance = await refetchAllowance();
         const hasAllowance = BN(allowance || "0").gte(amount);

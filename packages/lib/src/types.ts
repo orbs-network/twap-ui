@@ -333,7 +333,6 @@ export enum InputErrors {
 }
 
 export type Callbacks = {
-  st?: (args: CreateOrderCallbackArgs) => void;
   createOrder?: {
     onRequest?: (args: CreateOrderCallbackArgs) => void;
     onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
@@ -446,7 +445,6 @@ export interface TwapProps {
   chainId?: number;
   account?: string;
   enableQueryParams?: boolean;
-  feesDisabled?: boolean;
   config: Config;
   srcToken?: Token;
   dstToken?: Token;
@@ -458,7 +456,6 @@ export interface TwapProps {
   module: Module;
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   callbacks?: Callbacks;
-  numberFormat?: (value: number | string) => string;
   onInputAmountChange?: (amountWei: string, amountUI: string) => void;
   overrides?: {
     wrap?: (amount: bigint) => Promise<`0x${string}`>;
@@ -470,6 +467,8 @@ export interface TwapProps {
     stateDefaults?: Partial<StateDefaults>;
     minChunkSizeUsd?: number;
     translations?: Partial<Translations>;
+    numberFormat?: (value: number | string) => string;
+    feesDisabled?: boolean;
   };
 }
 

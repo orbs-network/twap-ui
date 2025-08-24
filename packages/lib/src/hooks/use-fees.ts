@@ -6,7 +6,8 @@ import BN from "bignumber.js";
 import { FEES } from "@orbs-network/twap-sdk";
 
 export const useFees = () => {
-  const { feesDisabled } = useTwapContext();
+  const { overrides } = useTwapContext();
+  const feesDisabled = overrides?.feesDisabled;
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const destTokenAmount = useDstAmount().amountUI;
 
