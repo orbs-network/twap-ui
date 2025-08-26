@@ -271,7 +271,7 @@ export const buildOrder = ({
     srcAmountPerChunk,
     txHash,
     chunks,
-    dstMinAmount: Number(dstMinAmountPerChunk) === 1 ? "" : new BN(dstMinAmountPerChunk).times(chunks).toString(),
+    dstMinAmount: Number(dstMinAmountPerChunk) === 1 ? "" : new BN(dstMinAmountPerChunk).times(chunks).toFixed(),
     isMarketOrder: type === OrderType.TWAP_MARKET,
     chainId,
     filledDate,
