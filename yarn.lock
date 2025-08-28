@@ -2643,10 +2643,10 @@
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
 
-"@orbs-network/swap-ui@^0.0.44":
-  version "0.0.44"
-  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.44.tgz#3ac9127c0b6d16f6b4eebd6014b3567eabc56393"
-  integrity sha512-bQOleySJ+AsFWfxfj5PKxA/VJKGM7KeEjiDlIP2QMCXF2zHjESxMMoKz5XAFra9fopzJcggF29pSG+sn4xCFyw==
+"@orbs-network/swap-ui@^0.0.51":
+  version "0.0.51"
+  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.51.tgz#586620fd9992c364d9925849bbab1499fb1f00b8"
+  integrity sha512-QEoc9S4qHp7jk6WhP/z8QvZZnNZwA/kshA9tCCVa0R8pfcQPtPQ+D/9S569yMN9bQ8iMPaH1jWVRuqxvbc3zQw==
 
 "@orbs-network/twap@^2.7.21":
   version "2.7.21"
