@@ -46,7 +46,7 @@ export const globalStyle = (name?: string) => {
   const font = fonts[name || ""];
   return {
     "*, p": {
-      fontFamily: `${font || "Helvetica"}!important`,
+      fontFamily: `Kanit!important`,
     },
   };
 };

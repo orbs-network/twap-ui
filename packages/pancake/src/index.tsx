@@ -339,7 +339,7 @@ const TwapPanel = memo(() => {
         priorityFeePerGas={context.priorityFeePerGas}
         translations={translations as Translations}
         provider={context.provider}
-        account={context.account}
+        account={context}
         srcToken={srcToken}
         dstToken={dstToken}
         storeOverride={context.limit ? storeOverride : undefined}

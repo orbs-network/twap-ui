@@ -7,7 +7,6 @@ export const configs: { [key: string]: Config } = {
     lensAddress: "0xEdB0c077fa87Fb21d050c619FF426798f8Fc1264",
     exchangeAddress: "0x1A2bb6B75D58b740d88413ef4840D6fa3F637940",
     exchangeType: "ExchangeV2" as any,
-    minChunkSizeUsd: 100,
   },
   PancakeSwapArbitrum: {
     chainName: "arb",

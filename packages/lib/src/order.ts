@@ -2,7 +2,7 @@ import { Config, Status } from "@orbs-network/twap";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { amountUiV2 } from "./utils";
-import { networks } from "@defi.org/web3-candies";
+import { eqIgnoreCase, networks } from "@defi.org/web3-candies";
 
 const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
@@ -158,6 +158,8 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
         timestamp
         dollarValueIn
         dollarValueOut,
+        twapAddress
+        exchange
         ${dexFee}
       }
     }
@@ -170,16 +172,11 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     });
     const response = await payload.json();
 
-    const orderFilleds = _.groupBy(response.data.orderFilleds, "TWAP_id");
-
-    const result = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
-      return parseFills(orderId, fills);
-    });
-
-    fills.push(...result);
+    fills.push(...response.data.orderFilleds);
     if (fills.length < LIMIT) break;
     page++;
   }
+
   return fills;
 };
 
@@ -323,10 +320,17 @@ export const getOrders = async ({
   }
 
   const ids = orders.map((order: any) => order.Contract_id);
-  const fills = await getAllFills({ endpoint, signal, ids, chainId });
+
+  const allFills = await getAllFills({ endpoint, signal, ids, chainId });
+
   orders = orders.map((rawOrder: any) => {
-    const fill = fills?.find((it: any) => it.TWAP_id === Number(rawOrder.Contract_id));
-    return new Order(rawOrder, fill);
+    const orderFilleds = allFills?.filter((fill: any) => {
+      return eqIgnoreCase(fill.twapAddress, rawOrder.twapAddress) && fill.TWAP_id === Number(rawOrder.Contract_id) && eqIgnoreCase(fill.exchange, rawOrder.exchange);
+    });
+
+    const parsedFills = parseFills(Number(rawOrder.Contract_id), orderFilleds);
+
+    return new Order(rawOrder, parsedFills);
   });
 
   return _.orderBy(orders, (o: any) => o.createdAt, "desc");

@@ -5,6 +5,7 @@ import { dapps, defaultDapp } from "./config";
 import { GlobalStyles, ThemeProvider } from "@mui/material";
 import { useMemo } from "react";
 import { SnackbarProvider } from "notistack";
+import Pancake from "./PancakeSwap";
 
 const useGlobalStyles = () => {
   const dapp = useSelectedDapp();
@@ -24,9 +25,7 @@ function App() {
         <StyledApp>
           <GlobalStyles styles={styles} />
           <Routes>
-            {dapps.map(({ config, Component }) => {
-              return <Route path={config.name.toLowerCase()} element={<Component />} key={config.name} />;
-            })}
+            <Route path="/" element={<Pancake.Component />} key={Pancake.config.name} />;
             <Route path="*" element={<Navigate to={defaultDapp.config.name.toLowerCase()} />} />
           </Routes>
         </StyledApp>
