@@ -184,7 +184,7 @@ const useOrdersQuery = () => {
       });
     },
     {
-      enabled: Boolean(config && account),
+      enabled: Boolean(config && account && publicClient),
       refetchInterval: REFETCH_ORDER_HISTORY,
       refetchOnWindowFocus: true,
       retry: false,
