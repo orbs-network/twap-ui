@@ -820,7 +820,7 @@ const TotalTrades = ({ totalTrades = 0 }: { totalTrades?: number }) => {
 const MinReceived = ({ minReceived, isMarketOrder = false, symbol = "" }: { minReceived?: string; isMarketOrder?: boolean; symbol?: string }) => {
   const t = useTwapContext().translations;
 
-  const minReceivedF = useFormatNumber({ value: minReceived });
+  const minReceivedF = useFormatNumber({ value: minReceived, decimalScale: 18 });
 
   if (isMarketOrder) return null;
 
