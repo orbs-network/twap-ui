@@ -1,4 +1,6 @@
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
+import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
+
 import { Order, OrderType } from "@orbs-network/twap-sdk";
 import * as React from "react";
 import { useTwapContext } from "../../context";
@@ -7,11 +9,12 @@ import { useOrderName, useOrders } from "../../hooks/order-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
 import TokenLogo from "../../components/TokenLogo";
-import { useCancelOrder } from "../../hooks/use-cancel-order";
-import { FC, ReactNode } from "react";
-import { OrderHistoryListOrderProps, OrderHistoryProps, Token, TokenLogoProps, UseToken } from "../../types";
+import { useCancelOrderMutation } from "../../hooks/use-cancel-order";
+import { FC } from "react";
+import { TokenLogoProps, UseToken } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { useOrderHistoryContext } from "./context";
+import { useMutation } from "@tanstack/react-query";
 
 const ListLoader = () => {
   const { listLoader } = useOrderHistoryContext();
@@ -21,55 +24,107 @@ const ListLoader = () => {
 export const OrderHistoryList = () => {
   const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
   const status = useTwapStore((s) => s.state.orderHIstoryStatusFilter);
-  const updateState = useTwapStore((s) => s.updateState);
-  const selectOrder = React.useCallback(
-    (id?: string) => {
-      updateState({ selectedOrderID: id });
-    },
-    [updateState],
-  );
+  const { Button, callbacks } = useOrderHistoryContext();
+  const [selectedOrders, setSelectedOrders] = React.useState<string[]>([]);
+  const [selectMode, setSelectMode] = React.useState(false);
+  const { mutateAsync: cancelOrder } = useCancelOrderMutation();
 
-  const { orders, isLoading } = useOrders();
-  const selectedOrders = !orders ? [] : !status ? orders.all : orders[status.toUpperCase() as keyof typeof orders];
+  const { orders: allOrders, isLoading } = useOrders();
+  const orders = React.useMemo(() => (!allOrders ? [] : !status ? allOrders.all : allOrders[status.toUpperCase() as keyof typeof allOrders]), [allOrders, status]);
+
+  const onSelectOrder = React.useCallback((id: string) => {
+    setSelectedOrders((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((orderId) => orderId !== id);
+      }
+      return [...prev, id];
+    });
+  }, []);
+
+  const onToggleSelectMode = React.useCallback(() => {
+    setSelectMode((prev) => !prev);
+    setSelectedOrders([]);
+  }, []);
+
+  const { mutate: onCancelOrders, isLoading: isCancelOrdersLoading } = useMutation({
+    mutationFn: () => {
+      return cancelOrder({ orderIds: selectedOrders, callbacks });
+    },
+  });
 
   if (selectedOrderID !== undefined) return null;
 
   return (
     <>
-      <OrderHistoryMenu />
+      <div className="twap-orders__list-header">
+        <OrderHistoryMenu />
+
+        <div className="twap-orders__list-header-select-toggle-container">
+          <Button className={`twap-orders__list-header-select-toggle ${selectMode ? "twap-orders__list-header-select-toggle-active" : ""}`} onClick={onToggleSelectMode}>
+            <p> Select Mode</p>
+          </Button>
+          {selectedOrders.length > 0 && (
+            <Button onClick={onCancelOrders} loading={isCancelOrdersLoading} className="twap-orders__list-header-select-toggle-cancel">
+              <HiOutlineTrash className="twap-orders__list-header-select-toggle-cancel-icon" />
+              <p>{`Cancel (${selectedOrders.length})`}</p>
+            </Button>
+          )}
+        </div>
+      </div>
       {isLoading ? (
         <ListLoader />
-      ) : !selectedOrders.length ? (
+      ) : !orders.length ? (
         <EmptyList />
       ) : (
         <div className="twap-orders__list">
-          <Virtuoso style={{ height: "100%" }} data={selectedOrders} itemContent={(index, order) => <ListOrder key={index} selectOrder={selectOrder} order={order} />} />
+          <Virtuoso
+            style={{ height: "100%" }}
+            data={orders}
+            itemContent={(index, order) => <ListOrder selectMode={selectMode} selected={selectedOrders.includes(order.id)} key={index} selectOrder={onSelectOrder} order={order} />}
+          />
         </div>
       )}
     </>
   );
 };
 
-const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: string) => void }) => {
-  const { callback: cancelOrder } = useCancelOrder();
-  const { useToken, ListOrder: CustomListOrder } = useOrderHistoryContext();
+const ListOrder = ({ order, selectOrder, selected, selectMode }: { order: Order; selectOrder: (id: string) => void; selected: boolean; selectMode: boolean }) => {
+  const { mutateAsync: cancelOrder } = useCancelOrderMutation();
+  const { useToken, ListOrder: CustomListOrder, Checkbox, callbacks } = useOrderHistoryContext();
+  const updateState = useTwapStore((s) => s.updateState);
+
+  const onShowOrder = React.useCallback(() => {
+    updateState({ selectedOrderID: order?.id });
+  }, [updateState, order?.id]);
 
   const handleCancelOrder = React.useCallback(() => {
-    return cancelOrder(order);
+    return cancelOrder({ orderIds: [order.id], callbacks });
   }, [cancelOrder, order]);
 
+  const onClick = React.useCallback(() => {
+    if (selectMode) {
+      selectOrder(order?.id);
+    } else {
+      onShowOrder();
+    }
+  }, [selectMode, selectOrder, onShowOrder, order?.id]);
+
   if (CustomListOrder) {
-    return <CustomListOrder order={order} selectOrder={selectOrder} cancelOrder={handleCancelOrder} />;
+    return <CustomListOrder order={order} selectOrder={onClick} cancelOrder={handleCancelOrder} selected={selected} />;
   }
 
   return (
-    <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
-      <ListItemHeader order={order} />
-      <LinearProgressWithLabel value={order.progress || 0} />
-      <div className="twap-orders__list-item-tokens">
-        <TokenDisplay address={order.srcTokenAddress} useToken={useToken} />
-        <HiArrowRight className="twap-orders__list-item-tokens-arrow" />
-        <TokenDisplay address={order.dstTokenAddress} useToken={useToken} />
+    <div className={`twap-orders__list-item twap-orders__list-item-${order.status} ${selectMode ? "twap-orders__list-item-select-mode" : ""}`} onClick={onClick}>
+      {selectMode && <Checkbox checked={selected} setChecked={() => {}} />}
+
+      <div className="twap-orders__list-item-content">
+        <ListItemHeader order={order} />
+        <LinearProgressWithLabel value={order.progress || 0} />
+        <div className="twap-orders__list-item-tokens">
+          <TokenDisplay address={order.srcTokenAddress} useToken={useToken} />
+          <HiArrowRight className="twap-orders__list-item-tokens-arrow" />
+          <TokenDisplay address={order.dstTokenAddress} useToken={useToken} />
+        </div>
       </div>
     </div>
   );

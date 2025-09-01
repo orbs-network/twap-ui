@@ -212,15 +212,40 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       marginTop: 20,
       marginBottom: 20,
     },
+
+    ".twap-orders__list-item-content": {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      flex: 1,
+    },
+    ".twap-orders__list-header": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+      width: "100%",
+    },
+    ".twap-orders__list-header-select-toggle-container": {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      width: "fit-content",
+    },
+    ".twap-orders__list-header-select-toggle": {
+      width: "fit-content",
+    },
     ".twap-orders__list-item": {
+      display: "flex",
+      alignItems: "center",
+      width: "100%",
+      gap: 20,
       cursor: "pointer",
       background: "#1B1B1B",
       padding: 12,
       borderRadius: 16,
       marginBottom: 6,
-      display: "flex",
-      flexDirection: "column",
-      gap: 8,
+
       "&:hover": {
         background: "rgba(255,255,255, 0.06)",
       },

@@ -5,21 +5,22 @@ import { useTwapStore } from "../useTwapStore";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import BN from "bignumber.js";
 import { useNetwork } from "./helper-hooks";
+import { SwapCallbacks } from "../types";
 
 export const useWrapToken = () => {
-  const { account, walletClient, publicClient, callbacks, overrides } = useTwapContext();
+  const { account, walletClient, publicClient, overrides } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const wToken = useNetwork()?.wToken;
   const getTransactionReceipt = useGetTransactionReceipt();
 
-  return useMutation(
-    async (amount: string) => {
-      if (!account || !walletClient || !publicClient) {
-        throw new Error("missing required parameters");
-      }
-      if (!wToken) {
-        throw new Error("tokenAddress is not defined");
-      }
+  return useMutation(async ({ amount, callbacks }: { amount: string; callbacks?: SwapCallbacks }) => {
+    if (!account || !walletClient || !publicClient) {
+      throw new Error("missing required parameters");
+    }
+    if (!wToken) {
+      throw new Error("tokenAddress is not defined");
+    }
+    try {
       callbacks?.wrap?.onRequest?.(amount);
       const amountWei = BigInt(BN(amount).decimalPlaces(0).toFixed());
       const amountUI = amountUi(wToken?.decimals, amount);
@@ -51,11 +52,9 @@ export const useWrapToken = () => {
       analytics.onWrapSuccess(hash);
       await callbacks?.wrap?.onSuccess?.(receipt, amountUI);
       return receipt;
-    },
-    {
-      onError: (error) => {
-        callbacks?.wrap?.onFailed?.((error as any).message);
-      },
-    },
-  );
+    } catch (error) {
+      callbacks?.wrap?.onFailed?.((error as any).message);
+      throw error;
+    }
+  });
 };

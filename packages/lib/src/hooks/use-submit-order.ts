@@ -1,6 +1,6 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { isNativeAddress, submitOrder } from "@orbs-network/twap-sdk";
-import { Steps } from "../types";
+import { SwapCallbacks, Steps } from "../types";
 import { isTxRejected } from "../utils";
 import { useApproveToken } from "./use-approve-token";
 import { useWrapToken } from "./use-wrap";
@@ -12,6 +12,8 @@ import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { analytics, EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/twap-sdk";
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
+import { useDstAmount } from "./use-dst-amount";
+import { TransactionReceipt } from "viem";
 
 const useSignOrder = () => {
   const { account, walletClient, chainId } = useTwapContext();
@@ -45,16 +47,23 @@ const useSignOrder = () => {
 };
 
 const useCreateOrder = () => {
-  const { account, walletClient, chainId, dstToken } = useTwapContext();
+  const { account, walletClient, chainId, dstToken, srcToken } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const signOrder = useSignOrder();
+  const srcAmount = useSrcAmount().amountUI;
+  const dstAmount = useDstAmount().amountUI;
 
-  return useMutation(async () => {
+  return useMutation(async (callbacks?: SwapCallbacks) => {
     try {
       if (!account || !walletClient || !chainId || !dstToken) {
         throw new Error("missing required parameters");
       }
-
+      callbacks?.createOrder?.onRequest?.({
+        srcToken: srcToken!,
+        dstToken: dstToken!,
+        srcAmount: srcAmount!,
+        dstAmount: dstAmount!,
+      });
       const { signature, orderData } = await signOrder.mutateAsync();
       console.log({ signature, orderData });
 
@@ -62,6 +71,13 @@ const useCreateOrder = () => {
       // analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
 
       updateState({ createOrderTxHash: "" });
+      callbacks?.createOrder?.onSuccess?.({
+        srcToken: srcToken!,
+        dstToken: dstToken!,
+        srcAmount: srcAmount!,
+        dstAmount: dstAmount!,
+        receipt: {} as TransactionReceipt,
+      });
 
       return {
         orderId: 0,
@@ -69,6 +85,7 @@ const useCreateOrder = () => {
       };
     } catch (error) {
       console.error(error);
+      callbacks?.createOrder?.onFailed?.((error as any).message);
       analytics.onCreateOrderError(error);
       throw error;
     }
@@ -84,7 +101,7 @@ export const useSubmitOrder = () => {
   const createOrderCallback = useCreateOrder().mutateAsync;
   const srcAmount = useSrcAmount().amountWei;
 
-  return useMutation(async () => {
+  return useMutation(async (callbacks?: SwapCallbacks) => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
     let wrapSuccess = false;
 
@@ -108,7 +125,7 @@ export const useSubmitOrder = () => {
 
       if (wrapRequired) {
         updateState({ activeStep: Steps.WRAP });
-        await wrapCallback(srcAmount);
+        await wrapCallback({ amount: srcAmount, callbacks });
         stepIndex++;
         updateState({ currentStepIndex: stepIndex });
         wrapSuccess = true;
@@ -116,12 +133,12 @@ export const useSubmitOrder = () => {
 
       if (approvalRequired) {
         updateState({ activeStep: Steps.APPROVE });
-        await approveCallback({ token: srcToken, amount: srcAmount });
+        await approveCallback({ token: srcToken, amount: srcAmount, callbacks });
         stepIndex++;
         updateState({ currentStepIndex: stepIndex });
       }
       updateState({ activeStep: Steps.CREATE });
-      const order = await createOrderCallback();
+      const order = await createOrderCallback(callbacks);
 
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;

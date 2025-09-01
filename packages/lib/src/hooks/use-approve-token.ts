@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTwapStore } from "../useTwapStore";
 import { useTwapContext } from "../context";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
-import { Token } from "../types";
+import { SwapCallbacks, Token } from "../types";
 import { amountUi, analytics, REPERMIT_ADDRESS } from "@orbs-network/twap-sdk";
 import { erc20Abi, maxUint256 } from "viem";
 import { ensureWrappedToken } from "../utils";
@@ -10,17 +10,17 @@ import { useEnsureAllowanceCallback } from "./use-allowance";
 import BN from "bignumber.js";
 
 export const useApproveToken = () => {
-  const { account, walletClient, publicClient, callbacks, overrides, chainId } = useTwapContext();
+  const { account, walletClient, publicClient, overrides, chainId } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const getTransactionReceipt = useGetTransactionReceipt();
   const { refetch: refetchAllowance } = useEnsureAllowanceCallback();
 
-  return useMutation(
-    async ({ token: _token, amount }: { token: Token; amount: string }) => {
-      if (!account || !walletClient || !publicClient || !chainId) {
-        throw new Error("missing required parameters");
-      }
+  return useMutation(async ({ token: _token, amount, callbacks }: { token: Token; amount: string; callbacks?: SwapCallbacks }) => {
+    if (!account || !walletClient || !publicClient || !chainId) {
+      throw new Error("missing required parameters");
+    }
 
+    try {
       const token = ensureWrappedToken(_token, chainId);
 
       callbacks?.approve?.onRequest?.(token, amountUi(token?.decimals, maxUint256.toString()));
@@ -64,11 +64,9 @@ export const useApproveToken = () => {
 
       analytics.onApproveSuccess(hash);
       callbacks?.approve?.onSuccess?.(receipt, token!, amountUi(token?.decimals, maxUint256.toString()));
-    },
-    {
-      onError: (error) => {
-        callbacks?.approve?.onFailed?.((error as any).message);
-      },
-    },
-  );
+    } catch (error) {
+      callbacks?.approve?.onFailed?.((error as any).message);
+      throw error;
+    }
+  });
 };

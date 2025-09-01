@@ -4,8 +4,8 @@ import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
-import { Module, Token } from "../types";
-import { useCancelOrder } from "./use-cancel-order";
+import { Module, OrderHistoryCallbacks, Token } from "../types";
+import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderType } from "../utils";
 import { useChunks } from "./use-chunks";
@@ -227,7 +227,7 @@ const useOrdersQuery = () => {
 
 export const useOrders = () => {
   const { data: orders, isLoading, error, refetch, isRefetching } = useOrdersQuery();
-  const { callback: cancelOrder } = useCancelOrder();
+  const { mutateAsync: cancelOrder } = useCancelOrderMutation();
 
   return useMemo(() => {
     return {
@@ -253,7 +253,7 @@ const filterAndSortOrders = (orders: Order[], status: OrderStatus) => {
 
 export const useOrderHistoryPanel = () => {
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
-  const cancelOrder = useCancelOrder();
+  const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
   const updateState = useTwapStore((s) => s.updateState);
   const isOpen = useTwapStore((s) => s.state.showOrderHistory);
 
@@ -269,6 +269,13 @@ export const useOrderHistoryPanel = () => {
     updateState({ selectedOrderID: undefined });
   }, [updateState]);
 
+  const onCancelOrders = useCallback(
+    (orderIds: string[], callbacks?: OrderHistoryCallbacks) => {
+      return cancelOrder({ orderIds, callbacks });
+    },
+    [cancelOrder],
+  );
+
   return {
     orders,
     isLoading: orderLoading,
@@ -278,11 +285,8 @@ export const useOrderHistoryPanel = () => {
     onClose,
     onOpen,
     onClosePreview,
-    cancelOrder: cancelOrder.callback,
+    onCancelOrders,
     openOrdersCount: orders?.OPEN?.length || 0,
-    cancelOrderStatus: cancelOrder.status,
-    cancelOrderTxHash: cancelOrder.txHash,
-    cancelOrderError: cancelOrder.error,
-    cancelOrderId: cancelOrder.orderId,
+    isCancelOrdersLoading,
   };
 };

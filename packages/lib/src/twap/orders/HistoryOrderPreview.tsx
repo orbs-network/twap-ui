@@ -3,17 +3,17 @@ import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
 import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate, getOrderFillDelayMillis } from "@orbs-network/twap-sdk";
 import moment from "moment";
-import { ButtonProps, LabelProps, OrderHistorySelectedOrderProps, Token, TokenLogoProps } from "../../types";
+import { ButtonProps, Token } from "../../types";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 import { useAmountUi } from "../../hooks/helper-hooks";
 import { useOrderName, useOrders } from "../../hooks/order-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
-import { SwapStatus, TokensDisplay } from "@orbs-network/swap-ui";
+import { TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../components/order-details";
-import { useCancelOrder } from "../../hooks/use-cancel-order";
 import { useTwapStore } from "../../useTwapStore";
 import { useOrderHistoryContext } from "./context";
+import { useCancelOrderMutation } from "../../hooks/use-cancel-order";
 
 export const useSelectedOrder = () => {
   const { orders } = useOrders();
@@ -153,17 +153,17 @@ const ExcecutionSummary = ({ order }: { order: Order }) => {
 };
 
 export const CancelOrderButton = ({ order, Button }: { order: Order; Button: FC<ButtonProps> }) => {
-  const context = useTwapContext();
-  const cancelOrder = useCancelOrder();
+  const { mutateAsync: cancelOrder, isLoading } = useCancelOrderMutation();
+  const { callbacks } = useOrderHistoryContext();
 
   const onCancelOrder = useCallback(async () => {
-    return cancelOrder.callback(order);
-  }, [cancelOrder, order]);
+    return cancelOrder({ orderIds: [order.id], callbacks });
+  }, [cancelOrder, order, callbacks]);
 
   if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
-    <Button loading={cancelOrder.status === SwapStatus.LOADING} onClick={onCancelOrder} disabled={cancelOrder.status === SwapStatus.LOADING} className="twap-cancel-order">
+    <Button loading={isLoading} onClick={onCancelOrder} disabled={isLoading} className="twap-cancel-order">
       Cancel
     </Button>
   );

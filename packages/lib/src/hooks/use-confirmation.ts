@@ -63,7 +63,7 @@ const useOrderDetails = () => {
 };
 
 export const useOrderExecutionFlow = () => {
-  const { mutateAsync, isLoading: mutationLoading } = useSubmitOrder();
+  const { mutateAsync: onSubmitOrder, isLoading: mutationLoading } = useSubmitOrder();
   const resetState = useTwapStore((s) => s.resetState);
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
   const currentStep = useTwapStore((s) => s.state.activeStep);
@@ -88,8 +88,6 @@ export const useOrderExecutionFlow = () => {
     },
     [updateState],
   );
-
-  const onSubmitOrder = useCallback(() => mutateAsync(), [mutateAsync]);
 
   const onClose = useCallback(() => {
     updateState({ showConfirmation: false });

@@ -8,7 +8,7 @@ export const useWrapOnly = () => {
   const srcAmount = useSrcAmount().amountWei;
   const resetState = useTwapStore((s) => s.resetState);
   return useMutation(async () => {
-    await mutateAsync(srcAmount);
+    await mutateAsync({ amount: srcAmount });
     resetState();
   });
 };

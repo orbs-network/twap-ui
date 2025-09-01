@@ -157,8 +157,9 @@ export type SelectMenuProps = {
 
 export type OrderHistoryListOrderProps = {
   order: Order;
-  selectOrder: (orderId: string) => void;
-  cancelOrder: (orderId: string) => Promise<string>;
+  selectOrder: () => void;
+  cancelOrder: () => Promise<TransactionReceipt | undefined>;
+  selected: boolean;
 };
 
 export type LimitPanelInvertButtonProps = {
@@ -306,7 +307,6 @@ interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
-  orderId?: number;
   receipt: TransactionReceipt;
 }
 
@@ -332,21 +332,19 @@ export enum InputErrors {
   EMPTY_TRIGGER_PRICE,
 }
 
-export type Callbacks = {
+type Callbacks = {
   onInputAmountChange?: (weiValue: string, uiValue: string) => void;
   onTradePriceChange?: (weiValue: string, uiValue: string) => void;
   onDurationChange?: (value?: number) => void;
   onChunksChange?: (value?: number) => void;
   onFillDelayChange?: (value: number) => void;
   onTriggerPriceChange?: (weiValue: string, uiValue: string) => void;
+};
+
+export type SwapCallbacks = {
   createOrder?: {
     onRequest?: (args: CreateOrderCallbackArgs) => void;
     onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
-    onFailed?: (error: string) => void;
-  };
-  cancelOrder?: {
-    onRequest?: (orderId: number) => void;
-    onSuccess?: (receipt: TransactionReceipt, orderId: number) => void;
     onFailed?: (error: string) => void;
   };
   approve?: {
@@ -368,22 +366,6 @@ export interface Provider {
 
 export type PublicClient = ReturnType<typeof createPublicClient>;
 export type WalletClient = ReturnType<typeof createWalletClient>;
-export interface BaseTwapProps {
-  config: Config;
-  srcToken?: Token;
-  dstToken?: Token;
-  srcUsd1Token?: number;
-  dstUsd1Token?: number;
-  srcBalance?: string;
-  dstBalance?: string;
-  children?: React.ReactNode;
-  askDataParams?: any[];
-  marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
-  customMinChunkSizeUsd?: number;
-  chainId?: number;
-  account?: string;
-  provider?: Provider;
-}
 
 export type ApproveProps = {
   tokenAddress: string;
@@ -437,6 +419,13 @@ export type SubmitOrderPanelProps = {
   reviewDetails?: ReactNode;
   Label: FC<LabelProps>;
   Button: FC<ButtonProps>;
+  callbacks?: SwapCallbacks;
+};
+
+export type OrderHistoryCallbacks = {
+  onCancelRequest?: (orderId: string[]) => void;
+  onCancelSuccess?: (orderId: string[], receipt: TransactionReceipt) => void;
+  onCancelFailed?: (error: string) => void;
 };
 
 export type OrderHistoryProps = {
@@ -447,8 +436,10 @@ export type OrderHistoryProps = {
   TokenLogo?: FC<TokenLogoProps>;
   Label: FC<LabelProps>;
   Button: FC<ButtonProps>;
+  Checkbox: FC<{ checked: boolean; setChecked: () => void }>;
   useToken: UseToken;
   dateFormat?: (date: number) => string;
+  callbacks?: OrderHistoryCallbacks;
 };
 
 export type Overrides = {
@@ -481,8 +472,8 @@ export interface TwapProps {
   slippage: number;
   module: Module;
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
-  callbacks?: Callbacks;
   overrides?: Overrides;
+  callbacks?: Callbacks;
 }
 
 export interface TwapContextType extends TwapProps {

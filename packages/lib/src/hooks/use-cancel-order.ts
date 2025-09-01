@@ -1,25 +1,23 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { analytics, Order, REPERMIT_ADDRESS, RePermitAbi, TwapAbi } from "@orbs-network/twap-sdk";
+import { analytics, REPERMIT_ADDRESS, RePermitAbi } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
-import { Abi } from "viem";
 import { useTwapContext } from "../context";
 import { isTxRejected } from "../utils";
-import { useOptimisticCancelOrder } from "./order-hooks";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { useTwapStore } from "../useTwapStore";
-import { useMemo } from "react";
+import { OrderHistoryCallbacks } from "../types";
 
-const useCancelOrderMutation = () => {
-  const { account, callbacks, walletClient, publicClient, overrides } = useTwapContext();
+export const useCancelOrderMutation = () => {
+  const { account, walletClient, publicClient, overrides } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
 
-  const optimisticCancelOrder = useOptimisticCancelOrder();
-  const mutation = useMutation(async (order: Order) => {
+  const mutation = useMutation(async ({ orderIds, callbacks }: { orderIds: string[]; callbacks?: OrderHistoryCallbacks }) => {
     try {
       if (!account || !walletClient || !publicClient) {
         throw new Error("missing required parameters");
       }
+
       updateState({
         cancelOrderStatus: SwapStatus.LOADING,
         cancelOrderTxHash: undefined,
@@ -27,7 +25,7 @@ const useCancelOrderMutation = () => {
         // cancelOrderId: order.id,
       });
       // analytics.onCancelOrderRequest(order.id);
-      // callbacks?.cancelOrder?.onRequest?.(order.id);
+      callbacks?.onCancelRequest?.(orderIds);
       let hash: `0x${string}` | undefined;
       if (overrides?.cancelOrder) {
         // hash = await transactions.cancelOrder({ contractAddress: order.twapAddress, abi: TwapAbi as Abi, functionName: "cancel", args: [order.id], orderId: order.id });
@@ -37,7 +35,7 @@ const useCancelOrderMutation = () => {
           address: REPERMIT_ADDRESS as `0x${string}`,
           abi: RePermitAbi,
           functionName: "cancel",
-          args: [order.id], // pass nonce, that is part of the order
+          args: orderIds, // pass nonce, that is part of the order
           chain: walletClient.chain,
         });
       }
@@ -55,41 +53,21 @@ const useCancelOrderMutation = () => {
       // optimisticCancelOrder(order.id);
       updateState({ cancelOrderStatus: SwapStatus.SUCCESS });
       analytics.onCancelOrderSuccess(hash);
-      // callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
+      callbacks?.onCancelSuccess?.(orderIds, receipt);
 
-      return hash;
+      return receipt;
     } catch (error) {
       console.log(`cancel error order`, error);
+      callbacks?.onCancelFailed?.((error as Error).message);
       if (isTxRejected(error)) {
         updateState({ cancelOrderStatus: undefined });
       } else {
         updateState({ cancelOrderStatus: SwapStatus.FAILED });
         analytics.onCancelOrderError(error);
-        callbacks?.cancelOrder?.onFailed?.((error as Error).message);
+        callbacks?.onCancelFailed?.((error as Error).message);
       }
     }
   });
 
   return mutation;
-};
-
-export const useCancelOrder = () => {
-  const { state } = useTwapStore();
-  const { mutateAsync: cancelOrder } = useCancelOrderMutation();
-
-  return useMemo((): {
-    status?: SwapStatus;
-    txHash?: string;
-    error?: string;
-    orderId?: number;
-    callback: (order: Order) => Promise<string>;
-  } => {
-    return {
-      callback: (order: Order) => cancelOrder(order).then((hash) => hash || ""),
-      status: state.cancelOrderStatus,
-      txHash: state.cancelOrderTxHash,
-      error: state.cancelOrderError,
-      orderId: state.cancelOrderId,
-    };
-  }, [state, cancelOrder]);
 };

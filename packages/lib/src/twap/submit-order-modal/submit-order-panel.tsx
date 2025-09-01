@@ -1,5 +1,5 @@
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../../context";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Steps, SubmitOrderPanelProps } from "../../types";
@@ -69,14 +69,18 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const totalSteps = useTwapStore((s) => s.state.totalSteps);
   const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
-  const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link } = props;
+  const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link, callbacks } = props;
 
   const {
     orderDetails: { srcAmount, dstAmount, srcToken, dstToken },
-    onSubmitOrder,
+    onSubmitOrder: onSubmitOrderCallback,
     isLoading,
     explorerUrl,
   } = useOrderExecutionFlow();
+
+  const onSubmitOrder = useCallback(() => {
+    onSubmitOrderCallback(callbacks);
+  }, [callbacks]);
 
   return (
     <SubmitOrderContextProvider {...props}>

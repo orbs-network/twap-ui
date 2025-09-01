@@ -1,6 +1,6 @@
-import React, { FC, useCallback, useMemo } from "react";
-import { OrderStatus, SelectMeuItem, SelectMenuProps } from "../../types";
-import { useTwapContext } from "../../context";
+import { useCallback, useMemo } from "react";
+import { OrderStatus, SelectMeuItem } from "../../types";
+
 import { useTwapStore } from "../../useTwapStore";
 import { useOrderHistoryContext } from "./context";
 
@@ -17,7 +17,6 @@ export function OrderHistoryMenu() {
     [updateState],
   );
 
-  const context = useTwapContext();
   const onSelect = useCallback((item: SelectMeuItem) => setStatus(item?.value as OrderStatus), [setStatus]);
 
   const items = useMemo(() => {
@@ -30,7 +29,14 @@ export function OrderHistoryMenu() {
     return [ALL_STATUS, ...result];
   }, []);
 
-  const selected = items.find((it) => it.value === status) || ALL_STATUS;
+  const selected = useMemo(() => {
+    return (
+      items.find((it) => it.value === status) || {
+        text: "Open",
+        value: "Open",
+      }
+    );
+  }, [items, status]);
 
   if (SelectMenu) {
     return <SelectMenu onSelect={onSelect} selected={selected} items={items} />;

@@ -1,7 +1,7 @@
 import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD } from "../hooks";
 import { NumberInput, Popup, PanelToggle } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar } from "antd";
+import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar, Checkbox } from "antd";
 import {
   TooltipProps,
   TWAP,
@@ -32,7 +32,6 @@ import {
   SelectMeuItem,
   useOrderExecutionFlow,
   useTranslation,
-  Overrides,
   ButtonProps,
   SubmitOrderPanel,
   LabelProps,
@@ -59,7 +58,7 @@ const OrderHistoryModal = () => {
   return (
     <>
       <Popup isOpen={Boolean(isOpen)} onClose={onClose}>
-        <OrderHistory SelectMenu={SelectMenu} Label={Label} Button={TwapButton} useToken={useToken} />
+        <OrderHistory SelectMenu={SelectMenu} Label={Label} Button={TwapButton} useToken={useToken} Checkbox={TwapCheckbox} />
       </Popup>
       <button onClick={onOpen} className="twap-orders__button">
         {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Orders</Typography>}
@@ -94,9 +93,7 @@ const SubmitOrderPanelModal = () => {
 };
 
 const StyledButton = styled(Button)`
-  width: 100%;
   background: #141414 !important;
-  margin-top: 20px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   color: white;
@@ -376,6 +373,10 @@ const Label = ({ text, tooltip }: LabelProps) => {
   );
 };
 
+const TwapCheckbox = ({ checked, setChecked }: { checked: boolean; setChecked: () => void }) => {
+  return <Checkbox checked={checked} onChange={setChecked} />;
+};
+
 const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) => {
   const { title, tooltip, duration, onUnitSelect, onInputChange, setDuration } = useDurationPanel();
   const [isCustom, setIsCustom] = useState(false);
@@ -607,7 +608,7 @@ const TradeAmount = ({ className }: { className?: string }) => {
 
 const TwapButton = (props: ButtonProps) => {
   return (
-    <StyledButton loading={props.loading} disabled={props.disabled} onClick={props.onClick}>
+    <StyledButton loading={props.loading} disabled={props.disabled} onClick={props.onClick} className={props.className}>
       {props.children}
     </StyledButton>
   );
