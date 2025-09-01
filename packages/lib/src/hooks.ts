@@ -645,7 +645,9 @@ export const useOrdersHistoryQuery = () => {
 
       const statuses = await fetchStatusesWithRetries();
 
-      return filtered.map((it) => ({ ...it, status: statuses?.[it.id.toString()] || Status.Expired }));
+      const res = filtered.map((it) => ({ ...it, status: statuses?.[it.id.toString()] || Status.Expired }));
+
+      return res;
     },
     staleTime: Infinity,
     refetchInterval: REFETCH_ORDER_HISTORY,
@@ -771,7 +773,7 @@ export const useFormatNumber = ({
     allowLeadingZeros: true,
     thousandSeparator: thousandSeparator ? "," : "",
     displayType: "text",
-    value: formatWithDecimals(value, decimalScale) || "",
+    value: formatDecimalsV2(value?.toString(), decimalScale) || "",
     prefix,
     suffix,
   });
@@ -1699,6 +1701,39 @@ export const getDecimals = (value?: string | number, decimalScale = 0) => {
 
   return Number(decimals);
 };
+
+export function formatDecimalsV2(value?: string, scale = 5, maxDecimals = 18): string {
+  if (!value) return "";
+
+  // ─── keep the sign, work with the absolute value ────────────────
+  const sign = value.startsWith("-") ? "-" : "";
+  const abs = sign ? value.slice(1) : value;
+
+  const [intPart, rawDec = ""] = abs.split(".");
+
+  // Fast-path: decimal part is all zeros (or absent) ───────────────
+  if (!rawDec || Number(rawDec) === 0) return sign + intPart;
+
+  /** Case 1 – |value| ≥ 1 *****************************************/
+  if (intPart !== "0") {
+    const sliced = rawDec.slice(0, scale);
+    const cleaned = sliced.replace(/0+$/, ""); // drop trailing zeros
+    const trimmed = cleaned ? "." + cleaned : "";
+    return sign + intPart + trimmed;
+  }
+
+  /** Case 2 – |value| < 1 *****************************************/
+  const firstSigIdx = rawDec.search(/[^0]/); // first non-zero position
+  if (firstSigIdx === -1) return "0"; // decimal part is all zeros
+  if (firstSigIdx + 1 > maxDecimals) return "0"; // too many leading zeros → 0
+
+  const leadingZeros = rawDec.slice(0, firstSigIdx); // keep them
+  const significantRaw = rawDec.slice(firstSigIdx).slice(0, scale);
+  const significant = significantRaw.replace(/0+$/, ""); // trim trailing zeros
+
+  return significant ? sign + "0." + leadingZeros + significant : "0";
+}
+
 export const formatWithDecimals = (value?: string | number, decimalScale?: number) => {
   if (value == null) return ""; // Handle null/undefined inputs
 
