@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Orders, OrdersPortal } from "./orders/Orders";
 import { SubmitOrderPanel } from "./submit-order-modal/SubmitOrderModal";
-import { TwapProvider } from "../context";
+import { TwapProvider, useTwapContext } from "../context";
 import { TwapProps } from "../types";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import {
@@ -40,8 +40,14 @@ const TWAP = (props: TwapProps) => {
   );
 };
 
+const useTranslations = () => {
+  const { translations } = useTwapContext();
+  return translations;
+};
+
 export {
   TWAP,
+  useTranslations,
   OrdersPortal as OrderHistory,
   useOrders,
   useSubmitOrderPanel,

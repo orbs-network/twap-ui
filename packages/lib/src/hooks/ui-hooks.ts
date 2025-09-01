@@ -158,6 +158,7 @@ export const useLimitPricePercentSelect = () => {
     buttons,
     selected: selectedPricePercent,
     isReset,
+    priceDiffFromMarket,
   };
 };
 

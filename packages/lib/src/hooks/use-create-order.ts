@@ -16,7 +16,18 @@ const useCallbacks = () => {
   const optimisticAddOrder = useOptimisticAddOrder();
   const destTokenAmountUI = useDestTokenAmount().amountUI;
   const { refetch: refetchOrders } = useOrders();
-  const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);
+  const onRequest = useCallback(
+    (params: string[]) => {
+      twapSDK.analytics.onCreateOrderRequest(params, account);
+      callbacks?.createOrder?.onRequest?.({
+        srcToken: srcToken!,
+        dstToken: dstToken!,
+        srcAmount: typedSrcAmount || "0",
+        dstAmount: destTokenAmountUI,
+      });
+    },
+    [twapSDK, account, srcToken, dstToken, typedSrcAmount, destTokenAmountUI],
+  );
   const onSuccess = useCallback(
     async (receipt: TransactionReceipt, params: string[], srcToken: Token, orderId?: number) => {
       twapSDK.analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);

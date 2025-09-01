@@ -294,14 +294,14 @@ export interface Components {
   Button?: FC<ButtonProps>;
 }
 
-interface CreateOrderCallbackArgs {
+export interface CreateOrderCallbackArgs {
   srcToken: Token;
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
 }
 
-interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
+export interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
   srcToken: Token;
   dstToken: Token;
   srcAmount: string;
