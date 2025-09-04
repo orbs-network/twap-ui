@@ -116,7 +116,7 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
       ".popup-content": {
         flex: 1,
         overflowY: "auto",
-        maxHeight: "500px",
+        maxHeight: "800px",
         height: "70vh",
       },
       ".popup-header": {

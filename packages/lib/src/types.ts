@@ -3,7 +3,7 @@ import { Config, Order, OrderType, TimeDuration, TimeUnit, TwapSDK } from "@orbs
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
-export { OrderStatus, type TwapFill, OrderType } from "@orbs-network/twap-sdk";
+export { OrderStatus, type TwapFill, OrderType, type Config } from "@orbs-network/twap-sdk";
 
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
@@ -450,7 +450,7 @@ export interface TwapProps {
     CancelOrderButton: FC<CancelOrderButtonProps>;
   };
   askDataParams?: any[];
-  marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
+  marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean; isExact?: boolean };
   customMinChunkSizeUsd?: number;
   useToken?: (value?: string) => Token | undefined;
   callbacks?: Callbacks;

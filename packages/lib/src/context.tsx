@@ -7,6 +7,7 @@ import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
 import { useTwapStore } from "./useTwapStore";
 import { initiateWallet } from "./lib";
+import BN from "bignumber.js";
 
 export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
@@ -64,10 +65,29 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
   }, [translations]);
 };
 
+const useParsedMarketPrice = ({ marketReferencePrice }: TwapProps) => {
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+
+  return useMemo(() => {
+    if (!marketReferencePrice.isExact) {
+      return marketReferencePrice;
+    }
+    const value = BN(marketReferencePrice.value || 0)
+      .dividedBy(typedSrcAmount || 0)
+      .toFixed();
+
+    return {
+      ...marketReferencePrice,
+      value,
+    };
+  }, [marketReferencePrice, typedSrcAmount]);
+};
+
 const Content = (props: TwapProps) => {
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
+  const marketReferencePrice = useParsedMarketPrice(props);
   return (
     <TwapContext.Provider
       value={{
@@ -78,9 +98,9 @@ const Content = (props: TwapProps) => {
         walletClient,
         publicClient,
         twapSDK,
-        marketPrice: props.marketReferencePrice.value,
-        marketPriceLoading: props.marketReferencePrice.isLoading,
-        noLiquidity: props.marketReferencePrice.noLiquidity,
+        marketPrice: marketReferencePrice.value,
+        marketPriceLoading: marketReferencePrice.isLoading,
+        noLiquidity: marketReferencePrice.noLiquidity,
         components: props.components || ({} as Components),
         numberFormat: props.numberFormat,
       }}
