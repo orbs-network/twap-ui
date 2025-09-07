@@ -321,7 +321,7 @@ export const usePriceDiffFromMarketPercent = () => {
   return useMemo(() => {
     // Validate inputs
     if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(marketPrice).isZero()) {
-      return "0";
+      return "";
     }
 
     // Determine comparison direction
