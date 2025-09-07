@@ -10,7 +10,7 @@ import { useSubmitOrderCallback } from "./use-submit-order";
 import { useOrderSubmissionArgs } from "./use-order-submission-args";
 
 export const useSubmitOrderPanel = () => {
-  const { dstUsd1Token, srcUsd1Token, account, srcToken, dstToken } = useTwapContext();
+  const { dstUsd1Token, srcUsd1Token, account, srcToken, dstToken, marketPriceLoading } = useTwapContext();
   const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
   const onClose = useOnCloseConfirmationModal();
   const deadline = useOrderDeadline();
@@ -77,6 +77,7 @@ export const useSubmitOrderPanel = () => {
       isLoading,
       disabled: !disclaimerAccepted || isLoading,
       onSubmit: submitOrder,
+      marketPriceLoading,
       currentStep: {
         type: currentStep,
         index: currentStepIndex,

@@ -394,7 +394,7 @@ export const useShouldWrapOrUnwrapOnly = () => {
 };
 
 export const useInputsError = () => {
-  const { marketPrice } = useTwapContext();
+  const { marketPrice, marketPriceLoading, srcUsd1Token } = useTwapContext();
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const chunksError = useChunksError();
   const fillDelayError = useFillDelayError();
@@ -402,7 +402,7 @@ export const useInputsError = () => {
   const tradeSizeError = useMinTradeSizeError();
   const limitPriceError = useLimitPriceError();
 
-  if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()) return;
+  if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero() || marketPriceLoading || !srcUsd1Token) return;
 
   return limitPriceError || chunksError || fillDelayError || tradeSizeError || orderDurationError;
 };

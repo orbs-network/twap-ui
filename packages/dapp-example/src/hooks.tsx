@@ -4,7 +4,7 @@ import { Token } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 import { amountBN, amountUi, Configs, eqIgnoreCase, erc20abi, getNetwork, isNativeAddress, networks } from "@orbs-network/twap-sdk";
 import _ from "lodash";
-import { useAccount, usePublicClient, useReadContracts } from "wagmi";
+import { useAccount, useChainId, usePublicClient, useReadContracts } from "wagmi";
 import { api } from "./api";
 import { erc20Abi } from "viem";
 
@@ -37,9 +37,10 @@ export const useTokenListBalances = () => {
   const { data: tokens } = useGetTokens();
   const client = usePublicClient();
   const account = useAccount().address;
+  const chainId = useChainId();
 
   return useQuery({
-    queryKey: ["useTokenListBalances", tokens?.length],
+    queryKey: ["useTokenListBalances", tokens?.length, chainId],
     queryFn: async () => {
       if (!client) return {};
       const addresses: string[] = tokens!.map((it) => it.address).filter((it) => !isNativeAddress(it));

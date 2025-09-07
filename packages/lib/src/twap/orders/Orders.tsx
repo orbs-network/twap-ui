@@ -107,7 +107,7 @@ const OrderHistory = ({ className = "" }: { className?: string }) => {
 
   return (
     <>
-      {cancelOrder.status ? (
+      {selectedOrderId && cancelOrder.status ? (
         <CancelOrderFlow />
       ) : (
         <div className={`twap-orders ${selectedOrderId !== undefined ? "twap-orders__show-selected" : ""} ${className}`}>
