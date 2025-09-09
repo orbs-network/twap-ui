@@ -1,22 +1,21 @@
 import React, { ReactNode } from "react";
 import { HistoryOrderPreview } from "./HistoryOrderPreview";
-import { OrderHistoryContextProvider, useOrderHistoryContext, useSelectedOrder } from "./context";
+import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
-import { useMemo } from "react";
 import { useTwapContext } from "../../context";
-import { Step, SwapFlow } from "@orbs-network/swap-ui";
-import { useTransactionExplorerLink } from "../../hooks/logic-hooks";
+import { SwapFlow } from "@orbs-network/swap-ui";
 import { Portal } from "../../components/Portal";
 import { useOrderHistoryPanel } from "../twap";
-import { SwapFlowComponent } from "../swap-flow";
-import { useTwapStore } from "../../useTwapStore";
-import { useCancelOrder } from "../../hooks/use-cancel-order";
 
 const PORTAL_ID = "twap-orders-portal";
 
 const OrdersContent = () => {
   const context = useTwapContext();
   const { isOpen, onClose } = useOrderHistoryPanel();
+
+  if (!context.OrderHistory.Panel) {
+    return null;
+  }
 
   return (
     <context.OrderHistory.Panel isOpen={isOpen} onClose={onClose}>
@@ -37,44 +36,6 @@ export const Orders = () => {
 
 export const OrdersPortal = ({ children }: { children?: ReactNode }) => {
   return <div id={PORTAL_ID}>{children}</div>;
-};
-
-const CancelOrderFlow = () => {
-  const cancelOrderTxHash = useTwapStore((s) => s.state.cancelOrderTxHash);
-  const cancelOrderStatus = useTwapStore((s) => s.state.cancelOrderStatus);
-  const cancelOrderError = useTwapStore((s) => s.state.cancelOrderError);
-  const { translations: t, useToken, TransactionModal } = useTwapContext();
-  const order = useSelectedOrder();
-  const inToken = useToken?.(order?.srcTokenAddress);
-  const outToken = useToken?.(order?.dstTokenAddress);
-
-  const explorerUrl = useTransactionExplorerLink(cancelOrderTxHash);
-  const currentStep = useMemo((): Step => {
-    return {
-      title: t.cancelOrderModalTitle.replace("{id}", order?.id?.toString() || ""),
-      explorerUrl,
-    };
-  }, [cancelOrderTxHash, order?.id, t]);
-
-  if (!order) {
-    return null;
-  }
-
-  return (
-    <SwapFlowComponent
-      className="twap-cancel-order-flow"
-      swapStatus={cancelOrderStatus}
-      totalSteps={1}
-      currentStep={currentStep}
-      currentStepIndex={0}
-      failedContent={<FailedContent error={cancelOrderError || ""} orderId={order.id} />}
-      successContent={<SuccessContent explorerUrl={explorerUrl || ""} orderId={order.id} />}
-      mainContent={<SwapFlow.Main />}
-      loadingViewContent={TransactionModal?.CancelOrder?.LoadingView ? <LoadingView orderId={order.id} /> : null}
-      inToken={inToken}
-      outToken={outToken}
-    />
-  );
 };
 
 const LoadingView = ({ orderId }: { orderId: number }) => {
@@ -101,20 +62,13 @@ const FailedContent = ({ error, orderId }: { error: string; orderId: number }) =
   return <SwapFlow.Failed link="https://www.orbs.com/dtwap-and-dlimit-faq" />;
 };
 
-const OrderHistory = ({ className = "" }: { className?: string }) => {
+export const OrderHistory = ({ className = "" }: { className?: string }) => {
   const { selectedOrderId } = useOrderHistoryContext();
-  const cancelOrder = useCancelOrder();
 
   return (
-    <>
-      {selectedOrderId && cancelOrder.status ? (
-        <CancelOrderFlow />
-      ) : (
-        <div className={`twap-orders ${selectedOrderId !== undefined ? "twap-orders__show-selected" : ""} ${className}`}>
-          <HistoryOrderPreview />
-          <OrderHistoryList />
-        </div>
-      )}
-    </>
+    <div className={`twap-orders ${selectedOrderId !== undefined ? "twap-orders__show-selected" : ""} ${className}`}>
+      <HistoryOrderPreview />
+      <OrderHistoryList />
+    </div>
   );
 };

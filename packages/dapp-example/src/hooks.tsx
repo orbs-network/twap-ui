@@ -269,6 +269,7 @@ const chainIdToName: { [key: number]: string } = {
   [networks.cronosZkEvm.id]: "cronos-zkevm",
   [networks.katana.id]: "katana",
   [networks.bera.id]: "bera",
+  [networks.avax.id]: "avax",
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {

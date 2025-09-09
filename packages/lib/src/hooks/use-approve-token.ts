@@ -45,6 +45,7 @@ export const useApproveToken = () => {
 
       twapSDK.analytics.onApproveSuccess(hash);
       callbacks?.approve?.onSuccess?.(receipt, token!, amountUi(token?.decimals, amount));
+      return receipt;
     },
     {
       onError: (error) => {

@@ -38,10 +38,10 @@ export const OrderHistoryList = () => {
 
 const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
   const context = useTwapContext();
-  const { callback: cancelOrder } = useCancelOrder();
+  const { callback: cancelOrder } = useCancelOrder(order);
 
   const handleCancelOrder = React.useCallback(() => {
-    return cancelOrder(order);
+    return cancelOrder();
   }, [cancelOrder, order]);
 
   const component = (

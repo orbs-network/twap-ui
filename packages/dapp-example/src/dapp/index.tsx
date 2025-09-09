@@ -409,7 +409,9 @@ const TradeAmount = () => {
 };
 
 const CancelOrderButton = (props: CancelOrderButtonProps) => {
-  return <StyledButton onClick={props.onClick}>Cancel</StyledButton>;
+  return <StyledButton onClick={props.onClick} disabled={props.isLoading}>
+    {props.isLoading ? "Loading..." : "Cancel"}
+  </StyledButton>;
 };
 
 const MarketPriceToggle = () => {

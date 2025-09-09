@@ -58,12 +58,6 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
 
   const onClose = useCallback(() => {
     setIsOpen(false);
-    updateState({
-      cancelOrderStatus: undefined,
-      cancelOrderTxHash: undefined,
-      cancelOrderError: undefined,
-      cancelOrderId: undefined,
-    });
   }, [updateState]);
   const onOpen = useCallback(() => setIsOpen(true), []);
 

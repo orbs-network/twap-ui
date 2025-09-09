@@ -6,13 +6,13 @@ import { useTwapContext } from "../context";
 import { isTxRejected } from "../utils";
 import { useOptimisticCancelOrder } from "./order-hooks";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
-import { useTwapStore } from "../useTwapStore";
+import { useCancelOrderState, useTwapStore } from "../useTwapStore";
 import { useMemo } from "react";
 
 const useCancelOrderMutation = () => {
   const { account, callbacks, walletClient, publicClient, twapSDK, transactions } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
-  const updateState = useTwapStore((s) => s.updateState);
+  const updateCancelOrderState = useTwapStore((s) => s.updateCancelOrderState);
 
   const optimisticCancelOrder = useOptimisticCancelOrder();
   const mutation = useMutation(async (order: Order) => {
@@ -20,11 +20,11 @@ const useCancelOrderMutation = () => {
       if (!account) throw new Error("account not defined");
       if (!walletClient) throw new Error("walletClient not defined");
       if (!publicClient) throw new Error("publicClient not defined");
-      updateState({
-        cancelOrderStatus: SwapStatus.LOADING,
-        cancelOrderTxHash: undefined,
-        cancelOrderError: undefined,
-        cancelOrderId: order.id,
+      updateCancelOrderState(order.id, {
+        status: SwapStatus.LOADING,
+        txHash: undefined,
+        error: undefined,
+        id: order.id,
       });
       twapSDK.analytics.onCancelOrderRequest(order.id);
       callbacks?.cancelOrder?.onRequest?.(order.id);
@@ -41,7 +41,7 @@ const useCancelOrderMutation = () => {
           chain: walletClient.chain,
         });
       }
-      updateState({ cancelOrderTxHash: hash });
+      updateCancelOrderState(order.id, { txHash: hash });
       const receipt = await getTransactionReceipt(hash);
 
       if (!receipt) {
@@ -55,14 +55,14 @@ const useCancelOrderMutation = () => {
       callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
       optimisticCancelOrder(order.id);
       twapSDK.analytics.onCancelOrderSuccess();
-      updateState({ cancelOrderStatus: SwapStatus.SUCCESS });
+      updateCancelOrderState(order.id, { status: SwapStatus.SUCCESS });
       return hash;
     } catch (error) {
       console.log(`cancel error order`, error);
       if (isTxRejected(error)) {
-        updateState({ cancelOrderStatus: undefined });
+        updateCancelOrderState(order.id, { status: undefined });
       } else {
-        updateState({ cancelOrderStatus: SwapStatus.FAILED });
+        updateCancelOrderState(order.id, { status: SwapStatus.FAILED });
         twapSDK.analytics.onCancelOrderError(error);
         callbacks?.cancelOrder?.onFailed?.((error as Error).message);
       }
@@ -72,23 +72,20 @@ const useCancelOrderMutation = () => {
   return mutation;
 };
 
-export const useCancelOrder = () => {
-  const { state } = useTwapStore();
+export const useCancelOrder = (order?: Order) => {
   const { mutateAsync: cancelOrder } = useCancelOrderMutation();
+  const { state } = useCancelOrderState(order?.id);
 
-  return useMemo((): {
-    status?: SwapStatus;
-    txHash?: string;
-    error?: string;
-    orderId?: number;
-    callback: (order: Order) => Promise<string>;
-  } => {
+  return useMemo(() => {
     return {
-      callback: (order: Order) => cancelOrder(order).then((hash) => hash || ""),
-      status: state.cancelOrderStatus,
-      txHash: state.cancelOrderTxHash,
-      error: state.cancelOrderError,
-      orderId: state.cancelOrderId,
+      callback: () => {
+        if (!order) throw new Error("order is not defined");
+        return cancelOrder(order);
+      },
+      status: state?.status,
+      txHash: state?.txHash,
+      error: state?.error,
+      orderId: state?.id,
     };
-  }, [state, cancelOrder]);
+  }, [state, cancelOrder, order]);
 };

@@ -1,6 +1,6 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { Chain, defineChain, http } from "viem";
-import { polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM, berachain } from "viem/chains";
+import { polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM, berachain, avalanche } from "viem/chains";
 
 const katana: Chain = defineChain({
   id: 747474,
@@ -23,7 +23,7 @@ const katana: Chain = defineChain({
     },
   },
 });
-const chains = [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM, katana, berachain];
+const chains = [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM, katana, berachain, avalanche];
 
 const transports = chains
   .map((chain) => {

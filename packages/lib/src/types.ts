@@ -3,7 +3,7 @@ import { Config, Order, OrderType, TimeDuration, TimeUnit, TwapSDK } from "@orbs
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
-export { OrderStatus, type TwapFill, OrderType, type Config } from "@orbs-network/twap-sdk";
+export { OrderStatus, type TwapFill, OrderType, type Config, TimeUnit } from "@orbs-network/twap-sdk";
 
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
@@ -121,13 +121,6 @@ export type SubmitOrderPanelProps = {
   children?: ReactNode;
 };
 
-export type OrderHistoryModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children?: ReactNode;
-};
-
 export type LimitPanelPercentSelectProps = {
   buttons: {
     text: string;
@@ -152,7 +145,7 @@ export type OrderHistoryListOrderProps = {
   order: Order;
   selectOrder: (orderId: number) => void;
   children: ReactNode;
-  cancelOrder: (orderId: number) => Promise<string>;
+  cancelOrder: (orderId: number) => Promise<string | undefined>;
 };
 
 export type LimitPanelInvertButtonProps = {
@@ -444,7 +437,7 @@ export interface TwapProps {
     SelectMenu?: FC<SelectMenuProps>;
     ListOrder?: FC<OrderHistoryListOrderProps>;
     SelectedOrder?: FC<OrderHistorySelectedOrderProps>;
-    Panel: FC<OrdersHistoryProps>;
+    Panel?: FC<OrdersHistoryProps>;
     ShowOrdersButton?: FC<OrdersButtonProps>;
     ListLoader?: ReactNode;
     CancelOrderButton: FC<CancelOrderButtonProps>;
@@ -524,6 +517,13 @@ export enum Steps {
   CREATE = "create",
 }
 
+export type CancelOrderState = {
+  status: SwapStatus;
+  txHash: string;
+  error: string;
+  id: number;
+};
+
 export interface State {
   swapStatus?: SwapStatus;
   fetchingAllowance?: boolean;
@@ -550,10 +550,10 @@ export interface State {
   isMarketOrder?: boolean;
 
   currentTime: number;
-  cancelOrderStatus?: SwapStatus;
-  cancelOrderTxHash?: string;
-  cancelOrderError?: string;
-  cancelOrderId?: number;
+
+  cancelOrderState: {
+    [key: number]: CancelOrderState;
+  };
 }
 
 export { SwapStatus };

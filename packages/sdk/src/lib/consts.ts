@@ -1,6 +1,7 @@
-import Configs from "@orbs-network/twap/configs.json";
+import allConfigs from "@orbs-network/twap/configs.json";
 import { networks } from "./networks";
 import { Config } from "./types";
+export const Configs = allConfigs as Record<string, Config>;
 
 export const SUGGEST_CHUNK_VALUE = 100;
 

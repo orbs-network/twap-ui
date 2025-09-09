@@ -18,6 +18,7 @@ const coingekoChainToName = {
   [networks.katana.id]: "katana",
   [networks.sei.id]: "sei-v2",
   [networks.bera.id]: "berachain",
+  [networks.avax.id]: "avalanche",
 };
 
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {

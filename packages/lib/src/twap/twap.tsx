@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Orders, OrdersPortal } from "./orders/Orders";
+import { Orders, OrdersPortal, OrderHistory } from "./orders/Orders";
 import { SubmitOrderPanel } from "./submit-order-modal/SubmitOrderModal";
 import { TwapProvider, useTwapContext } from "../context";
 import { TwapProps } from "../types";
@@ -17,6 +17,9 @@ import {
   useDisclaimerMessage,
   useOrderHistoryPanel,
   useStopLossPanel,
+  useMarketPrice,
+  useCreateOrderCallback,
+  useResetTwap,
 } from "../hooks/ui-hooks";
 import { DISCLAIMER_URL, ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
 import { useOrders } from "../hooks/order-hooks";
@@ -45,10 +48,17 @@ const useTranslations = () => {
   return translations;
 };
 
+const OrderHistoryContent = () => {
+  return <OrderHistory />;
+};
+
 export {
   TWAP,
   useTranslations,
   OrdersPortal as OrderHistory,
+  useCreateOrderCallback,
+  useResetTwap,
+  OrderHistoryContent,
   useOrders,
   useSubmitOrderPanel,
   useTokenPanel,
@@ -65,6 +75,7 @@ export {
   useOrderHistoryPanel,
   useResetState,
   useStopLossPanel,
+  useMarketPrice,
   ORBS_WEBSITE_URL,
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,

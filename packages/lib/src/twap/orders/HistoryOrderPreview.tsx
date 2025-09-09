@@ -134,11 +134,11 @@ const ExcecutionSummary = ({ order }: { order: Order }) => {
 
 export const CancelOrderButton = ({ order }: { order: Order }) => {
   const context = useTwapContext();
-  const cancelOrder = useCancelOrder();
+  const cancelOrder = useCancelOrder(order);
 
   const onCancelOrder = useCallback(async () => {
-    return cancelOrder.callback(order);
-  }, [cancelOrder, order]);
+    return cancelOrder.callback();
+  }, [cancelOrder]);
 
   if (!order || order.status !== OrderStatus.Open) return null;
 
@@ -176,7 +176,7 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
   const dstAmountUi = useAmountUi(dstToken?.decimals, order.filledDstAmount);
   const amount = useFormatNumber({ value: dstAmountUi, decimalScale: 3 });
 
-  if (dstAmountUi === undefined) return null;
+  if (BN(order.filledDstAmount || 0).isZero()) return null;
 
   return (
     <OrderDetails.DetailRow title={t.amountReceived}>
@@ -259,7 +259,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
   const srcToken = useToken?.(order.srcTokenAddress);
   const dstToken = useToken?.(order.dstTokenAddress);
 
-  if (order.filledDstAmount === undefined) return null;
+  if (BN(order.filledDstAmount || 0).isZero()) return null;
 
   const excecutionPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;

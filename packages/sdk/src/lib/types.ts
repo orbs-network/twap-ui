@@ -10,7 +10,7 @@ export type Config = {
   partner: string;
   exchangeAddress: string;
   exchangeType: string;
-  pathfinderKey: string;
+  pathfinderKey?: string;
 };
 
 export enum OrderStatus {

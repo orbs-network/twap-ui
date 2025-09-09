@@ -1,5 +1,5 @@
 import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
   useAmountUi,
@@ -12,6 +12,7 @@ import {
   useInputsError,
   useLimitPrice,
   useLimitPriceError,
+  useMaxChunks,
   useMinChunkSizeUsd,
   useMinTradeSizeError,
   useOnOpenConfirmationModal,
@@ -31,13 +32,15 @@ import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useTwapStore } from "../useTwapStore";
-import { formatDecimals } from "../utils";
+import { ensureWrappedToken, formatDecimals } from "../utils";
 import { useOrderHistoryContext } from "../twap/orders/context";
 import { useOrders } from "./order-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "../twap/consts";
 import { useWrapOnly } from "./use-wrap-only";
 import { useUnwrapToken } from "./use-unwrap";
 import { useCancelOrder } from "./use-cancel-order";
+
+import { useCreateOrder } from "./use-create-order";
 
 const defaultPercent = [1, 5, 10];
 
@@ -424,14 +427,12 @@ export const useChunkSizeMessage = () => {
   const chunkSizeError = useMinTradeSizeError();
   const { chunks } = useChunks();
   const error = !typedSrcAmount ? false : chunkSizeError;
-  const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
-  const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });
   const { srcToken, isLimitPanel } = useTwapContext();
   const isZero = isLimitPanel || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0) || !chunks;
   return {
     hide: isLimitPanel || !srcToken,
-    tokenAmount: isZero ? "0" : amountUIF,
-    usdAmount: isZero ? "0" : chunkSizeF,
+    tokenAmount: isZero ? "0" : amountUI,
+    usdAmount: isZero ? "0" : chunkSize,
     error,
     token: srcToken,
     zeroAmount: isZero,
@@ -459,7 +460,8 @@ const useTradeSize = () => {
   return useMemo(() => {
     if (!chunkSizeF || isLimitPanel || !srcToken)
       return {
-        value: amountUIF,
+        valueFormatted: amountUIF,
+        value: amountUI,
         token: srcToken,
         usd: chunkSizeF,
         error,
@@ -467,10 +469,38 @@ const useTradeSize = () => {
   }, [amountUI, chunkSize, isLimitPanel, srcToken, error, amountUIF, chunkSizeF]);
 };
 
+export const useMarketPrice = () => {
+  const { marketPrice, dstToken, srcToken } = useTwapContext();
+  const [inverted, setInverted] = useState(false);
+
+  const price = useMemo(() => {
+    if (!marketPrice) return "";
+    const priceUI = amountUi(dstToken?.decimals, marketPrice);
+    if (inverted) {
+      return BN(1).div(priceUI).toFixed();
+    } else {
+      return priceUI;
+    }
+  }, [marketPrice, inverted, dstToken?.decimals]);
+
+  const toggleInverted = useCallback(() => {
+    setInverted((prev) => !prev);
+  }, [setInverted]);
+
+  return {
+    price,
+    inverted,
+    toggleInverted,
+    leftToken: inverted ? dstToken : srcToken,
+    rightToken: inverted ? srcToken : dstToken,
+  };
+};
+
 export const useChunksPanel = () => {
   const { translations: t } = useTwapContext();
   const { setChunks, chunks } = useChunks();
   const error = useChunksError();
+  const maxChunks = useMaxChunks();
   const tradeSize = useTradeSize();
   return {
     error,
@@ -479,6 +509,7 @@ export const useChunksPanel = () => {
     label: t.tradesAmountTitle,
     tooltip: t.totalTradesTooltip,
     tradeSize,
+    maxChunks,
   };
 };
 
@@ -551,7 +582,6 @@ export const useShowOrderConfirmationModalButton = () => {
 
 export const useOrderHistoryPanel = () => {
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
-  const cancelOrder = useCancelOrder();
   const { isOpen, onClose, onOpen, selectedOrderId, selectOrder } = useOrderHistoryContext();
 
   const selectedOrder = useMemo(() => {
@@ -564,6 +594,7 @@ export const useOrderHistoryPanel = () => {
   }, [selectOrder]);
 
   const selectedOrderTitle = useOrderName(selectedOrder?.isMarketOrder, selectedOrder?.chunks);
+  const cancelOrder = useCancelOrder(selectedOrder);
 
   return {
     orders,
@@ -583,4 +614,30 @@ export const useOrderHistoryPanel = () => {
     selectedOrderTitle,
     closeSelectedOrder,
   };
+};
+
+export const useCreateOrderCallback = () => {
+  const { srcToken, chainId } = useTwapContext();
+  const { mutateAsync: createOrder, reset: resetCreateOrder, isLoading, isSuccess, error } = useCreateOrder();
+  const txHash = useTwapStore((s) => s.state.createOrderTxHash);
+  const updateState = useTwapStore((s) => s.updateState);
+
+  const reset = useCallback(() => {
+    updateState({ createOrderTxHash: undefined });
+    resetCreateOrder();
+  }, [updateState, resetCreateOrder]);
+
+  return {
+    createOrder: useCallback(() => createOrder(ensureWrappedToken(srcToken!, chainId!)), [createOrder, srcToken, chainId]),
+    txHash,
+    reset,
+    isLoading,
+    isSuccess,
+    error,
+  };
+};
+
+export const useResetTwap = () => {
+  const resetState = useTwapStore((s) => s.resetState);
+  return resetState;
 };

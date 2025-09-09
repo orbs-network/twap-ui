@@ -1,5 +1,5 @@
-import { buildOrder, getOrderFillDelayMillis, Order, OrderStatus } from "@orbs-network/twap-sdk";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { buildOrder, getOrderFillDelayMillis, isSupportedByTheGraph, LensAbi, LensOrder, Order, OrderStatus, parseLensOrder } from "@orbs-network/twap-sdk";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
@@ -167,15 +167,37 @@ const useHandlePersistedOrders = () => {
   );
 };
 
+const useGetOrdersFromLens = () => {
+  const { account, publicClient, config } = useTwapContext();
+  return useMutation(async () => {
+    if (!publicClient) throw new Error("publicClient is not defined");
+    const orders = (await publicClient.readContract({
+      address: config.lensAddress as `0x${string}`,
+      abi: LensAbi,
+      functionName: "makerOrders",
+      args: [account!],
+    })) as LensOrder[];
+    const parsedOrders = orders.map((order) => parseLensOrder(order, account!, config));
+
+    return parsedOrders.sort((a, b) => b.createdAt - a.createdAt);
+  });
+};
+
 const useOrdersQuery = () => {
   const { account, twapSDK, publicClient, config } = useTwapContext();
   const queryKey = useOrdersQueryKey();
   const handlePersistedOrders = useHandlePersistedOrders();
+  const { mutateAsync: getOrdersFromLens } = useGetOrdersFromLens();
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
       if (!publicClient) throw new Error("publicClient is not defined");
-      const orders: Order[] = await twapSDK.getOrders(account!, signal);
+      let orders: Order[] = [];
+      if (isSupportedByTheGraph(config.chainId)) {
+        orders = await twapSDK.getOrders(account!, signal);
+      } else {
+        orders = await getOrdersFromLens();
+      }
 
       handlePersistedOrders(orders);
 
