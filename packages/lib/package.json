@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui",
-  "version": "4.0.88",
+  "version": "4.0.89",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@orbs-network/swap-ui": "^0.0.51",
-    "@orbs-network/twap-sdk": "^4.0.88",
+    "@orbs-network/twap-sdk": "^4.0.89",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",
     "bignumber.js": "9.x",
