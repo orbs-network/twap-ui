@@ -148,7 +148,7 @@ export type OrderHistoryListOrderProps = {
   cancelOrder: (orderId: number) => Promise<string | undefined>;
 };
 
-export type LimitPanelInvertButtonProps = {
+export type LimitPanelInvertButminutetonProps = {
   onClick: () => void;
 };
 
@@ -413,7 +413,7 @@ export interface TwapProps {
   isExactAppoval?: boolean;
   children?: React.ReactNode;
   components?: Components;
-  SubmitOrderPanel: FC<SubmitOrderPanelProps>;
+  SubmitOrderPanel?: FC<SubmitOrderPanelProps>;
   panel?: "TWAP" | "LIMIT" | "STOP_LOSS";
   TransactionModal?: {
     Spinner?: ReactNode;

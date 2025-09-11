@@ -47,7 +47,9 @@ export const useTwapStore = create<TwapStore>((set, get) => ({
 export const useCancelOrderState = (orderId?: number) => {
   const cancelOrderState = useTwapStore((s) => s.state.cancelOrderState);
   const updateCancelOrderState = useTwapStore((s) => s.updateCancelOrderState);
-  const state = useMemo(() => (orderId ? cancelOrderState?.[orderId] : undefined), [cancelOrderState, orderId]);
+  const state = useMemo(() => {
+    return orderId !== undefined ? cancelOrderState?.[orderId] : undefined;
+  }, [cancelOrderState, orderId]);
   return {
     state,
     setState: (state: Partial<CancelOrderState>) => {

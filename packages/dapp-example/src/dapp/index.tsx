@@ -409,9 +409,11 @@ const TradeAmount = () => {
 };
 
 const CancelOrderButton = (props: CancelOrderButtonProps) => {
-  return <StyledButton onClick={props.onClick} disabled={props.isLoading}>
-    {props.isLoading ? "Loading..." : "Cancel"}
-  </StyledButton>;
+  return (
+    <StyledButton onClick={props.onClick} disabled={props.isLoading}>
+      {props.isLoading ? "Loading..." : "Cancel"}
+    </StyledButton>
+  );
 };
 
 const MarketPriceToggle = () => {
@@ -500,7 +502,7 @@ export const Dapp = () => {
         dstUsd1Token={dstUsd}
         srcBalance={srcBalance}
         dstBalance={dstBalance}
-        customMinChunkSizeUsd={5}
+        customMinChunkSizeUsd={1}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
         OrderHistory={{
           Panel: OrderHistoryModal,

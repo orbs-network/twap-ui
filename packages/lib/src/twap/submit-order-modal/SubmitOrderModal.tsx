@@ -23,6 +23,10 @@ const Modal = ({ children }: { children: ReactNode }) => {
   const context = useTwapContext();
   const { isOpen, onClose } = useSubmitOrderPanel();
 
+  if (!context.SubmitOrderPanel) {
+    return null;
+  }
+
   return (
     <context.SubmitOrderPanel isOpen={Boolean(isOpen)} onClose={onClose} title="Create order">
       <div className="twap-create-order">{children}</div>
