@@ -1,5 +1,5 @@
 import BN from "bignumber.js";
-import { MIN_FILL_DELAY_MINUTES } from "./consts";
+import { MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MINUTES } from "./consts";
 import { Config, getAskParamsProps, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
@@ -33,15 +33,17 @@ export const getChunks = (maxPossibleChunks: number, isLimitPanel = false, typed
   return maxPossibleChunks;
 };
 
-export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, oneSrcTokenUsd?: string, minChunkSizeUsd?: number) => {
+export const getMaxPossibleChunks = (fillDelay: TimeDuration, typedSrcAmount?: string, oneSrcTokenUsd?: string, minChunkSizeUsd?: number) => {
   if (!typedSrcAmount || !oneSrcTokenUsd || !minChunkSizeUsd) return 1;
-  const amount = BN(oneSrcTokenUsd).times(typedSrcAmount);
 
-  const res = BN.max(1, amount.div(minChunkSizeUsd)).integerValue(BN.ROUND_FLOOR).toNumber();
+  const totalUsd = BN(oneSrcTokenUsd).times(typedSrcAmount);
 
-  return res > 1 ? res : 1;
+  const maxChunksBySize = totalUsd.div(minChunkSizeUsd).integerValue(BN.ROUND_FLOOR).toNumber();
+
+  const maxChunksByTime = Math.floor(MAX_ORDER_DURATION_MILLIS / 2 / getTimeDurationMillis(fillDelay));
+
+  return Math.max(1, Math.min(maxChunksBySize, maxChunksByTime));
 };
-
 export const getFillDelay = (isLimitPanel = false, customFillDelay?: TimeDuration) => {
   if (isLimitPanel || !customFillDelay) return DEFAULT_FILL_DELAY;
   return customFillDelay;

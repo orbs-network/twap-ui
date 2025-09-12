@@ -118,9 +118,10 @@ export const useLimitPrice = () => {
 export const useMaxChunks = () => {
   const { twapSDK, srcUsd1Token } = useTwapContext();
   const minChunkSizeUsd = useMinChunkSizeUsd();
+  const { fillDelay } = useFillDelay();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
-  return useMemo(() => twapSDK.getMaxChunks(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, twapSDK]);
+  return useMemo(() => twapSDK.getMaxChunks(fillDelay, typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, twapSDK, fillDelay]);
 };
 
 export const useChunks = () => {
@@ -394,7 +395,7 @@ export const useShouldWrapOrUnwrapOnly = () => {
 };
 
 export const useInputsError = () => {
-  const { marketPrice, marketPriceLoading, srcUsd1Token } = useTwapContext();
+  const { marketPrice, srcUsd1Token } = useTwapContext();
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const chunksError = useChunksError();
   const fillDelayError = useFillDelayError();
@@ -402,7 +403,7 @@ export const useInputsError = () => {
   const tradeSizeError = useMinTradeSizeError();
   const limitPriceError = useLimitPriceError();
 
-  if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero() || marketPriceLoading || !srcUsd1Token) return;
+  if (BN(srcAmount || 0).isZero() || !srcUsd1Token) return;
 
   return limitPriceError || chunksError || fillDelayError || tradeSizeError || orderDurationError;
 };
@@ -480,13 +481,15 @@ export const useOnCloseConfirmationModal = () => {
 
   return useCallback(() => {
     updateState({ showConfirmation: false });
-    if (swapStatus === SwapStatus.SUCCESS) {
-      resetState();
-    }
+    setTimeout(() => {
+      if (swapStatus === SwapStatus.SUCCESS) {
+        resetState();
+      }
 
-    if (swapStatus === SwapStatus.FAILED) {
-      updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
-    }
+      if (swapStatus === SwapStatus.FAILED) {
+        updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
+      }
+    }, 5_00);
   }, [resetState, updateState, swapStatus]);
 };
 

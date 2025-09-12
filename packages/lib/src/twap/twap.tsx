@@ -23,7 +23,7 @@ import {
 } from "../hooks/ui-hooks";
 import { DISCLAIMER_URL, ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
 import { useOrders } from "../hooks/order-hooks";
-import { useInputsError, useResetState } from "../hooks/logic-hooks";
+import { useBalanceError, useInputsError, useResetState } from "../hooks/logic-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "./consts";
 import { useSubmitOrderPanel } from "../hooks/use-submit-order-panel";
 import { Portal } from "../components/Portal";
@@ -54,6 +54,7 @@ const OrderHistoryContent = () => {
 
 export {
   TWAP,
+  useBalanceError,
   useTranslations,
   OrdersPortal as OrderHistory,
   useCreateOrderCallback,

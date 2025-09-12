@@ -52,8 +52,8 @@ export class TwapSDK {
   getAskParams(props: getAskParamsProps) {
     return getAskParams(this.config, props);
   }
-  getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) {
-    return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);
+  getMaxChunks(fillDelay: TimeDuration, typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) {
+    return getMaxPossibleChunks(fillDelay, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);
   }
   getChunks(maxChunks: number, isLimitPanel: boolean, customChunks?: number) {
     return getChunks(maxChunks, isLimitPanel, customChunks);

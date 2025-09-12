@@ -561,7 +561,7 @@ const parseOrderStatus = (progress: number, deadline: number, status?: RawStatus
 };
 
 export const parseRawStatus = (progress: number, status?: number): OrderStatus => {
-  if (progress === 100) return OrderStatus.Completed;
+  if (progress > 99) return OrderStatus.Completed;
   if (status && status > Date.now() / 1000) return OrderStatus.Open;
 
   switch (status) {
