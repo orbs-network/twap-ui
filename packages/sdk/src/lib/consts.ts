@@ -29,6 +29,9 @@ export const THE_GRAPH_ORDERS_API = {
   [networks.sonic.id]: `${THE_GRAPH_API}/DtBr6a5vsoDd2oAXdPszcn4gLgrr1XC68Q3AJQKXnNLV`,
   [networks.ftm.id]: `${THE_GRAPH_API}/DdRo1pmJkrJC9fjsjEBWnNE1uqrbh7Diz4tVKd7rfupp`,
   [networks.katana.id]: `${THE_GRAPH_API}/CGi9sDFMQcnBwF3C3NoCFqnaE34sssbgwPLTwiskSXmW`,
+  [networks.avax.id]: `${THE_GRAPH_API}/FxZ1vMwE5Xy1qvKvZENUMz4vhW8Sh4vXJf9Vp7o17pTx`,
+  [networks.bera.id]: `${THE_GRAPH_API}/H7aY53mY1hgaSURwXj3ZVirwNSifExwjgEL5GNtTqmEj`,
+
   [networks.flare.id]: getGfURL("flare"),
   [networks.cronosZkEvm.id]: getGfURL("cronos-zkevm"),
 };
