@@ -403,7 +403,7 @@ export const useInputsError = () => {
   const tradeSizeError = useMinTradeSizeError();
   const limitPriceError = useLimitPriceError();
 
-  if (BN(srcAmount || 0).isZero() || !srcUsd1Token) return;
+  if (BN(srcAmount || 0).isZero() || BN(srcUsd1Token || 0).isZero()) return;
 
   return limitPriceError || chunksError || fillDelayError || tradeSizeError || orderDurationError;
 };
