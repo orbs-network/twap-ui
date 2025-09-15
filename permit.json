@@ -1,4 +1,10 @@
 {
+    "domain": {
+        "name": "RePermit",
+        "version": "1",
+        "chainId": 56,
+        "verifyingContract": "0x1234567890123456789012345678901234567890"
+    },
     "types": {
         "RePermitWitnessTransferFrom": [
             {
@@ -22,6 +28,24 @@
                 "type": "Order"
             }
         ],
+        "Exchange": [
+            {
+                "name": "adapter",
+                "type": "address"
+            },
+            {
+                "name": "ref",
+                "type": "address"
+            },
+            {
+                "name": "share",
+                "type": "uint32"
+            },
+            {
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
         "Input": [
             {
                 "name": "token",
@@ -30,34 +54,24 @@
             {
                 "name": "amount",
                 "type": "uint256"
+            },
+            {
+                "name": "maxAmount",
+                "type": "uint256"
             }
         ],
         "Order": [
             {
-                "name": "info",
-                "type": "OrderInfo"
-            },
-            {
-                "name": "exclusiveFiller",
-                "type": "address"
-            },
-            {
-                "name": "exclusivityOverrideBps",
-                "type": "uint256"
-            },
-            {
-                "name": "input",
-                "type": "Input"
-            },
-            {
-                "name": "output",
-                "type": "Output"
-            }
-        ],
-        "OrderInfo": [
-            {
                 "name": "reactor",
                 "type": "address"
+            },
+            {
+                "name": "executor",
+                "type": "address"
+            },
+            {
+                "name": "exchange",
+                "type": "Exchange"
             },
             {
                 "name": "swapper",
@@ -72,12 +86,28 @@
                 "type": "uint256"
             },
             {
-                "name": "additionalValidationContract",
-                "type": "address"
+                "name": "exclusivity",
+                "type": "uint32"
             },
             {
-                "name": "additionalValidationData",
-                "type": "bytes"
+                "name": "epoch",
+                "type": "uint32"
+            },
+            {
+                "name": "slippage",
+                "type": "uint32"
+            },
+            {
+                "name": "freshness",
+                "type": "uint32"
+            },
+            {
+                "name": "input",
+                "type": "Input"
+            },
+            {
+                "name": "output",
+                "type": "Output"
             }
         ],
         "Output": [
@@ -87,6 +117,10 @@
             },
             {
                 "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "name": "maxAmount",
                 "type": "uint256"
             },
             {
@@ -103,61 +137,45 @@
                 "name": "amount",
                 "type": "uint256"
             }
-        ],
-        "EIP712Domain": [
-            {
-                "name": "name",
-                "type": "string"
-            },
-            {
-                "name": "version",
-                "type": "string"
-            },
-            {
-                "name": "chainId",
-                "type": "uint256"
-            },
-            {
-                "name": "verifyingContract",
-                "type": "address"
-            }
         ]
-    },
-    "domain": {
-        "name": "RePermit",
-        "version": "1",
-        "chainId": "146",
-        "verifyingContract": "0xbba2344a886d66f43ac0e9ed980cc14c82715aec"
     },
     "primaryType": "RePermitWitnessTransferFrom",
     "message": {
         "permitted": {
-            "token": "0x6047828dc181963ba44974801ff68e538da5eaf9",
-            "amount": "38734546"
+            "token": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+            "amount": "60545869945725502414"
         },
-        "spender": "0x8963992816b4eafe5a22b7db2a99513c18be9afa",
-        "nonce": "196",
-        "deadline": "1756820846",
+        "spender": "0xc19E284C8f5ccef721a761d0CA18dc8E9a612aFd",
+        "nonce": "1757937585657000",
+        "deadline": "1757938834",
         "witness": {
-            "info": {
-                "reactor": "0xc19e284c8f5ccef721a761d0ca18dc8e9a612afd",
-                "swapper": "0x50015a452e644f5511fbeeac6b2ad2bf154e40e4",
-                "nonce": "196",
-                "deadline": "1756820846",
-                "additionalValidationContract": "0xbba2344a886d66f43ac0e9ed980cc14c82715aec",
-                "additionalValidationData": "0x"
+            "reactor": "0xc19E284C8f5ccef721a761d0CA18dc8E9a612aFd",
+            "executor": "0x9B350b26B82F3c088e1C0C345a904ee5EB655E15",
+            "exchange": {
+                "adapter": "0x1A2bb6B75D58b740d88413ef4840D6fa3F637940",
+                "ref": "0xfeE0000a55d378afbcbBAEAEf29b58F8872b7F02",
+                "share": "5000",
+                "data": "0x"
             },
-            "exclusiveFiller": "0xc19e284c8f5ccef721a761d0ca18dc8e9a612afd",
-            "exclusivityOverrideBps": "100",
+            "swapper": "0x50015A452E644F5511fbeeac6B2aD2bf154E40E4",
+            "nonce": "1757937585657000",
+            "deadline": "1757938834",
+            "exclusivity": "0",
+            "epoch": "300",
+            "slippage": "50",
+            "freshness": "10",
             "input": {
-                "token": "0x6047828dc181963ba44974801ff68e538da5eaf9",
-                "amount": "38734546"
+                "token": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+                "amount": "30272934972862751207",
+                "maxAmount": "60545869945725502414"
             },
             "output": {
-                "token": "0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38",
-                "amount": "116003424977946243987",
-                "recipient": "0x50015a452e644f5511fbeeac6b2ad2bf154e40e4"
+                "token": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+                "amount": "16487545038459458",
+                "maxAmount": "0",
+                "recipient": "0x50015A452E644F5511fbeeac6B2aD2bf154E40E4"
             }
         }
-    }
+    },
+    "account": "0x50015A452E644F5511fbeeac6B2aD2bf154E40E4"
 }

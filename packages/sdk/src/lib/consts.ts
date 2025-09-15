@@ -1,6 +1,6 @@
 import Configs from "@orbs-network/twap/configs.json";
 import { networks } from "./networks";
-import { Config, EIP712TypeName, TimeDuration, TimeUnit } from "./types";
+import { Config, TimeDuration, TimeUnit } from "./types";
 export const API_ENDPOINT = "https://order-sink.orbs.network";
 
 export const SUGGEST_CHUNK_VALUE = 100;
@@ -75,48 +75,139 @@ export const REACTOR_ADDRESS = "0xc19E284C8f5ccef721a761d0CA18dc8E9a612aFd";
 export const EXECUTOR_ADDRESS = "0x9B350b26B82F3c088e1C0C345a904ee5EB655E15";
 export const EXCLUSIVITY_OVERRIDE_BPS = "0";
 
-export const REPERMIT_PRIMARY_TYPE = "RePermitWitnessTransferFrom" as EIP712TypeName;
+export const REPERMIT_PRIMARY_TYPE = "RePermitWitnessTransferFrom";
 
 export const EIP712_TYPES = {
   RePermitWitnessTransferFrom: [
-    { name: "permitted", type: "TokenPermissions" },
-    { name: "spender", type: "address" },
-    { name: "nonce", type: "string" },
-    { name: "deadline", type: "string" },
-    { name: "witness", type: "Order" },
+    {
+      name: "permitted",
+      type: "TokenPermissions",
+    },
+    {
+      name: "spender",
+      type: "address",
+    },
+    {
+      name: "nonce",
+      type: "uint256",
+    },
+    {
+      name: "deadline",
+      type: "uint256",
+    },
+    {
+      name: "witness",
+      type: "Order",
+    },
   ],
-  TokenPermissions: [
-    { name: "token", type: "address" },
-    { name: "amount", type: "string" },
-  ],
-  Order: [
-    { name: "info", type: "OrderInfo" },
-    { name: "exclusiveFiller", type: "address" },
-    { name: "exclusivityOverrideBps", type: "string" },
-    { name: "input", type: "Input" },
-    { name: "output", type: "Output" },
-    { name: "epoch", type: "string" },
-    { name: "slippage", type: "string" },
-    { name: "trigger", type: "string" },
-    { name: "chainId", type: "string" },
-  ],
-  OrderInfo: [
-    { name: "reactor", type: "address" },
-    { name: "swapper", type: "address" },
-    { name: "nonce", type: "string" },
-    { name: "deadline", type: "string" },
-    { name: "additionalValidationContract", type: "address" },
-    { name: "additionalValidationData", type: "string" },
+  Exchange: [
+    {
+      name: "adapter",
+      type: "address",
+    },
+    {
+      name: "ref",
+      type: "address",
+    },
+    {
+      name: "share",
+      type: "uint32",
+    },
+    {
+      name: "data",
+      type: "bytes",
+    },
   ],
   Input: [
-    { name: "token", type: "address" },
-    { name: "amount", type: "string" },
-    { name: "maxAmount", type: "string" },
+    {
+      name: "token",
+      type: "address",
+    },
+    {
+      name: "amount",
+      type: "uint256",
+    },
+    {
+      name: "maxAmount",
+      type: "uint256",
+    },
+  ],
+  Order: [
+    {
+      name: "reactor",
+      type: "address",
+    },
+    {
+      name: "executor",
+      type: "address",
+    },
+    {
+      name: "exchange",
+      type: "Exchange",
+    },
+    {
+      name: "swapper",
+      type: "address",
+    },
+    {
+      name: "nonce",
+      type: "uint256",
+    },
+    {
+      name: "deadline",
+      type: "uint256",
+    },
+    {
+      name: "exclusivity",
+      type: "uint32",
+    },
+    {
+      name: "epoch",
+      type: "uint32",
+    },
+    {
+      name: "slippage",
+      type: "uint32",
+    },
+    {
+      name: "freshness",
+      type: "uint32",
+    },
+    {
+      name: "input",
+      type: "Input",
+    },
+    {
+      name: "output",
+      type: "Output",
+    },
   ],
   Output: [
-    { name: "token", type: "address" },
-    { name: "amount", type: "string" },
-    { name: "recipient", type: "address" },
-    { name: "maxAmount", type: "string" },
+    {
+      name: "token",
+      type: "address",
+    },
+    {
+      name: "amount",
+      type: "uint256",
+    },
+    {
+      name: "maxAmount",
+      type: "uint256",
+    },
+    {
+      name: "recipient",
+      type: "address",
+    },
+  ],
+  TokenPermissions: [
+    {
+      name: "token",
+      type: "address",
+    },
+    {
+      name: "amount",
+      type: "uint256",
+    },
   ],
 };

@@ -1,5 +1,5 @@
 import { EXCLUSIVITY_OVERRIDE_BPS, EXECUTOR_ADDRESS, REACTOR_ADDRESS, REPERMIT_ADDRESS } from "./consts";
-import { Address, BuildRePermitOrderDataProps, OrderData } from "./types";
+import { Address, BuildRePermitOrderDataProps, RePermitWitnessTransferFrom } from "./types";
 import { safeBNString } from "./utils";
 
 export const buildRePermitOrderData = ({
@@ -14,12 +14,13 @@ export const buildRePermitOrderData = ({
   srcAmountPerChunk,
   dstMinAmountPerChunk,
   triggerAmountPerChunk,
+  exchangeAddress,
 }: BuildRePermitOrderDataProps) => {
   const nonce = (Date.now() * 1000).toString();
   const epoch = safeBNString(fillDelayMillis / 1000);
   const deadline = safeBNString(deadlineMilliseconds / 1000);
 
-  const orderData: OrderData = {
+  const orderData: RePermitWitnessTransferFrom = {
     permitted: {
       token: srcToken as Address,
       amount: srcAmount,
@@ -28,17 +29,21 @@ export const buildRePermitOrderData = ({
     nonce: nonce,
     deadline: deadline,
     witness: {
-      info: {
-        reactor: REACTOR_ADDRESS,
-        swapper: account as Address,
-        nonce: nonce,
-        deadline: deadline,
-        additionalValidationContract: EXECUTOR_ADDRESS,
-        additionalValidationData: "0x",
+      reactor: REACTOR_ADDRESS,
+      executor: EXECUTOR_ADDRESS,
+      exchange: {
+        adapter: exchangeAddress as Address,
+        ref: "0xfeE0000a55d378afbcbBAEAEf29b58F8872b7F02",
+        share: "5000",
+        data: "0x",
       },
-
-      exclusiveFiller: EXECUTOR_ADDRESS,
-      exclusivityOverrideBps: EXCLUSIVITY_OVERRIDE_BPS,
+      swapper: account as Address,
+      nonce: nonce,
+      deadline: deadline,
+      exclusivity: EXCLUSIVITY_OVERRIDE_BPS,
+      epoch,
+      slippage: slippage.toString(),
+      freshness: "10",
       input: {
         token: srcToken as Address,
         amount: srcAmountPerChunk,
@@ -50,11 +55,6 @@ export const buildRePermitOrderData = ({
         maxAmount: triggerAmountPerChunk || "",
         recipient: account as Address,
       },
-
-      epoch,
-      slippage: slippage.toString(),
-      trigger: triggerAmountPerChunk || "",
-      chainId: chainId.toString(),
     },
   };
 
@@ -64,8 +64,6 @@ export const buildRePermitOrderData = ({
     chainId: chainId,
     verifyingContract: REPERMIT_ADDRESS as Address,
   };
-
-  console.log({ orderData });
 
   return {
     domain,

@@ -1,5 +1,5 @@
 import { API_ENDPOINT } from "./consts";
-import { OrderData } from "./types";
+import { RePermitWitnessTransferFrom } from "./types";
 
 function parseViemSignature(signature: string) {
   // Remove 0x prefix
@@ -13,13 +13,15 @@ function parseViemSignature(signature: string) {
   return { v, r, s };
 }
 
-export const submitOrder = async (order: OrderData, signature: string) => {
+export const submitOrder = async (order: RePermitWitnessTransferFrom, signature: string) => {
   const body = {
     signature: parseViemSignature(signature),
     order,
     status: "pending",
   };
-  console.log("body", body);
+  console.log("order", order);
+  console.log("signature", signature);
+  console.log("parsed signature", parseViemSignature(signature));
 
   const response = await fetch(`${API_ENDPOINT}/orders`, {
     method: "POST",

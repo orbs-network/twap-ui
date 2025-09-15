@@ -1,3 +1,5 @@
+import { EIP712_TYPES } from "./consts";
+
 export type Config = {
   chainName: string;
   chainId: number;
@@ -111,6 +113,7 @@ export type BuildRePermitOrderDataProps = {
   srcAmountPerChunk: string;
   dstMinAmountPerChunk?: string;
   triggerAmountPerChunk?: string;
+  exchangeAddress: string;
 };
 export type Address = `0x${string}`;
 export type Hex = `0x${string}`;
@@ -121,36 +124,33 @@ export interface TokenPermissions {
   amount: string;
 }
 
-export interface Input {
-  token: Address;
-  amount: string;
-  maxAmount: string;
-}
-
-export interface Output {
-  token: Address;
-  amount: string;
-  maxAmount: string;
-  recipient: Address;
-}
-
-export interface PermitDataOrderInfo {
+export interface PermitDataOrder {
   reactor: Address;
+  executor: Address;
+  exchange: {
+    adapter: Address;
+    ref: Address;
+    share: string;
+    data: Hex;
+  };
   swapper: Address;
   nonce: string;
   deadline: string;
-  additionalValidationContract: Address;
-  additionalValidationData: Hex; // bytes
-}
-
-export interface PermitDataOrder {
-  info: PermitDataOrderInfo;
-  exclusiveFiller: Address;
-  exclusivityOverrideBps: string;
+  exclusivity: string;
   epoch: string;
   slippage: string;
-  input: Input;
-  output: Output;
+  freshness: string;
+  input: {
+    token: Address;
+    amount: string;
+    maxAmount: string;
+  };
+  output: {
+    token: Address;
+    amount: string;
+    maxAmount: string;
+    recipient: Address;
+  };
 }
 
 export interface RePermitWitnessTransferFrom {
@@ -161,16 +161,6 @@ export interface RePermitWitnessTransferFrom {
   witness: PermitDataOrder;
 }
 
-// EIP-712 "types" descriptor (for signTypedData)
-export type EIP712TypeName = "TokenPermissions" | "Input" | "Output" | "OrderInfo" | "Order" | "RePermitWitnessTransferFrom";
-
-export interface EIP712Field {
-  name: string;
-  type: string;
-}
-
-export type EIP712Types = Record<EIP712TypeName, EIP712Field[]>;
-
 // Full typed-data container
 export interface RePermitTypedData {
   domain: {
@@ -180,7 +170,7 @@ export interface RePermitTypedData {
     verifyingContract: Address;
   };
   primaryType: "RePermitWitnessTransferFrom";
-  types: EIP712Types;
+  types: typeof EIP712_TYPES;
   message: RePermitWitnessTransferFrom;
 }
 
@@ -189,43 +179,6 @@ export type Signature = {
   r: `0x${string}`;
   s: `0x${string}`;
 };
-
-export interface OrderData {
-  permitted: {
-    token: Address;
-    amount: string;
-  };
-  spender: Address;
-  nonce: string;
-  deadline: string;
-  witness: {
-    info: {
-      reactor: Address;
-      swapper: Address;
-      nonce: string;
-      deadline: string;
-      additionalValidationContract: Address;
-      additionalValidationData: Hex;
-    };
-    exclusiveFiller: Address;
-    exclusivityOverrideBps: string;
-    input: {
-      token: Address;
-      amount: string;
-      maxAmount: string;
-    };
-    output: {
-      token: Address;
-      amount: string;
-      recipient: Address;
-      maxAmount: string;
-    };
-    epoch: string;
-    slippage: string;
-    trigger: string;
-    chainId: string;
-  };
-}
 
 export type RawOrder = {
   Contract_id: string | number;

@@ -9,7 +9,7 @@ import { useTriggerAmountPerChunk } from "./use-trigger-amount-per-chunk";
 import { buildRePermitOrderData, getNetwork, isNativeAddress } from "@orbs-network/twap-sdk";
 
 export const useBuildRePermitOrderDataCallback = () => {
-  const { srcToken, dstToken, chainId, account, slippage: _slippage } = useTwapContext();
+  const { srcToken, dstToken, chainId, account, slippage: _slippage, config } = useTwapContext();
   const srcAmountWei = useSrcAmount().amountWei;
   const srcChunkAmount = useSrcChunkAmount().amountWei;
   const deadlineMillis = useDeadline();
@@ -36,6 +36,7 @@ export const useBuildRePermitOrderDataCallback = () => {
       srcAmountPerChunk: srcChunkAmount,
       dstMinAmountPerChunk,
       triggerAmountPerChunk,
+      exchangeAddress: config.exchangeAddress,
     });
-  }, [srcToken, dstToken, chainId, account, srcAmountWei, deadlineMillis, srcChunkAmount, triggerAmountPerChunk, slippage, dstMinAmountPerChunk, fillDelay]);
+  }, [srcToken, dstToken, chainId, account, srcAmountWei, deadlineMillis, srcChunkAmount, triggerAmountPerChunk, slippage, dstMinAmountPerChunk, fillDelay, config]);
 };

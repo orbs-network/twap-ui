@@ -27,6 +27,14 @@ const useSignOrder = () => {
 
     const { orderData, domain } = buildRePermitOrderData();
 
+    console.log({
+      domain,
+      types: EIP712_TYPES,
+      primaryType: REPERMIT_PRIMARY_TYPE,
+      message: orderData as Record<string, any>,
+      account: account as `0x${string}`,
+    });
+
     console.log(`Using domain:`, domain);
     console.log(`Using types:`, EIP712_TYPES);
     console.log(`Order data to sign:`, JSON.stringify(orderData, null, 2));
@@ -65,7 +73,6 @@ const useCreateOrder = () => {
         dstAmount: dstAmount!,
       });
       const { signature, orderData } = await signOrder.mutateAsync();
-      console.log({ signature, orderData });
 
       await submitOrder(orderData, signature || "");
       // analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
