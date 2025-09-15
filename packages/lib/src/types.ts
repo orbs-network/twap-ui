@@ -453,7 +453,6 @@ export type Overrides = {
   minChunkSizeUsd?: number;
   translations?: Partial<Translations>;
   numberFormat?: (value: number | string) => string;
-  feesDisabled?: boolean;
 };
 
 export interface TwapProps {
@@ -474,6 +473,7 @@ export interface TwapProps {
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   overrides?: Overrides;
   callbacks?: Callbacks;
+  fees?: number;
 }
 
 export interface TwapContextType extends TwapProps {
@@ -528,24 +528,30 @@ export enum Steps {
   UNWRAP = "unwrap",
 }
 
-export interface State {
-  swapStatus?: SwapStatus;
-  fetchingAllowance?: boolean;
-  activeStep?: Steps;
-  currentStepIndex?: number;
-  swapError?: string;
-  createOrderTxHash?: string;
+export type Swap = {
+  status?: SwapStatus;
+  error?: string;
+  step?: Steps;
+  stepIndex?: number;
   approveTxHash?: string;
   wrapTxHash?: string;
-  unwrapTxHash?: string;
   totalSteps?: number;
-  swapIndex: number;
+  srcAmount?: string;
+  dstAmount?: string;
+  srcToken?: Token;
+  dstToken?: Token;
+  srcUsdAmount?: string;
+  dstUsdAmount?: string;
+};
+
+export interface State {
+  fetchingAllowance?: boolean;
+  unwrapTxHash?: string;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   typedSrcAmount?: string;
-  acceptedDstAmount?: string;
   typedChunks?: number;
-  typedFillDelay: TimeDuration;
+  typedFillDelay?: TimeDuration;
   typedDuration?: TimeDuration;
   typedLimitPrice?: string;
   typedTriggerPrice?: string;
@@ -563,6 +569,8 @@ export interface State {
   selectedOrderID?: string;
   showOrderHistory?: boolean;
   orderHIstoryStatusFilter?: OrderStatus;
+
+  swap: Swap;
 }
 
 export { SwapStatus };

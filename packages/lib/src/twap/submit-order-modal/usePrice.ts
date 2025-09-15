@@ -1,17 +1,18 @@
-import { useTwapStore } from "../../useTwapStore";
 import { useMemo } from "react";
 import BN from "bignumber.js";
+import { useSwap } from "../../hooks/use-swap";
 
 export const useTradePrice = () => {
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
+  const {
+    swap: { dstAmount, srcAmount },
+  } = useSwap();
 
   const price = useMemo(
     () =>
-      BN(acceptedDstAmount || 0)
-        .dividedBy(typedSrcAmount || 0)
+      BN(dstAmount || 0)
+        .dividedBy(srcAmount || 0)
         .toString(),
-    [acceptedDstAmount, typedSrcAmount],
+    [dstAmount, srcAmount],
   );
 
   return price;

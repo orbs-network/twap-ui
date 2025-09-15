@@ -8,34 +8,26 @@ import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { useUnwrapToken } from "./use-unwrap";
 import { useWrapOnly } from "./use-wrap-only";
 import BN from "bignumber.js";
-import { useDstAmount } from "./use-dst-amount";
 import { useCallback } from "react";
+import { useSwap } from "./use-swap";
 
 const useConfirm = () => {
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const updateState = useTwapStore((s) => s.updateState);
-  const dstAmount = useDstAmount().amountUI;
+  const { swap, resetSwap } = useSwap();
 
   return useCallback(() => {
     updateState({ showConfirmation: true });
-    if (swapStatus === SwapStatus.LOADING) {
-      return;
+    if (swap?.status !== SwapStatus.LOADING) {
+      resetSwap();
     }
-
-    if (swapStatus === SwapStatus.FAILED) {
-      updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
-    }
-    updateState({
-      acceptedDstAmount: dstAmount,
-    });
-  }, [updateState, dstAmount, swapStatus]);
+  }, [updateState, swap, resetSwap]);
 };
 
 export const useOnOpenConfirmationButton = () => {
   const { srcUsd1Token, translations: t, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity, account } = useTwapContext();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const swapStatus = useTwapStore((s) => s.state.swap?.status);
 
   const minChunkSizeUsd = useMinChunkSizeUsd();
   const balanceError = useBalanceError();

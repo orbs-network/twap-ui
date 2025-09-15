@@ -14,6 +14,7 @@ import { analytics, EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/tw
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
 import { useDstAmount } from "./use-dst-amount";
 import { TransactionReceipt } from "viem";
+import { useSwap } from "./use-swap";
 
 const useSignOrder = () => {
   const { account, walletClient, chainId } = useTwapContext();
@@ -48,7 +49,6 @@ const useSignOrder = () => {
 
 const useCreateOrder = () => {
   const { account, walletClient, chainId, dstToken, srcToken } = useTwapContext();
-  const updateState = useTwapStore((s) => s.updateState);
   const signOrder = useSignOrder();
   const srcAmount = useSrcAmount().amountUI;
   const dstAmount = useDstAmount().amountUI;
@@ -70,7 +70,6 @@ const useCreateOrder = () => {
       await submitOrder(orderData, signature || "");
       // analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
 
-      updateState({ createOrderTxHash: "" });
       callbacks?.createOrder?.onSuccess?.({
         srcToken: srcToken!,
         dstToken: dstToken!,
@@ -100,11 +99,12 @@ export const useSubmitOrder = () => {
   const wrapCallback = useWrapToken().mutateAsync;
   const createOrderCallback = useCreateOrder().mutateAsync;
   const srcAmount = useSrcAmount().amountWei;
+  const { initSwap, updateSwap } = useSwap();
 
   return useMutation(async (callbacks?: SwapCallbacks) => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
     let wrapSuccess = false;
-
+    initSwap();
     try {
       if (!srcToken || !dstToken || !chainId) {
         throw new Error("missing required parameters");
@@ -120,35 +120,35 @@ export const useSubmitOrder = () => {
       let totalSteps = 1;
       if (wrapRequired) totalSteps++;
       if (approvalRequired) totalSteps++;
-
-      updateState({ swapStatus: SwapStatus.LOADING, totalSteps, fetchingAllowance: false });
+      updateState({ fetchingAllowance: false });
+      updateSwap({ status: SwapStatus.LOADING, totalSteps, stepIndex });
 
       if (wrapRequired) {
-        updateState({ activeStep: Steps.WRAP });
-        await wrapCallback({ amount: srcAmount, callbacks });
+        updateSwap({ step: Steps.WRAP });
+        await wrapCallback({ amount: srcAmount, callbacks, onHash: (hash) => updateSwap({ wrapTxHash: hash }) });
         stepIndex++;
-        updateState({ currentStepIndex: stepIndex });
+        updateSwap({ stepIndex });
         wrapSuccess = true;
       }
 
       if (approvalRequired) {
-        updateState({ activeStep: Steps.APPROVE });
-        await approveCallback({ token: srcToken, amount: srcAmount, callbacks });
+        updateSwap({ step: Steps.APPROVE });
+        await approveCallback({ token: srcToken, amount: srcAmount, callbacks, onHash: (hash) => updateSwap({ approveTxHash: hash }) });
         stepIndex++;
-        updateState({ currentStepIndex: stepIndex });
+        updateSwap({ stepIndex });
       }
-      updateState({ activeStep: Steps.CREATE });
+      updateSwap({ step: Steps.CREATE });
       const order = await createOrderCallback(callbacks);
 
-      updateState({ swapStatus: SwapStatus.SUCCESS });
+      updateSwap({ status: SwapStatus.SUCCESS });
       return order;
     } catch (error) {
       if (wrapSuccess) {
-        updateState({ activeStep: Steps.UNWRAP, swapStatus: SwapStatus.FAILED, currentStepIndex: undefined });
+        updateSwap({ step: Steps.UNWRAP, status: SwapStatus.FAILED, stepIndex: undefined });
       } else if (isTxRejected(error)) {
-        updateState({ activeStep: undefined, swapStatus: undefined, currentStepIndex: undefined });
+        updateSwap({ step: undefined, status: undefined, stepIndex: undefined });
       } else {
-        updateState({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message });
+        updateSwap({ status: SwapStatus.FAILED, error: (error as any).message });
       }
     }
   });

@@ -1,7 +1,6 @@
 import { amountUi, analytics, iwethabi } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
-import { useTwapStore } from "../useTwapStore";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import BN from "bignumber.js";
 import { useNetwork } from "./helper-hooks";
@@ -9,11 +8,10 @@ import { SwapCallbacks } from "../types";
 
 export const useWrapToken = () => {
   const { account, walletClient, publicClient, overrides } = useTwapContext();
-  const updateState = useTwapStore((s) => s.updateState);
   const wToken = useNetwork()?.wToken;
   const getTransactionReceipt = useGetTransactionReceipt();
 
-  return useMutation(async ({ amount, callbacks }: { amount: string; callbacks?: SwapCallbacks }) => {
+  return useMutation(async ({ amount, callbacks, onHash }: { amount: string; callbacks?: SwapCallbacks; onHash?: (hash: string) => void }) => {
     if (!account || !walletClient || !publicClient) {
       throw new Error("missing required parameters");
     }
@@ -38,8 +36,7 @@ export const useWrapToken = () => {
           chain: walletClient.chain,
         });
       }
-      updateState({ wrapTxHash: hash });
-
+      onHash?.(hash);
       const receipt = await getTransactionReceipt(hash);
       if (!receipt) {
         throw new Error("failed to get transaction receipt");

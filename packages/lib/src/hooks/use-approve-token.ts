@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { useTwapStore } from "../useTwapStore";
 import { useTwapContext } from "../context";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { SwapCallbacks, Token } from "../types";
@@ -11,11 +10,10 @@ import BN from "bignumber.js";
 
 export const useApproveToken = () => {
   const { account, walletClient, publicClient, overrides, chainId } = useTwapContext();
-  const updateState = useTwapStore((s) => s.updateState);
   const getTransactionReceipt = useGetTransactionReceipt();
   const { refetch: refetchAllowance } = useEnsureAllowanceCallback();
 
-  return useMutation(async ({ token: _token, amount, callbacks }: { token: Token; amount: string; callbacks?: SwapCallbacks }) => {
+  return useMutation(async ({ token: _token, amount, callbacks, onHash }: { token: Token; amount: string; callbacks?: SwapCallbacks; onHash: (hash: string) => void }) => {
     if (!account || !walletClient || !publicClient || !chainId) {
       throw new Error("missing required parameters");
     }
@@ -37,7 +35,7 @@ export const useApproveToken = () => {
           chain: walletClient.chain,
         });
       }
-      updateState({ approveTxHash: hash });
+      onHash(hash);
       const receipt = await getTransactionReceipt(hash);
 
       if (!receipt) {

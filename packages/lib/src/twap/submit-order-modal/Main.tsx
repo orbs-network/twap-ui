@@ -5,7 +5,7 @@ import { OrderDetails } from "../../components/order-details";
 import { useTwapStore } from "../../useTwapStore";
 import { useChunks } from "../../hooks/use-chunks";
 import { useFillDelay } from "../../hooks/use-fill-delay";
-import { useAmountUi, useUsdAmount } from "../../hooks/helper-hooks";
+import { useAmountUi } from "../../hooks/helper-hooks";
 import { useDstMinAmountPerChunk } from "../../hooks/use-dst-min-amount-out-per-chunk";
 import { useDeadline } from "../../hooks/use-deadline";
 import { useSrcChunkAmount } from "../../hooks/use-src-chunk-amount";
@@ -17,6 +17,7 @@ import { useLimitPrice } from "../../hooks/use-limit-price";
 import { FC } from "react";
 import { LabelProps } from "../../types";
 import { useSubmitOrderPanelContext } from "./context";
+import { useSwap } from "../../hooks/use-swap";
 
 const Price = () => {
   const { srcToken, dstToken, translations: t } = useTwapContext();
@@ -42,15 +43,13 @@ const FillDelaySummary = () => {
 };
 
 export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; isLoading: boolean }) => {
-  const { translations, srcUsd1Token, dstUsd1Token } = useTwapContext();
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const acceptedDstAmount = useTwapStore((s) => s.state.acceptedDstAmount);
-  const srcAmountUsd = useUsdAmount(srcAmount, srcUsd1Token);
-  const dstAmountUsd = useUsdAmount(acceptedDstAmount, dstUsd1Token);
+  const { translations } = useTwapContext();
+  const {
+    swap: { srcUsdAmount, dstUsdAmount },
+  } = useSwap();
 
-  const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
-  const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: srcUsdAmount, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: dstUsdAmount, decimalScale: 2 });
   const { Label, USD, reviewDetails, Button, MainView } = useSubmitOrderPanelContext();
   if (MainView) {
     return MainView;
@@ -61,10 +60,10 @@ export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; 
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
-        inUsd={USD ? <USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
-        outUsd={USD ? <USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
+        inUsd={USD ? <USD value={srcUsdAmount || ""} isLoading={false} /> : `$${inUsd}`}
+        outUsd={USD ? <USD value={dstUsdAmount || ""} isLoading={false} /> : `$${outUsd}`}
       />
-      {!swapStatus && (
+      {!status && (
         <div className="twap-create-order-bottom">
           <FillDelaySummary />
           <Details Label={Label} />
@@ -79,10 +78,10 @@ export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; 
 };
 
 const Details = ({ Label }: { Label: FC<LabelProps> }) => {
-  const fee = useFees();
+  const {amount: feeAmount, percent: feePercent} = useFees();
   const { dstToken } = useTwapContext();
 
-  const feeAmountF = useFormatNumber({ value: fee.amountUI, decimalScale: 2 });
+  const feeAmountF = useFormatNumber({ value: feeAmount, decimalScale: 2 });
   return (
     <OrderDetails.Container Label={Label}>
       <div className="twap-create-order-details">
@@ -90,7 +89,7 @@ const Details = ({ Label }: { Label: FC<LabelProps> }) => {
         <LimitModuleDetails />
         <StopLossModuleDetails />
         <TwapModuleDetails />
-        {fee && <OrderDetails.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
+        {feeAmount && <OrderDetails.DetailRow title={`Fee (${feePercent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
       </div>
     </OrderDetails.Container>
   );

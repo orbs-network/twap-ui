@@ -401,4 +401,25 @@ export const networks = {
     explorer: "https://explorer.katana.garden", // placeholder — replace with actual if known
     eip1559: true,
   },
+  bera: {
+    id: 80094,
+    name: "Bera",
+    shortname: "bera",
+    native: {
+      address: zeroAddress,
+      symbol: "BERA",
+      decimals: 18,
+      logoUrl: "https://berascan.com/token/images/bera_ofc_64.png",
+    },
+    wToken: {
+      symbol: "WBERA",
+      address: "0x6969696969696969696969696969696969696969", // standard L2 WETH address (example, verify if custom)
+      decimals: 18,
+      logoUrl: "https://berascan.com/token/images/wrappedbera_ofc_64.png",
+    },
+    publicRpcUrl: "wss://rpc.berachain-apis.com",
+    logoUrl: "https://katana.network/assets/katana-logo.svg",
+    explorer: "https://berascan.com", // placeholder — replace with actual if known
+    eip1559: true,
+  },
 };

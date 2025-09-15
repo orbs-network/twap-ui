@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { State } from "./types";
+import { State, Swap } from "./types";
 import { useCallback } from "react";
 
 interface TwapStore {
@@ -11,6 +11,7 @@ interface TwapStore {
 const initialState = {
   disclaimerAccepted: true,
   currentTime: Date.now(),
+  swap: {} as Swap,
 } as State;
 
 export const useTwapStore = create<TwapStore>((set, get) => ({
@@ -21,7 +22,7 @@ export const useTwapStore = create<TwapStore>((set, get) => ({
       state: {
         ...initialState,
         currentTime: Date.now(),
-        acceptedDstAmount: get().state.acceptedDstAmount,
+        swap: get().state.swap,
         isMarketOrder: get().state.isMarketOrder,
       },
     });

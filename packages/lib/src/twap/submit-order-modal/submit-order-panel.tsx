@@ -12,6 +12,7 @@ import { useOrderExecutionFlow } from "../../hooks/use-confirmation";
 import { SubmitOrderContextProvider, useSubmitOrderPanelContext } from "./context";
 import { Failed } from "./Failed";
 import { Main } from "./Main";
+import { useSwap } from "../../hooks/use-swap";
 
 const useTitle = () => {
   const { translations: t } = useTwapContext();
@@ -23,36 +24,34 @@ const useTitle = () => {
 
 const useStep = () => {
   const { translations: t, srcToken } = useTwapContext();
-  const activeStep = useTwapStore((s) => s.state.activeStep);
-  const wrapTxHash = useTwapStore((s) => s.state.wrapTxHash);
-  const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
-  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
+  const {
+    swap: { step, wrapTxHash, approveTxHash },
+  } = useSwap();
   const network = useNetwork();
   const wrapExplorerUrl = useExplorerLink(wrapTxHash);
   const unwrapExplorerUrl = useExplorerLink(wrapTxHash);
 
   const approveExplorerUrl = useExplorerLink(approveTxHash);
-  const createOrderExplorerUrl = useExplorerLink(createOrderTxHash);
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
   const wSymbol = network?.wToken.symbol;
   const swapTitle = useTitle();
 
   return useMemo((): Step | undefined => {
-    if (activeStep === Steps.UNWRAP) {
+    if (step === Steps.UNWRAP) {
       return {
         title: t.unwrapAction.replace("{symbol}", wSymbol || ""),
         explorerUrl: unwrapExplorerUrl,
         hideTokens: true,
       };
     }
-    if (activeStep === Steps.WRAP) {
+    if (step === Steps.WRAP) {
       return {
         title: t.wrapAction.replace("{symbol}", symbol),
         explorerUrl: wrapExplorerUrl,
       };
     }
-    if (activeStep === Steps.APPROVE) {
+    if (step === Steps.APPROVE) {
       return {
         title: t.approveAction?.replace("{symbol}", symbol),
         explorerUrl: approveExplorerUrl,
@@ -60,22 +59,20 @@ const useStep = () => {
     }
     return {
       title: swapTitle,
-      explorerUrl: createOrderExplorerUrl,
     };
-  }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol]);
+  }, [step, approveExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol]);
 };
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const totalSteps = useTwapStore((s) => s.state.totalSteps);
-  const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
+  const {
+    swap: { status, stepIndex, totalSteps },
+  } = useSwap();
   const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link, callbacks } = props;
 
   const {
     orderDetails: { srcAmount, dstAmount, srcToken, dstToken },
     onSubmitOrder: onSubmitOrderCallback,
     isLoading,
-    explorerUrl,
   } = useOrderExecutionFlow();
 
   const onSubmitOrder = useCallback(() => {
@@ -85,12 +82,12 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   return (
     <SubmitOrderContextProvider {...props}>
       <SwapFlowComponent
-        swapStatus={swapStatus}
+        swapStatus={status}
         totalSteps={totalSteps}
         currentStep={useStep()}
-        currentStepIndex={currentStepIndex}
+        currentStepIndex={stepIndex}
         failedContent={<Failed />}
-        successContent={<SuccessContent explorerUrl={explorerUrl} />}
+        successContent={<SuccessContent />}
         mainContent={<Main isLoading={Boolean(isLoading)} onSubmitOrder={onSubmitOrder} />}
         LoadingView={LoadingView}
         srcAmount={srcAmount}

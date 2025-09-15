@@ -1,35 +1,37 @@
 import { isTxRejected } from "../../utils";
 import { SwapFlow, SwapStatus } from "@orbs-network/swap-ui";
 import { useNetwork } from "../../hooks/helper-hooks";
-import { useTwapStore } from "../../useTwapStore";
 import { useUnwrapToken } from "../../hooks/use-unwrap";
 import { useCallback } from "react";
 import { useTwapContext } from "../../context";
 import { useSubmitOrderPanelContext } from "./context";
+import { useSwap } from "../../hooks/use-swap";
 
 const TxError = ({ error }: { error?: any }) => {
-  const activeStep = useTwapStore((s) => s.state.activeStep);
+  const {
+    swap: { step },
+    updateSwap,
+  } = useSwap();
   const { mutateAsync: unwrap, isLoading } = useUnwrapToken();
   const network = useNetwork();
-  const updateState = useTwapStore((s) => s.updateState);
   const t = useTwapContext().translations;
   const { Button } = useSubmitOrderPanelContext();
 
   const onUnwrap = useCallback(async () => {
     try {
-      updateState({ swapStatus: SwapStatus.LOADING, totalSteps: 1, currentStepIndex: 0 });
+      updateSwap({ status: SwapStatus.LOADING, totalSteps: 1, stepIndex: 0 });
       await unwrap();
-      updateState({ swapStatus: SwapStatus.SUCCESS });
+      updateSwap({ status: SwapStatus.SUCCESS });
     } catch (error) {
       if (isTxRejected(error)) {
-        updateState({ swapStatus: SwapStatus.FAILED });
+        updateSwap({ status: SwapStatus.FAILED });
       } else {
-        updateState({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message, activeStep: undefined });
+        updateSwap({ status: SwapStatus.FAILED, error: (error as any).message, step: undefined });
       }
     }
-  }, [unwrap, updateState]);
+  }, [unwrap, updateSwap]);
 
-  if (!activeStep) return null;
+  if (!step) return null;
 
   return (
     <div className="twap-failed-unwrap">

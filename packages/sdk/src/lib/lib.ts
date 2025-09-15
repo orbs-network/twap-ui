@@ -58,16 +58,17 @@ export const getChunks = (maxPossibleChunks: number, module: Module, typedChunks
   if (typedChunks !== undefined) return typedChunks;
   return maxPossibleChunks;
 };
-
-export const getMaxPossibleChunks = (typedSrcAmount?: string, oneSrcTokenUsd?: string, minChunkSizeUsd?: number) => {
+export const getMaxPossibleChunks = (fillDelay: TimeDuration, typedSrcAmount?: string, oneSrcTokenUsd?: string, minChunkSizeUsd?: number) => {
   if (!typedSrcAmount || !oneSrcTokenUsd || !minChunkSizeUsd) return 1;
-  const amount = BN(oneSrcTokenUsd).times(typedSrcAmount);
 
-  const res = BN.max(1, amount.div(minChunkSizeUsd)).integerValue(BN.ROUND_FLOOR).toNumber();
+  const totalUsd = BN(oneSrcTokenUsd).times(typedSrcAmount);
 
-  return res > 1 ? res : 1;
+  const maxChunksBySize = totalUsd.div(minChunkSizeUsd).integerValue(BN.ROUND_FLOOR).toNumber();
+
+  const maxChunksByTime = Math.floor(MAX_ORDER_DURATION_MILLIS / 2 / getTimeDurationMillis(fillDelay));
+
+  return Math.max(1, Math.min(maxChunksBySize, maxChunksByTime));
 };
-
 export const getFillDelay = (customFillDelay?: TimeDuration) => {
   if (customFillDelay) {
     return customFillDelay;

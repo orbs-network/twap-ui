@@ -4,6 +4,7 @@ import { InputError, InputErrors } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { getChunks, getMaxChunksError, getMaxPossibleChunks } from "@orbs-network/twap-sdk";
+import { useFillDelay } from "./use-fill-delay";
 
 export const useChunksError = () => {
   const { module } = useTwapContext();
@@ -57,8 +58,9 @@ const useMaxChunks = () => {
   const { srcUsd1Token } = useTwapContext();
   const minChunkSizeUsd = useMinChunkSizeUsd();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const fillDelay = useFillDelay().fillDelay;
 
-  return useMemo(() => getMaxPossibleChunks(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, minChunkSizeUsd]);
+  return useMemo(() => getMaxPossibleChunks(fillDelay, typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, minChunkSizeUsd, fillDelay]);
 };
 
 export const useChunksPanel = () => {

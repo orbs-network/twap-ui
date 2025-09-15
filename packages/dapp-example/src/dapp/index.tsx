@@ -713,6 +713,7 @@ export const Dapp = () => {
         dstBalance={useTokenBalance(dstToken).data?.wei}
         marketReferencePrice={marketReferencePrice}
         account={account}
+        fees={0.25}
       >
         <div className="flex flex-col gap-4 justify-center items-center max-w-[450px] w-full">
           <PanelToggle />

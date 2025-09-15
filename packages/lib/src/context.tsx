@@ -1,18 +1,12 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { amountBN, analytics } from "@orbs-network/twap-sdk";
+import { analytics } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType, Translations } from "./types";
 import defaultTranslations from "./i18n/en.json";
 import { initiateWallet } from "./lib";
 import { useListener } from "./hooks/use-default-values";
-import { useTwapStore } from "./useTwapStore";
 import { useAllowanceListener } from "./hooks/use-allowance";
 import { ErrorBoundary } from "react-error-boundary";
-import { useDuration } from "./hooks/use-duration";
-import { useChunks } from "./hooks/use-chunks";
-import { useFillDelay } from "./hooks/use-fill-delay";
-import { useTriggerPrice } from "./hooks/use-trigger-price";
-import { useLimitPrice } from "./hooks/use-limit-price";
 
 const TwapFallbackUI = () => {
   return (
