@@ -78,7 +78,7 @@ export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; 
 };
 
 const Details = ({ Label }: { Label: FC<LabelProps> }) => {
-  const {amount: feeAmount, percent: feePercent} = useFees();
+  const { amount: feeAmount, percent: feePercent } = useFees();
   const { dstToken } = useTwapContext();
 
   const feeAmountF = useFormatNumber({ value: feeAmount, decimalScale: 2 });

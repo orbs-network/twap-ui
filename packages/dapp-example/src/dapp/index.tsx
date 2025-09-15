@@ -3,7 +3,6 @@ import { NumberInput, Popup, PanelToggle } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar, Checkbox } from "antd";
 import {
-  TooltipProps,
   TWAP,
   SelectMenuProps,
   useFormatNumber,
