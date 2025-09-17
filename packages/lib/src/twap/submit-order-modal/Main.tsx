@@ -17,7 +17,7 @@ import { useLimitPrice } from "../../hooks/use-limit-price";
 import { FC } from "react";
 import { LabelProps } from "../../types";
 import { useSubmitOrderPanelContext } from "./context";
-import { useSwap } from "../../hooks/use-swap";
+import { useDerivedSwap } from "../../hooks/use-derived-swap";
 
 const Price = () => {
   const { srcToken, dstToken, translations: t } = useTwapContext();
@@ -44,13 +44,11 @@ const FillDelaySummary = () => {
 
 export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; isLoading: boolean }) => {
   const { translations } = useTwapContext();
-  const {
-    swap: { srcUsdAmount, dstUsdAmount },
-  } = useSwap();
-
+  const { srcUsdAmount, dstUsdAmount, isSubmitted } = useDerivedSwap();
+  const { Button } = useSubmitOrderPanelContext();
   const inUsd = useFormatNumber({ value: srcUsdAmount, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstUsdAmount, decimalScale: 2 });
-  const { Label, USD, reviewDetails, Button, MainView } = useSubmitOrderPanelContext();
+  const { Label, USD, reviewDetails, MainView } = useSubmitOrderPanelContext();
   if (MainView) {
     return MainView;
   }
@@ -63,7 +61,7 @@ export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; 
         inUsd={USD ? <USD value={srcUsdAmount || ""} isLoading={false} /> : `$${inUsd}`}
         outUsd={USD ? <USD value={dstUsdAmount || ""} isLoading={false} /> : `$${outUsd}`}
       />
-      {!status && (
+      {!isSubmitted && (
         <div className="twap-create-order-bottom">
           <FillDelaySummary />
           <Details Label={Label} />

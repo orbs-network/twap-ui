@@ -1,36 +1,20 @@
-import { useCallback, useMemo } from "react";
-import { Swap } from "../types";
+import { useMemo } from "react";
 import { useTwapStore } from "../useTwapStore";
 import { useTwapContext } from "../context";
-import { useUsdAmount } from "./helper-hooks";
-import { useDstAmount } from "./use-dst-amount";
 import { useSrcAmount } from "./use-src-amount";
+import { useDstAmount } from "./use-dst-amount";
+import { useUsdAmount } from "./helper-hooks";
 
-export const useSwap = () => {
-  const updateState = useTwapStore((s) => s.updateState);
+export function useDerivedSwap() {
   const { srcToken, dstToken, srcUsd1Token, dstUsd1Token } = useTwapContext();
+
   const srcAmount = useSrcAmount().amountUI;
   const dstAmount = useDstAmount().amountUI;
   const srcUsdAmount = useUsdAmount(srcAmount, srcUsd1Token);
   const dstUsdAmount = useUsdAmount(dstAmount, dstUsd1Token);
-
   const state = useTwapStore((s) => s.state);
-  const resetSwap = useCallback(() => updateState({ swap: {} as Swap }), [updateState, state]);
 
-  const updateSwap = useCallback((data: Partial<Swap>) => updateState({ swap: { ...state.swap, ...data } }), [updateState, state]);
-
-  const initSwap = useCallback(() => {
-    updateSwap({
-      srcToken,
-      dstToken,
-      srcAmount,
-      dstAmount,
-      srcUsdAmount,
-      dstUsdAmount,
-    });
-  }, [updateSwap, srcToken, dstToken, srcAmount, dstAmount, srcUsdAmount, dstUsdAmount]);
-
-  const swap = useMemo((): Swap => {
+  return useMemo(() => {
     return {
       status: state.swap.status,
       error: state.swap.error,
@@ -45,8 +29,7 @@ export const useSwap = () => {
       dstToken: state.swap.dstToken || dstToken,
       srcUsdAmount: state.swap.srcUsdAmount || srcUsdAmount,
       dstUsdAmount: state.swap.dstUsdAmount || dstUsdAmount,
+      isSubmitted: Boolean(state.swap.status),
     };
   }, [state.swap, srcAmount, dstAmount, srcToken, dstToken, srcUsdAmount, dstUsdAmount]);
-
-  return { resetSwap, initSwap, updateSwap, swap };
-};
+}

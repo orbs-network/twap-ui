@@ -5,17 +5,16 @@ import { useUnwrapToken } from "../../hooks/use-unwrap";
 import { useCallback } from "react";
 import { useTwapContext } from "../../context";
 import { useSubmitOrderPanelContext } from "./context";
-import { useSwap } from "../../hooks/use-swap";
+import { useDerivedSwap } from "../../hooks/use-derived-swap";
+import { useTwapStore } from "../../useTwapStore";
 
 const TxError = ({ error }: { error?: any }) => {
-  const {
-    swap: { step },
-    updateSwap,
-  } = useSwap();
+  const { step } = useDerivedSwap();
   const { mutateAsync: unwrap, isLoading } = useUnwrapToken();
   const network = useNetwork();
   const t = useTwapContext().translations;
   const { Button } = useSubmitOrderPanelContext();
+  const updateSwap = useTwapStore((s) => s.updateSwap);
 
   const onUnwrap = useCallback(async () => {
     try {

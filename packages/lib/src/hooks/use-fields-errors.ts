@@ -7,6 +7,7 @@ import { useFillDelayError } from "./use-fill-delay";
 import { useSrcChunkAmountError } from "./use-src-chunk-amount";
 import { useLimitPriceError } from "./use-limit-price";
 import { useDurationError } from "./use-duration";
+import { useBalanceError } from "./use-balance-error";
 
 export const useFieldsErrors = () => {
   const { marketPrice } = useTwapContext();
@@ -17,7 +18,9 @@ export const useFieldsErrors = () => {
   const srcChunkAmountError = useSrcChunkAmountError();
   const limitPriceError = useLimitPriceError();
   const triggerPriceError = useTriggerPriceError();
+  const balanceError = useBalanceError();
+
   if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()) return;
 
-  return triggerPriceError || limitPriceError || chunksError || fillDelayError || srcChunkAmountError || orderDurationError;
+  return balanceError || triggerPriceError || limitPriceError || chunksError || fillDelayError || srcChunkAmountError || orderDurationError;
 };

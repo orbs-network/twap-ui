@@ -2,19 +2,24 @@ import { useMemo } from "react";
 import { useTwapContext } from "../context";
 import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
 import BN from "bignumber.js";
+import { InputErrors } from "../types";
 
 export const useBalanceError = () => {
   const maxSrcInputAmount = useMaxSrcAmount();
   const { translations: t, srcBalance } = useTwapContext();
   const srcAmountWei = useSrcAmount().amountWei;
 
-  // return useMemo(() => {
-  //   const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
+  const error = useMemo(() => {
+    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
 
-  //   if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
-  //     return t.insufficientFunds;
-  //   }
-  // }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
+    return (srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax;
+  }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
 
-  return undefined;
+  if (error) {
+    return {
+      type: InputErrors.INSUFFICIENT_BALANCE,
+      message: t.insufficientFunds,
+      value: srcBalance,
+    };
+  }
 };

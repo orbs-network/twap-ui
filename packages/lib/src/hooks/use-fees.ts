@@ -1,14 +1,12 @@
 import { useMemo } from "react";
 import { useTwapContext } from "../context";
 import BN from "bignumber.js";
-import { useSwap } from "./use-swap";
+import { useDerivedSwap } from "./use-derived-swap";
 
 export const useFees = () => {
   const { fees } = useTwapContext();
 
-  const {
-    swap: { dstAmount },
-  } = useSwap();
+  const { dstAmount } = useDerivedSwap();
 
   const amount = useMemo(() => {
     if (!fees || !dstAmount) return "";

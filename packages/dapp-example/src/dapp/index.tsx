@@ -8,7 +8,7 @@ import {
   useFormatNumber,
   useLimitPriceToggle,
   useChunkSizeMessage,
-  useOnOpenConfirmationButton,
+  useOpenSubmitModalButton,
   useFillDelayPanel,
   useDurationPanel,
   DEFAULT_DURATION_OPTIONS,
@@ -29,11 +29,11 @@ import {
   useInvertTrade,
   useTriggerPriceWarning,
   SelectMeuItem,
-  useOrderExecutionFlow,
   useTranslation,
   ButtonProps,
   SubmitOrderPanel,
   LabelProps,
+  useSubmitSwapPanel,
 } from "@orbs-network/twap-ui";
 import { Config, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -67,27 +67,43 @@ const OrderHistoryModal = () => {
 };
 
 const SubmitOrderPanelModal = () => {
-  const { onDisclaimerChange, disclaimerAccepted, isOpen, onClose } = useOrderExecutionFlow();
+  const { onCloseModal, onOpenModal, isSubmitted } = useSubmitSwapPanel();
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onOpen = useCallback(() => {
+    onOpenModal();
+    setIsOpen(true);
+  }, [onOpenModal]);
+
+  const onClose = useCallback(() => {
+    onCloseModal();
+    setIsOpen(false);
+  }, [onCloseModal]);
+
   return (
-    <Popup isOpen={isOpen} onClose={onClose}>
-      <SubmitOrderPanel
-        Button={TwapButton}
-        Label={Label}
-        reviewDetails={
-          <>
-            <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
-              <Flex align="center" gap={6}>
-                Accept{" "}
-                <a href={DISCLAIMER_URL} target="_blank" rel="noreferrer">
-                  Disclaimer
-                </a>
+    <>
+      <Popup isOpen={isOpen} onClose={onClose}>
+        <SubmitOrderPanel
+          Button={TwapButton}
+          Label={Label}
+          reviewDetails={
+            <>
+              <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
+                <Flex align="center" gap={6}>
+                  Accept{" "}
+                  <a href={DISCLAIMER_URL} target="_blank" rel="noreferrer">
+                    Disclaimer
+                  </a>
+                </Flex>
+                <Switch checked={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Flex>
-              <Switch checked={disclaimerAccepted} onChange={() => onDisclaimerChange(!disclaimerAccepted)} />
-            </Flex>
-          </>
-        }
-      />
-    </Popup>
+            </>
+          }
+        />
+      </Popup>
+      {!isSubmitted && <ConfirmationButton onClick={onOpen} />}
+    </>
   );
 };
 
@@ -160,12 +176,12 @@ export const useSwitchChain = () => {
     (config: Config) => {
       (walletClient as any)?.switchChain({ id: config.chainId });
     },
-    [walletClient],
+    [walletClient]
   );
 };
 
-const ConfirmationButton = () => {
-  const { onClick, text, disabled: _disabled } = useOnOpenConfirmationButton();
+const ConfirmationButton = ({ onClick }: { onClick: () => void }) => {
+  const { text, disabled: _disabled } = useOpenSubmitModalButton();
   const { address, chainId } = useAccount();
   const { openConnectModal } = useConnectModal();
   const switchChain = useSwitchChain();
@@ -385,7 +401,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
       setIsCustom(value);
       setDuration(defaultDuration);
     },
-    [setDuration, isCustom, defaultDuration],
+    [setDuration, isCustom, defaultDuration]
   );
 
   const customSelected = SELECT_DURATION_OPTIONS.find((it) => {
@@ -504,7 +520,7 @@ const SymbolInput = ({ token, onChange, value, error, isLoading }: { token?: Tok
     <div
       className={clsx(
         "flex flex-row gap-1 justify-between items-center  bg-[rgba(255,255,255,0.05)] rounded-[12px] border border-solid px-3 py-2 flex-1",
-        error ? "border-[#FF0000]" : "border-transparent",
+        error ? "border-[#FF0000]" : "border-transparent"
       )}
     >
       <p className="text-[14px] text-white font-medium">{token?.symbol}</p>
@@ -726,7 +742,6 @@ export const Dapp = () => {
           <PanelInputs />
           {twap && <TradeAmountMessage />}
           <InputsError />
-          <ConfirmationButton />
           <SubmitOrderPanelModal />
           <OrderHistoryModal />
           <WarningMessage />

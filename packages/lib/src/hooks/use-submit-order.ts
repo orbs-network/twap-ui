@@ -14,7 +14,6 @@ import { analytics, EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/tw
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
 import { useDstAmount } from "./use-dst-amount";
 import { TransactionReceipt } from "viem";
-import { useSwap } from "./use-swap";
 
 const useSignOrder = () => {
   const { account, walletClient, chainId } = useTwapContext();
@@ -102,16 +101,15 @@ export const useSubmitOrder = () => {
   const { srcToken, dstToken, chainId } = useTwapContext();
   const { ensure: ensureAllowance } = useEnsureAllowanceCallback();
   const updateState = useTwapStore((s) => s.updateState);
+  const updateSwap = useTwapStore((s) => s.updateSwap);
   const approveCallback = useApproveToken().mutateAsync;
   const wrapCallback = useWrapToken().mutateAsync;
   const createOrderCallback = useCreateOrder().mutateAsync;
   const srcAmount = useSrcAmount().amountWei;
-  const { initSwap, updateSwap } = useSwap();
 
   return useMutation(async (callbacks?: SwapCallbacks) => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
     let wrapSuccess = false;
-    initSwap();
     try {
       if (!srcToken || !dstToken || !chainId) {
         throw new Error("missing required parameters");

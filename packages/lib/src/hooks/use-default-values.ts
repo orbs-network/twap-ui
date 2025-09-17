@@ -57,7 +57,6 @@ export const useListener = () => {
         typedDuration: formatDuration(state?.duration),
         typedFillDelay: formatDuration(state?.fillDelay),
         isMarketOrder: module === Module.TWAP ? state?.isMarketOrder : false,
-        disclaimerAccepted: state?.disclaimerAccepted,
       });
       updatedRef.current = true;
     }

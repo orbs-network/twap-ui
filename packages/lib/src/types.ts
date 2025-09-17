@@ -330,6 +330,7 @@ export enum InputErrors {
   TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
   TAKE_PROFIT_TRIGGER_PRICE_LESS_THAN_MARKET_PRICE,
   EMPTY_TRIGGER_PRICE,
+  INSUFFICIENT_BALANCE,
 }
 
 type Callbacks = {
@@ -395,7 +396,6 @@ export type GetAllowanceProps = {
 
 export type InitialState = {
   isMarketOrder?: boolean;
-  disclaimerAccepted?: boolean;
   inputAmount?: string;
   chunks?: number;
   fillDelay?: number;
@@ -547,8 +547,6 @@ export type Swap = {
 export interface State {
   fetchingAllowance?: boolean;
   unwrapTxHash?: string;
-  showConfirmation?: boolean;
-  disclaimerAccepted?: boolean;
   typedSrcAmount?: string;
   typedChunks?: number;
   typedFillDelay?: TimeDuration;

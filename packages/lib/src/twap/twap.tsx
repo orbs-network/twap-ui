@@ -6,7 +6,6 @@ import { useOrderHistoryPanel, useOrders } from "../hooks/order-hooks";
 import { DEFAULT_DURATION_OPTIONS } from "./consts";
 import { useResetState } from "../useTwapStore";
 import { useFieldsErrors } from "../hooks/use-fields-errors";
-import { useOrderExecutionFlow } from "../hooks/use-confirmation";
 import { useInvertTrade } from "../hooks/use-invert-trade";
 import { useMarketPricePanel } from "../hooks/use-market-price-panel";
 import { useLimitPricePanel } from "../hooks/use-limit-price";
@@ -16,10 +15,11 @@ import { useFillDelayPanel } from "../hooks/use-fill-delay";
 import { useDurationPanel } from "../hooks/use-duration";
 import { useChunkSizeMessage, useDisclaimerMessage, useTriggerPriceWarning } from "../hooks/use-message";
 import { useChunksPanel } from "../hooks/use-chunks";
-import { useOnOpenConfirmationButton } from "../hooks/use-open-confirmation-button";
 import { useTriggerPricePanel } from "../hooks/use-trigger-price";
 import { useTranslation } from "../hooks/use-translation";
 import { OrderHistory } from "./orders/Orders";
+import { useOpenSubmitModalButton } from "../hooks/use-open-submit-modal-button";
+import { useSubmitSwapPanel } from "../hooks/use-submit-swap-panel";
 
 const TWAP = (props: TwapProps) => {
   return (
@@ -41,7 +41,6 @@ export {
   useDurationPanel,
   useChunkSizeMessage,
   useChunksPanel,
-  useOnOpenConfirmationButton,
   useLimitPricePanel,
   useFieldsErrors,
   useDisclaimerMessage,
@@ -50,8 +49,9 @@ export {
   useTriggerPricePanel,
   useInvertTrade,
   useTriggerPriceWarning,
-  useOrderExecutionFlow,
   useTranslation,
+  useOpenSubmitModalButton,
+  useSubmitSwapPanel,
   ORBS_WEBSITE_URL,
   ORBS_LOGO,
   DEFAULT_DURATION_OPTIONS,

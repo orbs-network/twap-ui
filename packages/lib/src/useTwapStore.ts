@@ -5,6 +5,7 @@ import { useCallback } from "react";
 interface TwapStore {
   resetState: () => void;
   updateState: (value: Partial<State>) => void;
+  updateSwap: (value: Partial<Swap>) => void;
   state: State;
 }
 
@@ -17,6 +18,8 @@ const initialState = {
 export const useTwapStore = create<TwapStore>((set, get) => ({
   state: initialState,
   updateState: (value: Partial<State>) => set((state) => ({ state: { ...state.state, ...value } })),
+  updateSwap: (data: Partial<Swap>) => set((state) => ({ state: { ...state.state, swap: { ...state.state.swap, ...data } } })),
+
   resetState: () => {
     set({
       state: {

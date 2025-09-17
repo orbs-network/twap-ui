@@ -1,5 +1,5 @@
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { useTwapContext } from "../../context";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Steps, SubmitOrderPanelProps } from "../../types";
@@ -8,11 +8,11 @@ import { SwapFlowComponent } from "../swap-flow";
 import { useChunks } from "../../hooks/use-chunks";
 import { useOrderName } from "../../hooks/order-hooks";
 import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
-import { useOrderExecutionFlow } from "../../hooks/use-confirmation";
 import { SubmitOrderContextProvider, useSubmitOrderPanelContext } from "./context";
 import { Failed } from "./Failed";
 import { Main } from "./Main";
-import { useSwap } from "../../hooks/use-swap";
+import { useDerivedSwap } from "../../hooks/use-derived-swap";
+import { useSubmitSwapPanel } from "../twap";
 
 const useTitle = () => {
   const { translations: t } = useTwapContext();
@@ -24,9 +24,7 @@ const useTitle = () => {
 
 const useStep = () => {
   const { translations: t, srcToken } = useTwapContext();
-  const {
-    swap: { step, wrapTxHash, approveTxHash },
-  } = useSwap();
+  const { step, wrapTxHash, approveTxHash } = useDerivedSwap();
   const network = useNetwork();
   const wrapExplorerUrl = useExplorerLink(wrapTxHash);
   const unwrapExplorerUrl = useExplorerLink(wrapTxHash);
@@ -64,20 +62,11 @@ const useStep = () => {
 };
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
-  const {
-    swap: { status, stepIndex, totalSteps },
-  } = useSwap();
+  const { status, stepIndex, totalSteps } = useDerivedSwap();
   const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link, callbacks } = props;
 
-  const {
-    orderDetails: { srcAmount, dstAmount, srcToken, dstToken },
-    onSubmitOrder: onSubmitOrderCallback,
-    isLoading,
-  } = useOrderExecutionFlow();
+  const { srcAmount, dstAmount, srcToken, dstToken, onSubmitOrder, isLoading } = useSubmitSwapPanel(callbacks);
 
-  const onSubmitOrder = useCallback(() => {
-    onSubmitOrderCallback(callbacks);
-  }, [callbacks]);
 
   return (
     <SubmitOrderContextProvider {...props}>
