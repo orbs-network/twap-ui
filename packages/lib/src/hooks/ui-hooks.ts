@@ -19,6 +19,7 @@ import {
   useOrderDuration,
   useOrderDurationError,
   useOrderName,
+  useOriginalPriceDiffFromMarketPercent,
   usePriceDiffFromMarketPercent,
   useShouldOnlyWrap,
   useShouldUnwrap,
@@ -204,6 +205,7 @@ export const useLimitPricePanel = () => {
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const usd = useLimitPanelUsd();
+  const originalPriceDiffFromMarket = useOriginalPriceDiffFromMarketPercent();
 
   return {
     tokens,
@@ -215,6 +217,7 @@ export const useLimitPricePanel = () => {
     usd,
     isLimitOrder: !isMarketOrder,
     hide: isMarketOrder || panel === "STOP_LOSS",
+    originalPriceDiffFromMarket,
   };
 };
 

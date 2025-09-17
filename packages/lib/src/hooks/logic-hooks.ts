@@ -334,6 +334,24 @@ export const usePriceDiffFromMarketPercent = () => {
   }, [limitPrice, marketPrice, isInvertedPrice]);
 };
 
+export const useOriginalPriceDiffFromMarketPercent = () => {
+  const { marketPrice } = useTwapContext();
+  const limitPrice = useLimitPrice().amountWei;
+  return useMemo(() => {
+    // Validate inputs
+    if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(marketPrice).isZero()) {
+      return "";
+    }
+
+    // Determine comparison direction
+    const from = limitPrice;
+    const to = marketPrice;
+
+    // Calculate percentage difference
+    return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_UP).toFixed();
+  }, [limitPrice, marketPrice]);
+};
+
 export const useMaxSrcInputAmount = () => {
   const { srcToken, config, srcBalance } = useTwapContext();
 

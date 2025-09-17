@@ -252,11 +252,13 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const LimitPanel = () => {
-  const { input, usd, isInverted, percent, onInvert, hide } = useLimitPricePanel();
+  const { input, usd, isInverted, percent, onInvert, hide, originalPriceDiffFromMarket } = useLimitPricePanel();
   const { setSrcToken, setDstToken, srcToken, dstToken } = useDappStore();
   const onSelect = isInverted ? setSrcToken : setDstToken;
   const topToken = isInverted ? dstToken : srcToken;
   const bottomToken = isInverted ? srcToken : dstToken;
+
+  console.log({ originalPriceDiffFromMarket });
 
   if (hide) return null;
   return (
