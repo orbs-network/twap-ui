@@ -505,7 +505,7 @@ export const Dapp = () => {
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         customMinChunkSizeUsd={1}
-        marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false }}
+        marketReferencePrice={{ value: marketPrice || "1000", isLoading: marketPriceLoading, noLiquidity: false }}
         OrderHistory={{
           Panel: OrderHistoryModal,
           SelectMenu: SelectMenu,
