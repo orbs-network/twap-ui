@@ -18,8 +18,8 @@ export const useMarketPricePanel = () => {
   }, [invert, marketPrice, srcToken?.decimals, dstToken?.decimals]);
 
   return {
-    leftToken: invert ? dstToken : srcToken,
-    rightToken: invert ? srcToken : dstToken,
+    sellToken: invert ? dstToken : srcToken,
+    buyToken: invert ? srcToken : dstToken,
     price,
     onInvert: useCallback(() => setInvert(!invert), [invert]),
   };

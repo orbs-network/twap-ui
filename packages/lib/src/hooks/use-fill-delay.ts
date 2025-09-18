@@ -1,14 +1,11 @@
-import { getFillDelay, getMaxFillDelayError, getMinFillDelayError, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { getFillDelay, getMaxFillDelayError, getMinFillDelayError, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
-import { DEFAULT_DURATION_OPTIONS, InputError, InputErrors, millisToDays, millisToMinutes } from "..";
-import { useChunks } from "./use-chunks";
+import { InputError, InputErrors, millisToDays, millisToMinutes } from "..";
 
-export const useFillDelayError = () => {
+const useFillDelayError = (chunks: number, fillDelay: TimeDuration) => {
   const { translations: t } = useTwapContext();
-  const { chunks } = useChunks();
-  const fillDelay = useFillDelay().fillDelay;
 
   const maxFillDelayError = useMemo((): InputError | undefined => {
     const { isError, value } = getMaxFillDelayError(fillDelay, chunks);
@@ -33,45 +30,15 @@ export const useFillDelayError = () => {
   return maxFillDelayError || minFillDelayError;
 };
 
-export const useFillDelay = () => {
+export const useFillDelay = (chunks: number) => {
   const typedFillDelay = useTwapStore((s) => s.state.typedFillDelay);
   const updateState = useTwapStore((s) => s.updateState);
   const fillDelay = useMemo(() => getFillDelay(typedFillDelay), [typedFillDelay]);
+  const error = useFillDelayError(chunks, fillDelay);
 
   return {
     fillDelay,
-    setFillDelay: useCallback((typedFillDelay: TimeDuration) => updateState({ typedFillDelay }), [updateState]),
-  };
-};
-
-export const useFillDelayPanel = () => {
-  const { setFillDelay, fillDelay } = useFillDelay();
-  const error = useFillDelayError();
-  const { translations: t } = useTwapContext();
-
-  const onInputChange = useCallback(
-    (value: string) => {
-      setFillDelay({ unit: fillDelay.unit, value: Number(value) });
-    },
-    [setFillDelay, fillDelay],
-  );
-
-  const onUnitSelect = useCallback(
-    (unit: TimeUnit) => {
-      setFillDelay({ unit, value: fillDelay.value });
-    },
-    [setFillDelay, fillDelay],
-  );
-
-  return {
-    onInputChange,
-    onUnitSelect,
-    setFillDelay,
-    milliseconds: fillDelay.unit * fillDelay.value,
-    fillDelay,
+    onChange: useCallback((typedFillDelay: TimeDuration) => updateState({ typedFillDelay }), [updateState]),
     error,
-    title: t.tradeIntervalTitle,
-    tooltip: t.tradeIntervalTootlip,
-    units: DEFAULT_DURATION_OPTIONS,
   };
 };

@@ -7,14 +7,6 @@ import { useTwapContext } from "../context";
 import { Module, OrderHistoryCallbacks, Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTwapStore } from "../useTwapStore";
-import { getOrderType } from "../utils";
-import { useChunks } from "./use-chunks";
-
-export const useOrderType = () => {
-  const { chunks } = useChunks();
-  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  return useMemo(() => getOrderType(isMarketOrder || false, chunks), [chunks, isMarketOrder]);
-};
 
 export const useOrderName = (isMarketOrder = false, chunks = 1) => {
   const { translations: t, module } = useTwapContext();

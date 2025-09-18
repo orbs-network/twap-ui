@@ -1,20 +1,17 @@
-import { getDuration, getMaxOrderDurationError, getMinOrderDurationError, Module, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { getDuration, getMaxFillDelayError, getMaxOrderDurationError, getMinOrderDurationError, Module, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
-import { useChunks } from "./use-chunks";
-import { useFillDelay } from "./use-fill-delay";
 import { InputError, InputErrors } from "../types";
 import { millisToDays, millisToMinutes } from "../utils";
-import { DEFAULT_DURATION_OPTIONS } from "../twap/consts";
 
-export const useDurationError = () => {
+export const useDurationError = (duration: TimeDuration) => {
   const { translations: t, module } = useTwapContext();
-  const duration = useDuration().duration;
 
   return useMemo((): InputError | undefined => {
     const maxError = getMaxOrderDurationError(module, duration);
     const minError = getMinOrderDurationError(duration);
+
 
     if (maxError.isError) {
       return {
@@ -33,10 +30,8 @@ export const useDurationError = () => {
   }, [duration, t, module]);
 };
 
-export const useDuration = () => {
+export const useDuration = (chunks: number, fillDelay: TimeDuration) => {
   const { module } = useTwapContext();
-  const { chunks } = useChunks();
-  const { fillDelay } = useFillDelay();
   const typedDuration = useTwapStore((s) => s.state.typedDuration);
   const updateState = useTwapStore((s) => s.updateState);
   const duration = useMemo(() => getDuration(module, chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, module]);
@@ -47,10 +42,10 @@ export const useDuration = () => {
   };
 };
 
-export const useDurationPanel = () => {
+export const useDurationPanel = (chunks: number, fillDelay: TimeDuration) => {
   const { translations: t, module } = useTwapContext();
-  const { duration, setDuration } = useDuration();
-  const error = useDurationError();
+  const { duration, setDuration } = useDuration(chunks, fillDelay);
+  const error = useDurationError(duration);
 
   const onInputChange = useCallback(
     (value: string) => {
@@ -74,14 +69,13 @@ export const useDurationPanel = () => {
   }, [t, module]);
 
   return {
-    duration,
-    setDuration,
-    durationMillis: duration.unit * duration.value,
+    value: duration,
+    onChange: setDuration,
+    milliseconds: duration.unit * duration.value,
     onInputChange,
     onUnitSelect,
-    title: t.expiry,
+    label: t.expiry,
     tooltip,
     error,
-    units: DEFAULT_DURATION_OPTIONS,
   };
 };

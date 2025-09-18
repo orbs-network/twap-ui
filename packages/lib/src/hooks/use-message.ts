@@ -20,26 +20,6 @@ export const useDisclaimerMessage = () => {
   }, [isMarketOrder, t]);
 };
 
-export const useChunkSizeMessage = () => {
-  const { usd: chunkSize, amountUI: amountUI } = useSrcChunkAmount();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const { chunks } = useChunks();
-  const chunkSizeError = useSrcChunkAmountError();
-  const error = !typedSrcAmount ? false : chunkSizeError;
-  const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
-  const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });
-  const { srcToken, module } = useTwapContext();
-  const isZero = module === Module.LIMIT || !srcToken || BN(amountUI || 0).eq(0) || BN(chunkSize || 0).eq(0) || !chunks;
-  return {
-    hide: module === Module.LIMIT || !srcToken,
-    tokenAmount: isZero ? "0" : amountUIF,
-    usdAmount: isZero ? "0" : chunkSizeF,
-    error,
-    token: srcToken,
-    zeroAmount: isZero,
-  };
-};
-
 export const useTriggerPriceWarning = () => {
   const { triggerPricePercent } = useTwapStore((s) => s.state);
   const { translations: t, module } = useTwapContext();

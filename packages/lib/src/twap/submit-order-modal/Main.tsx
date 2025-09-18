@@ -3,21 +3,20 @@ import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 import { OrderDetails } from "../../components/order-details";
 import { useTwapStore } from "../../useTwapStore";
-import { useChunks } from "../../hooks/use-chunks";
 import { useFillDelay } from "../../hooks/use-fill-delay";
 import { useAmountUi } from "../../hooks/helper-hooks";
 import { useDstMinAmountPerChunk } from "../../hooks/use-dst-min-amount-out-per-chunk";
 import { useDeadline } from "../../hooks/use-deadline";
-import { useSrcChunkAmount } from "../../hooks/use-src-chunk-amount";
-import { useFees } from "../../hooks/use-fees";
 import { Module } from "@orbs-network/twap-sdk";
 import { useTriggerPrice } from "../../hooks/use-trigger-price";
 import { useTradePrice } from "../../hooks/use-trade-price";
 import { useLimitPrice } from "../../hooks/use-limit-price";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { LabelProps } from "../../types";
 import { useSubmitOrderPanelContext } from "./context";
 import { useDerivedSwap } from "../../hooks/use-derived-swap";
+import BN from "bignumber.js";
+import { useUserContext } from "../../user-context";
 
 const Price = () => {
   const { srcToken, dstToken, translations: t } = useTwapContext();
@@ -36,16 +35,16 @@ const Price = () => {
 };
 
 const FillDelaySummary = () => {
-  const chunks = useChunks().chunks;
-  const { fillDelay } = useFillDelay();
+  const { panels } = useUserContext();
+  const fillDelay = panels.fillDelay.value;
+  const chunks = panels.chunks.value;
   const fillDelayMillis = fillDelay.unit * fillDelay.value;
   return <OrderDetails.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
 };
 
-export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; isLoading: boolean }) => {
+export const Main = () => {
   const { translations } = useTwapContext();
   const { srcUsdAmount, dstUsdAmount, isSubmitted } = useDerivedSwap();
-  const { Button } = useSubmitOrderPanelContext();
   const inUsd = useFormatNumber({ value: srcUsdAmount, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstUsdAmount, decimalScale: 2 });
   const { Label, USD, reviewDetails, MainView } = useSubmitOrderPanelContext();
@@ -70,6 +69,21 @@ export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; 
       )}
     </>
   );
+};
+const useFees = () => {
+  const { fees } = useTwapContext();
+
+  const { dstAmount } = useDerivedSwap();
+
+  const amount = useMemo(() => {
+    if (!fees || !dstAmount) return "";
+    return BN(dstAmount).multipliedBy(fees).dividedBy(100).toFixed();
+  }, [dstAmount]);
+
+  return {
+    amount,
+    percent: fees,
+  };
 };
 
 const Details = ({ Label }: { Label: FC<LabelProps> }) => {
@@ -124,19 +138,20 @@ const StopLossModuleDetails = () => {
 
 const TwapModuleDetails = () => {
   const { srcToken, dstToken, module } = useTwapContext();
-  const srcChunkAmount = useSrcChunkAmount().amountUI;
+  const { panels } = useUserContext();
+  const { amountPerTrade, value: chunks } = panels.chunks;
   const deadline = useDeadline();
 
   const dstMinAmountOut = useDstMinAmountPerChunk().amountUI;
   const { fillDelay } = useFillDelay();
   const fillDelayMillis = fillDelay.unit * fillDelay.value;
-  const chunks = useChunks().chunks;
+
   if (module !== Module.TWAP) return null;
 
   return (
     <>
       <OrderDetails.Expiry deadline={deadline} />
-      <OrderDetails.ChunkSize srcChunkAmount={srcChunkAmount} chunks={chunks} srcToken={srcToken} />
+      <OrderDetails.ChunkSize srcChunkAmount={amountPerTrade} chunks={chunks} srcToken={srcToken} />
       <OrderDetails.ChunksAmount chunks={chunks} />
       <OrderDetails.MinDestAmount totalChunks={chunks} dstToken={dstToken} dstMinAmountOut={dstMinAmountOut} />
       <OrderDetails.TradeInterval chunks={chunks} fillDelayMillis={fillDelayMillis} />

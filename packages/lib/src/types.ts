@@ -295,19 +295,9 @@ export interface Components {
   Button: FC<ButtonProps>;
 }
 
-interface CreateOrderCallbackArgs {
-  srcToken: Token;
-  dstToken: Token;
-  srcAmount: string;
-  dstAmount: string;
-}
 
-interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
-  srcToken: Token;
-  dstToken: Token;
-  srcAmount: string;
-  dstAmount: string;
-  receipt: TransactionReceipt;
+interface CreateOrderSuccessCallbackArgs extends SwapData {
+  receipt?: TransactionReceipt;
 }
 
 export type InputError = {
@@ -344,19 +334,16 @@ type Callbacks = {
 
 export type SwapCallbacks = {
   createOrder?: {
-    onRequest?: (args: CreateOrderCallbackArgs) => void;
+    onRequest?: (args: SwapData) => void;
     onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
-    onFailed?: (error: string) => void;
   };
   approve?: {
     onRequest?: (token: Token, amount: string) => void;
     onSuccess?: (receipt: TransactionReceipt, token: Token, amount: string) => void;
-    onFailed?: (error: string) => void;
   };
   wrap?: {
     onRequest?: (amount: string) => void;
     onSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
-    onFailed?: (error: string) => void;
   };
 };
 
@@ -528,7 +515,16 @@ export enum Steps {
   UNWRAP = "unwrap",
 }
 
-export type Swap = {
+export type SwapData = {
+  srcToken: Token;
+  dstToken: Token;
+  srcAmount: string;
+  dstAmount: string;
+  srcUsdAmount: string;
+  dstUsdAmount: string;
+};
+
+export type Swap = SwapData & {
   status?: SwapStatus;
   error?: string;
   step?: Steps;
@@ -536,12 +532,6 @@ export type Swap = {
   approveTxHash?: string;
   wrapTxHash?: string;
   totalSteps?: number;
-  srcAmount?: string;
-  dstAmount?: string;
-  srcToken?: Token;
-  dstToken?: Token;
-  srcUsdAmount?: string;
-  dstUsdAmount?: string;
 };
 
 export interface State {

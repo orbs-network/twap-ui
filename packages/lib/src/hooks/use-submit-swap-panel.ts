@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Swap, SwapCallbacks, SwapStatus } from "../types";
+import { Swap, SwapCallbacks, SwapData, SwapStatus } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { useTwapContext } from "../context";
 import { useUsdAmount } from "./helper-hooks";
@@ -7,6 +7,7 @@ import { useDstAmount } from "./use-dst-amount";
 import { useSrcAmount } from "./use-src-amount";
 import { useSubmitOrder } from "./use-submit-order";
 import { useDerivedSwap } from "./use-derived-swap";
+import { useMutation } from "@tanstack/react-query";
 
 export const useSubmitSwapPanel = (callbacks?: SwapCallbacks) => {
   const updateSwap = useTwapStore((s) => s.updateSwap);
@@ -33,17 +34,25 @@ export const useSubmitSwapPanel = (callbacks?: SwapCallbacks) => {
     }
   }, [swap, updateSwap]);
 
-  const onSubmitOrder = useCallback(async () => {
-    updateSwap({
-      srcToken,
-      dstToken,
-      srcAmount,
+  const { mutateAsync: onSubmitOrder } = useMutation(async () => {
+    const data: SwapData = {
+      srcToken: srcToken!,
+      dstToken: dstToken!,
+      srcAmount: srcAmount!,
       dstAmount,
       srcUsdAmount,
       dstUsdAmount,
+    };
+    updateSwap(data);
+
+    callbacks?.createOrder?.onRequest?.(data);
+    const result = await submitOrderMutation.mutateAsync(callbacks);
+    callbacks?.createOrder?.onSuccess?.({
+      ...data,
+      receipt: result?.receipt,
     });
-    await submitOrderMutation.mutateAsync(callbacks);
-  }, [srcToken, dstToken, srcAmount, dstAmount, srcUsdAmount, dstUsdAmount, updateSwap, submitOrderMutation, callbacks]);
+    return result;
+  });
 
   return useMemo(() => {
     return {

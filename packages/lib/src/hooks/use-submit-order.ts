@@ -12,8 +12,7 @@ import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { analytics, EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/twap-sdk";
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
-import { useDstAmount } from "./use-dst-amount";
-import { TransactionReceipt } from "viem";
+
 
 const useSignOrder = () => {
   const { account, walletClient, chainId } = useTwapContext();
@@ -55,34 +54,20 @@ const useSignOrder = () => {
 };
 
 const useCreateOrder = () => {
-  const { account, walletClient, chainId, dstToken, srcToken } = useTwapContext();
+  const { account, walletClient, chainId, dstToken } = useTwapContext();
   const signOrder = useSignOrder();
-  const srcAmount = useSrcAmount().amountUI;
-  const dstAmount = useDstAmount().amountUI;
 
-  return useMutation(async (callbacks?: SwapCallbacks) => {
+
+  return useMutation(async () => {
     try {
       if (!account || !walletClient || !chainId || !dstToken) {
         throw new Error("missing required parameters");
       }
-      callbacks?.createOrder?.onRequest?.({
-        srcToken: srcToken!,
-        dstToken: dstToken!,
-        srcAmount: srcAmount!,
-        dstAmount: dstAmount!,
-      });
+   
       const { signature, orderData } = await signOrder.mutateAsync();
 
       await submitOrder(orderData, signature || "");
       // analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
-
-      callbacks?.createOrder?.onSuccess?.({
-        srcToken: srcToken!,
-        dstToken: dstToken!,
-        srcAmount: srcAmount!,
-        dstAmount: dstAmount!,
-        receipt: {} as TransactionReceipt,
-      });
 
       return {
         orderId: 0,
@@ -90,7 +75,6 @@ const useCreateOrder = () => {
       };
     } catch (error) {
       console.error(error);
-      callbacks?.createOrder?.onFailed?.((error as any).message);
       analytics.onCreateOrderError(error);
       throw error;
     }
@@ -130,20 +114,24 @@ export const useSubmitOrder = () => {
 
       if (wrapRequired) {
         updateSwap({ step: Steps.WRAP });
-        await wrapCallback({ amount: srcAmount, callbacks, onHash: (hash) => updateSwap({ wrapTxHash: hash }) });
+        callbacks?.wrap?.onRequest?.(srcAmount);
+        const wrapReceipt = await wrapCallback({ amount: srcAmount, callbacks, onHash: (hash) => updateSwap({ wrapTxHash: hash }) });
         stepIndex++;
         updateSwap({ stepIndex });
         wrapSuccess = true;
+        callbacks?.wrap?.onSuccess?.(wrapReceipt, srcAmount);
       }
 
       if (approvalRequired) {
+        callbacks?.approve?.onRequest?.(srcToken, srcAmount);
         updateSwap({ step: Steps.APPROVE });
-        await approveCallback({ token: srcToken, amount: srcAmount, callbacks, onHash: (hash) => updateSwap({ approveTxHash: hash }) });
+        const approveReceipt = await approveCallback({ token: srcToken, onHash: (hash) => updateSwap({ approveTxHash: hash }) });
+        callbacks?.approve?.onSuccess?.(approveReceipt, srcToken, srcAmount);
         stepIndex++;
         updateSwap({ stepIndex });
       }
       updateSwap({ step: Steps.CREATE });
-      const order = await createOrderCallback(callbacks);
+      const order = await createOrderCallback();
 
       updateSwap({ status: SwapStatus.SUCCESS });
       return order;
