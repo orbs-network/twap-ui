@@ -66,9 +66,6 @@ export const Main = ({ onSubmitOrder, isLoading }: { onSubmitOrder: () => void; 
           <FillDelaySummary />
           <Details Label={Label} />
           {reviewDetails}
-          <Button loading={isLoading} disabled={isLoading} onClick={onSubmitOrder}>
-            {translations.confirmOrder}
-          </Button>
         </div>
       )}
     </>

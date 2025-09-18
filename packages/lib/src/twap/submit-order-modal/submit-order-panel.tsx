@@ -67,7 +67,6 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
 
   const { srcAmount, dstAmount, srcToken, dstToken, onSubmitOrder, isLoading } = useSubmitSwapPanel(callbacks);
 
-
   return (
     <SubmitOrderContextProvider {...props}>
       <SwapFlowComponent

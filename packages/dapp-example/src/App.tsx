@@ -15,38 +15,14 @@ function App() {
       <ConfigProvider
         theme={{
           components: {
-            Table: {
-              colorBgContainer: "#141414",
-              colorText: "#fff",
-              colorLink: "#fff",
-              colorTextHeading: "#fff",
-            },
-            Dropdown: {
-              colorBgElevated: "#141414",
-              colorText: "#fff",
-              colorBorder: "transparent",
-            },
-            Input: {
-              colorBgContainer: "#141414",
-              colorText: "#fff",
-              colorBorder: "transparent",
-            },
             Typography: {
               colorText: "#fff",
-            },
-            Button: {
-              colorText: "#fff",
-              colorTextDisabled: "#fff",
-              colorBgContainerDisabled: "#131313",
-              borderColorDisabled: "transparent",
-              colorBgBase: "#141414",
             },
           },
         }}
       >
         <div className="app">
           <GlobalStyles config={config} />
-          {/* <ToggleTheme /> */}
           <div className="navbar">
             <ConfigSelector />
             <ConnectButton />

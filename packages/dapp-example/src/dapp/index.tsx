@@ -67,7 +67,7 @@ const OrderHistoryModal = () => {
 };
 
 const SubmitOrderPanelModal = () => {
-  const { onCloseModal, onOpenModal, isSubmitted } = useSubmitSwapPanel();
+  const { onCloseModal, onOpenModal, isSubmitted, onSubmitOrder, isLoading } = useSubmitSwapPanel();
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -98,6 +98,9 @@ const SubmitOrderPanelModal = () => {
                 </Flex>
                 <Switch checked={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Flex>
+              <TwapButton onClick={onSubmitOrder} disabled={!disclaimerAccepted} loading={isLoading}>
+                Confirm Order
+              </TwapButton>
             </>
           }
         />
@@ -176,7 +179,7 @@ export const useSwitchChain = () => {
     (config: Config) => {
       (walletClient as any)?.switchChain({ id: config.chainId });
     },
-    [walletClient]
+    [walletClient],
   );
 };
 
@@ -401,7 +404,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
       setIsCustom(value);
       setDuration(defaultDuration);
     },
-    [setDuration, isCustom, defaultDuration]
+    [setDuration, isCustom, defaultDuration],
   );
 
   const customSelected = SELECT_DURATION_OPTIONS.find((it) => {
@@ -520,7 +523,7 @@ const SymbolInput = ({ token, onChange, value, error, isLoading }: { token?: Tok
     <div
       className={clsx(
         "flex flex-row gap-1 justify-between items-center  bg-[rgba(255,255,255,0.05)] rounded-[12px] border border-solid px-3 py-2 flex-1",
-        error ? "border-[#FF0000]" : "border-transparent"
+        error ? "border-[#FF0000]" : "border-transparent",
       )}
     >
       <p className="text-[14px] text-white font-medium">{token?.symbol}</p>
