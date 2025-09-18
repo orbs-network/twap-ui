@@ -9,36 +9,36 @@ import { useFillDelay } from "./use-fill-delay";
 export const useChunksError = () => {
   const { module } = useTwapContext();
   const t = useTwapContext().translations;
-  const { chunks, maxChunks } = useChunks();
+  const { amount, maxAmount } = useChunks();
 
   return useMemo((): InputError | undefined => {
-    if (!chunks) {
+    if (!amount) {
       return {
         type: InputErrors.MIN_CHUNKS,
         value: 1,
         message: `${t.minChunksError} 1`,
       };
     }
-    const { isError } = getMaxChunksError(chunks, maxChunks, module);
+    const { isError } = getMaxChunksError(amount, maxAmount, module);
     if (isError) {
       return {
         type: InputErrors.MAX_CHUNKS,
-        value: maxChunks,
-        message: t.maxChunksError.replace("{maxChunks}", `${maxChunks}`),
+        value: maxAmount,
+        message: t.maxChunksError.replace("{maxChunks}", `${maxAmount}`),
       };
     }
-  }, [chunks, maxChunks, module]);
+  }, [amount, maxAmount, module]);
 };
 
 export const useChunks = () => {
   const { module } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const updateState = useTwapStore((s) => s.updateState);
-  const maxChunks = useMaxChunks();
+  const maxAmount = useMaxChunks();
 
-  const chunks = useMemo(() => getChunks(maxChunks, module, typedChunks), [maxChunks, typedChunks]);
+  const amount = useMemo(() => getChunks(maxAmount, module, typedChunks), [maxAmount, typedChunks]);
 
-  const setChunks = useCallback(
+  const onChange = useCallback(
     (typedChunks: number) => {
       updateState({
         typedChunks,
@@ -48,9 +48,9 @@ export const useChunks = () => {
   );
 
   return {
-    chunks,
-    maxChunks,
-    setChunks,
+    amount,
+    maxAmount,
+    onChange,
   };
 };
 
@@ -65,13 +65,13 @@ const useMaxChunks = () => {
 
 export const useChunksPanel = () => {
   const { translations: t } = useTwapContext();
-  const { setChunks, chunks } = useChunks();
+  const { onChange, amount } = useChunks();
   const error = useChunksError();
 
   return {
     error,
-    trades: chunks,
-    onChange: setChunks,
+    amount,
+    onChange,
     label: t.tradesAmountTitle,
     tooltip: t.totalTradesTooltip,
   };
