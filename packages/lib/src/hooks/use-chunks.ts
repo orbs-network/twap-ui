@@ -9,13 +9,12 @@ import { useSrcAmount } from "./use-src-amount";
 import { useAmountUi } from "./helper-hooks";
 import BN from "bignumber.js";
 
-export const useChunksError = () => {
+export const useChunksError = (amount: number, maxAmount: number) => {
   const { module, srcUsd1Token } = useTwapContext();
   const t = useTwapContext().translations;
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const minChunkSizeUsd = useMinChunkSizeUsd();
 
-  const { amount, maxAmount } = useChunks();
 
   return useMemo((): InputError | undefined => {
     if (!amount) {
@@ -77,8 +76,10 @@ export const useChunks = () => {
     amount,
     maxAmount,
     amountPerTrade: amountPerTradeUI,
+    amountPerTradeWei: amountPerTrade,
     amountPerTradeUsd: usd,
     onChange,
+    error: useChunksError(amount, maxAmount),
   };
 };
 
@@ -91,21 +92,4 @@ const useMaxChunks = () => {
   return useMemo(() => getMaxPossibleChunks(fillDelay, typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, minChunkSizeUsd, fillDelay]);
 };
 
-export const useTradesPanel = () => {
-  const { translations: t, srcToken, dstToken } = useTwapContext();
-  const { onChange, amount, amountPerTradeUsd, amountPerTrade } = useChunks();
 
-  const error = useChunksError();
-
-  return {
-    error,
-    value: amount,
-    amountPerTrade,
-    onChange,
-    label: t.tradesAmountTitle,
-    tooltip: t.totalTradesTooltip,
-    amountPerTradeUsd,
-    sellToken: srcToken,
-    buyToken: dstToken,
-  };
-};

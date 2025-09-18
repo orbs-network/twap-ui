@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { useTwapStore } from "../useTwapStore";
-import { useDuration } from "./use-duration";
 import { getDeadline } from "@orbs-network/twap-sdk";
+import { useUserContext } from "../user-context";
 
 export const useDeadline = () => {
   const currentTime = useTwapStore((s) => s.state.currentTime);
-  const duration = useDuration().duration;
-  const deadline = useMemo(() => getDeadline(currentTime, duration), [currentTime, duration]);
+  const {
+    duration: { value },
+  } = useUserContext();
 
-  return deadline;
+  return useMemo(() => getDeadline(currentTime, value), [currentTime, value]);
 };

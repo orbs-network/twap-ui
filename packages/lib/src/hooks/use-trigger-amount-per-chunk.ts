@@ -1,20 +1,20 @@
 import { useTriggerPrice } from "./use-trigger-price";
 import { useTwapContext } from "../context";
-import { useSrcChunkAmount } from "./use-src-chunk-amount";
 import { useTwapStore } from "../useTwapStore";
 import { useMemo } from "react";
 import { useAmountUi } from "./helper-hooks";
 import { getTriggerPricePerChunk } from "@orbs-network/twap-sdk";
+import { useChunks } from "./use-chunks";
 
 export const useTriggerAmountPerChunk = () => {
   const { srcToken, dstToken, module } = useTwapContext();
   const triggerPrice = useTriggerPrice().amountWei;
-  const srcChunkAmount = useSrcChunkAmount().amountWei;
+  const amountPerTrade = useChunks().amountPerTradeWei;
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
 
   const result = useMemo(() => {
-    return getTriggerPricePerChunk(module, srcChunkAmount, triggerPrice, srcToken?.decimals || 0);
-  }, [triggerPrice, srcChunkAmount, isMarketOrder, srcToken?.decimals, module]);
+    return getTriggerPricePerChunk(module, amountPerTrade, triggerPrice, srcToken?.decimals || 0);
+  }, [triggerPrice, amountPerTrade, isMarketOrder, srcToken?.decimals, module]);
 
   return {
     amountWei: result,

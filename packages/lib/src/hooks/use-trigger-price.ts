@@ -4,18 +4,17 @@ import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { useInputWithPercentage } from "./use-input-with-percentage";
 import { InputError, InputErrors, Module } from "../types";
-import { useInvertTrade } from "./use-invert-trade";
 import { useDefaultTriggerPricePercent } from "./use-default-values";
 import { getStopLossPriceError, getTakeProfitPriceError } from "@orbs-network/twap-sdk";
 
-export const useTriggerPriceError = () => {
+export const useTriggerPriceError = (triggerPriceWei = '') => {
   const { module, marketPrice, translations: t } = useTwapContext();
-  const triggerPrice = useTriggerPrice().amountWei;
+
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
     if (!typedSrcAmount || !marketPrice) return;
     if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) return;
-    const stopLossError = getStopLossPriceError(marketPrice || "", triggerPrice || "", module);
+    const stopLossError = getStopLossPriceError(marketPrice || "", triggerPriceWei || "", module);
     if (stopLossError?.isError) {
       return {
         type: InputErrors.STOP_LOSS_TRIGGER_PRICE_GREATER_THAN_MARKET_PRICE,
@@ -23,7 +22,7 @@ export const useTriggerPriceError = () => {
         message: t.StopLossTriggerPriceError,
       };
     }
-    const takeProfitError = getTakeProfitPriceError(marketPrice || "", triggerPrice || "", module);
+    const takeProfitError = getTakeProfitPriceError(marketPrice || "", triggerPriceWei || "", module);
 
     if (takeProfitError?.isError) {
       return {
@@ -33,14 +32,14 @@ export const useTriggerPriceError = () => {
       };
     }
 
-    if (!triggerPrice || BN(triggerPrice || 0).isZero()) {
+    if (!triggerPriceWei || BN(triggerPriceWei || 0).isZero()) {
       return {
         type: InputErrors.EMPTY_TRIGGER_PRICE,
-        value: triggerPrice,
+        value: triggerPriceWei,
         message: t.emptyTriggerPrice,
       };
     }
-  }, [marketPrice, triggerPrice, module, t, typedSrcAmount]);
+  }, [marketPrice, triggerPriceWei, module, t, typedSrcAmount]);
 };
 
 export const useTriggerPrice = () => {
@@ -63,7 +62,7 @@ export const useTriggerPrice = () => {
   const percentage = typedPercent === undefined ? defaultTriggerPricePercent : typedPercent;
   const enabled = module === Module.STOP_LOSS || module === Module.TAKE_PROFIT;
 
-  return useInputWithPercentage({
+  const result =  useInputWithPercentage({
     typedValue: useTwapStore((s) => s.state.typedTriggerPrice),
     percentage,
     tokenDecimals: dstToken?.decimals,
@@ -71,40 +70,13 @@ export const useTriggerPrice = () => {
     setValue: useCallback((typedTriggerPrice?: string) => updateState({ typedTriggerPrice }), [updateState]),
     setPercentage,
   });
+  const error = useTriggerPriceError(result.amountWei);
+
+  return useMemo(() => {
+    return {
+      ...result,
+      error,
+    };
+  }, [result, error]);
 };
 
-export const useTriggerPricePanel = () => {
-  const { translations: t, srcToken, dstToken, module, marketPrice, marketPriceLoading } = useTwapContext();
-  const { amountUI, onChange, onPercentageChange, usd, percentDiffFromMarketPrice, percentage } = useTriggerPrice();
-  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const updateState = useTwapStore((s) => s.updateState);
-  const error = useTriggerPriceError();
-
-  const { isInverted } = useInvertTrade();
-  const defaultTriggerPricePercent = useDefaultTriggerPricePercent();
-
-  const onSetMarketRate = useCallback(() => {
-    updateState({ triggerPricePercent: null, typedTriggerPrice: undefined });
-  }, [updateState, defaultTriggerPricePercent]);
-
-  const prefixStopsLoss = isInverted ? "+" : "-";
-  const prefixTakeProfit = isInverted ? "-" : "+";
-
-  return {
-    price: amountUI,
-    error,
-    label: t.stopLossLabel,
-    tooltip: t.stopLossTooltip,
-    onChange,
-    onPercentageChange,
-    marketDiffPercentage: percentDiffFromMarketPrice,
-    isActive: !isMarketOrder,
-    onSetMarketRate,
-    usd,
-    srcToken: isInverted ? dstToken : srcToken,
-    dstToken: isInverted ? srcToken : dstToken,
-    selectedPercentage: percentage,
-    prefix: module === Module.STOP_LOSS ? prefixStopsLoss : prefixTakeProfit,
-    isLoading: marketPriceLoading || !marketPrice,
-  };
-};

@@ -555,7 +555,6 @@ export interface State {
   cancelOrderId?: number;
 
   selectedOrderID?: string;
-  showOrderHistory?: boolean;
   orderHIstoryStatusFilter?: OrderStatus;
 
   swap: Swap;

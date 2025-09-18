@@ -1,43 +1,74 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { useTradesPanel } from "./hooks/use-chunks";
-import { useDurationPanel, useFillDelayPanel, useLimitPricePanel, useMarketPricePanel } from "./twap/twap";
 import { useTwapContext } from "./context";
 import { useAmountBN, useAmountUi, useUsdAmount } from "./hooks/helper-hooks";
 import { useTwapStore } from "./useTwapStore";
 import { getDestTokenAmount, getDestTokenMinAmountPerChunk, Module } from "@orbs-network/twap-sdk";
 import { useLimitPrice } from "./hooks/use-limit-price";
 import { useTriggerPrice } from "./hooks/use-trigger-price";
-
-type Panels = {
+import {
+  useDstTokenPanel,
+  useDurationPanel,
+  useFillDelayPanel,
+  useLimitPricePanel,
+  useMarketPriceDisplay,
+  useSrcTokenPanel,
+  useTradesPanel,
+  useTriggerPricePanel,
+} from "./hooks/user-hooks";
+import BN from "bignumber.js";
+import { InputError } from "./types";
+type UserContextType = {
   trades: ReturnType<typeof useTradesPanel>;
   fillDelay: ReturnType<typeof useFillDelayPanel>;
   duration: ReturnType<typeof useDurationPanel>;
   limitPrice: ReturnType<typeof useLimitPricePanel>;
-  marketPrice: ReturnType<typeof useMarketPricePanel>;
-};
-
-type UserContextType = {
-  panels: Panels;
+  marketPrice: ReturnType<typeof useMarketPriceDisplay>;
   derivedSwap: ReturnType<typeof useDerivedSwap>;
+  inputsError: InputError | undefined;
 };
 
 const Context = createContext({} as UserContextType);
 
 export function UserContext({ children }: { children: React.ReactNode }) {
+  const { marketPrice } = useTwapContext();
+  const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+
   const trades = useTradesPanel();
-  const limitPrice = useLimitPricePanel();
-  const fillDelay = useFillDelayPanel(trades.value);
+  const fillDelay = useFillDelayPanel();
   const duration = useDurationPanel(trades.value, fillDelay.value);
   const tradePrice = useTradePrice();
-  const marketPrice = useMarketPricePanel();
+  const marketPriceDisplay = useMarketPriceDisplay();
   const derivedSwap = useDerivedSwap(tradePrice);
   const dstMinAmountPerTrade = useDstMinAmountPerTrade(tradePrice, trades.amountPerTrade).amountUI;
+  const srcTokenPanel = useSrcTokenPanel();
+  const dstTokenPanel = useDstTokenPanel(dstMinAmountPerTrade);
+  const triggerPrice = useTriggerPricePanel();
+  const limitPrice = useLimitPricePanel();
 
-  return <Context.Provider value={{ derivedSwap, panels: { trades, fillDelay, duration, limitPrice } }}>{children}</Context.Provider>;
+
+
+  const inputsError =
+    BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()
+      ? undefined
+      : srcTokenPanel.isInsufficientBalance || triggerPrice.error || limitPrice.error || trades.error || fillDelay.error || duration.error;
+
+  return <Context.Provider value={{ derivedSwap, trades, fillDelay, duration, limitPrice, marketPrice: marketPriceDisplay, inputsError }}>{children}</Context.Provider>;
 }
 
 export const useUserContext = () => {
   return useContext(Context);
+};
+
+export const useDisclaimerMessage = () => {
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const { translations: t } = useTwapContext();
+  return useMemo(() => {
+    return {
+      type: isMarketOrder ? "market" : "limit",
+      text: isMarketOrder ? t.marketOrderWarning : t.limitPriceMessage,
+      url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
+    };
+  }, [isMarketOrder, t]);
 };
 
 const useTradePrice = () => {

@@ -4,9 +4,8 @@ import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
-import { Module, OrderHistoryCallbacks, Token } from "../types";
+import { Module, Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
-import { useTwapStore } from "../useTwapStore";
 
 export const useOrderName = (isMarketOrder = false, chunks = 1) => {
   const { translations: t, module } = useTwapContext();
@@ -243,42 +242,3 @@ const filterAndSortOrders = (orders: Order[], status: OrderStatus) => {
   return orders.filter((order) => order.status === status).sort((a, b) => b.createdAt - a.createdAt);
 };
 
-export const useOrderHistoryPanel = () => {
-  const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
-  const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
-  const updateState = useTwapStore((s) => s.updateState);
-  const isOpen = useTwapStore((s) => s.state.showOrderHistory);
-
-  const onClose = useCallback(() => {
-    updateState({ showOrderHistory: false });
-  }, [updateState]);
-
-  const onOpen = useCallback(() => {
-    updateState({ showOrderHistory: true });
-  }, [updateState]);
-
-  const onClosePreview = useCallback(() => {
-    updateState({ selectedOrderID: undefined });
-  }, [updateState]);
-
-  const onCancelOrders = useCallback(
-    (orderIds: string[], callbacks?: OrderHistoryCallbacks) => {
-      return cancelOrder({ orderIds, callbacks });
-    },
-    [cancelOrder],
-  );
-
-  return {
-    orders,
-    isLoading: orderLoading,
-    refetch,
-    isRefetching,
-    isOpen,
-    onClose,
-    onOpen,
-    onClosePreview,
-    onCancelOrders,
-    openOrdersCount: orders?.OPEN?.length || 0,
-    isCancelOrdersLoading,
-  };
-};

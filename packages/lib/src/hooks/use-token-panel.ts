@@ -1,67 +1,52 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
-import { useAmountUi, useUsdAmount, useShouldWrapOrUnwrapOnly } from "./helper-hooks";
-import { useBalanceError } from "./use-balance-error";
-import { useDstAmount } from "./use-dst-amount";
+import { useAmountUi, useUsdAmount, useShouldWrapOrUnwrapOnly, useAmountBN } from "./helper-hooks";
+import { useMaxSrcAmount } from "./use-src-amount";
+import BN from "bignumber.js";
+import { InputErrors } from "../types";
 
-export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { srcBalance, dstBalance } = useTwapContext();
-  const token = useToken({ isSrcToken });
-  return useAmountUi(token?.decimals, isSrcToken ? srcBalance : dstBalance);
-};
-
-export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { srcUsd1Token, dstUsd1Token } = useTwapContext();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const dstAmountOut = useDstAmount().amountUI;
-  const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
-  const dstUsd = useUsdAmount(dstAmountOut, dstUsd1Token);
-
-  const token = useToken({ isSrcToken });
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const data = isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd;
-
-  return {
-    data: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
-    isLoading: Boolean(token && !data),
-  };
-};
-
-export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { marketPriceLoading } = useTwapContext();
+export const useTokenPanel = ({ isSrcToken, dstAmount }: { isSrcToken: boolean; dstAmount: string }) => {
+  const { marketPriceLoading, srcToken, dstToken, srcBalance, dstBalance, translations: t } = useTwapContext();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const updateState = useTwapStore((s) => s.updateState);
-  const destTokenAmountUI = useDstAmount().amountUI;
+  const { srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(dstAmount, dstUsd1Token);
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  const maxSrcInputAmount = useMaxSrcAmount();
+  const srcAmountWei = useAmountBN(srcToken?.decimals, typedSrcAmount);
+
+  const token = isSrcToken ? srcToken : dstToken;
+  const balance = useAmountUi(token?.decimals, isSrcToken ? srcBalance : dstBalance);
+  const error = useMemo(() => {
+    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
+
+    if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+      return {
+        type: InputErrors.INSUFFICIENT_BALANCE,
+        message: t.insufficientFunds,
+        value: srcBalance,
+      };
+    }
+  }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
 
   const onChange = useCallback(
     (value: string) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken],
+    [updateState, isSrcToken]
   );
+
   return {
-    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(destTokenAmountUI, 8),
+    balance,
+    usd: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
+    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(dstAmount, 8),
     onChange,
     isLoading: isSrcToken ? false : marketPriceLoading,
-  };
-};
-export const useToken = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { srcToken, dstToken } = useTwapContext();
-  return isSrcToken ? srcToken : dstToken;
-};
-
-export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { marketPriceLoading } = useTwapContext();
-  return {
-    balance: useTokenBalance({ isSrcToken }),
-    usd: useTokenUSD({ isSrcToken }),
-    input: useTokenInput({ isSrcToken }),
-    token: useToken({ isSrcToken }),
-    error: useBalanceError(),
-    isLoading: isSrcToken ? false : marketPriceLoading,
+    token,
+    isInsufficientBalance: isSrcToken ? error : undefined,
   };
 };

@@ -1,22 +1,11 @@
-import { getFillDelay, getMaxFillDelayError, getMinFillDelayError, TimeDuration } from "@orbs-network/twap-sdk";
+import { getFillDelay, getMinFillDelayError, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
-import { InputError, InputErrors, millisToDays, millisToMinutes } from "..";
+import { InputError, InputErrors, millisToMinutes } from "..";
 
-const useFillDelayError = (chunks: number, fillDelay: TimeDuration) => {
+const useFillDelayError = (fillDelay: TimeDuration) => {
   const { translations: t } = useTwapContext();
-
-  const maxFillDelayError = useMemo((): InputError | undefined => {
-    const { isError, value } = getMaxFillDelayError(fillDelay, chunks);
-    if (!isError) return undefined;
-    return {
-      type: InputErrors.MAX_FILL_DELAY,
-      value: value,
-      message: t.maxFillDelayError.replace("{fillDelay}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`),
-    };
-  }, [fillDelay, chunks, t]);
-
   const minFillDelayError = useMemo((): InputError | undefined => {
     const { isError, value } = getMinFillDelayError(fillDelay);
     if (!isError) return undefined;
@@ -27,14 +16,14 @@ const useFillDelayError = (chunks: number, fillDelay: TimeDuration) => {
     };
   }, [fillDelay, t]);
 
-  return maxFillDelayError || minFillDelayError;
+  return minFillDelayError;
 };
 
-export const useFillDelay = (chunks: number) => {
+export const useFillDelay = () => {
   const typedFillDelay = useTwapStore((s) => s.state.typedFillDelay);
   const updateState = useTwapStore((s) => s.updateState);
   const fillDelay = useMemo(() => getFillDelay(typedFillDelay), [typedFillDelay]);
-  const error = useFillDelayError(chunks, fillDelay);
+  const error = useFillDelayError(fillDelay);
 
   return {
     fillDelay,
@@ -42,3 +31,4 @@ export const useFillDelay = (chunks: number) => {
     error,
   };
 };
+
