@@ -1,4 +1,4 @@
-import { amountUi, Module, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountUi, Module, OrderStatus, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import { useFillDelay } from "./use-fill-delay";
@@ -227,6 +227,7 @@ export const useOrderHistoryPanel = () => {
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
   const updateState = useTwapStore((s) => s.updateState);
+  const selectedStatus = useTwapStore((s) => s.state.orderHistoryStatusFilter);
 
   const onClosePreview = useCallback(() => {
     updateState({ selectedOrderID: undefined });
@@ -239,6 +240,12 @@ export const useOrderHistoryPanel = () => {
     [cancelOrder],
   );
 
+  const onSelectStatus = useMemo(() => {
+    return (status?: OrderStatus) => {
+      updateState({ orderHistoryStatusFilter: status });
+    };
+  }, [selectedStatus]);
+
   return {
     orders,
     isLoading: orderLoading,
@@ -248,6 +255,8 @@ export const useOrderHistoryPanel = () => {
     onCancelOrders,
     openOrdersCount: orders?.OPEN?.length || 0,
     isCancelOrdersLoading,
+    selectedStatus,
+    onSelectStatus,
   };
 };
 
