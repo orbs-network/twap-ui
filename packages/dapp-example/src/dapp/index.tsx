@@ -18,8 +18,9 @@ import {
   Components,
   useTwap,
 } from "@orbs-network/twap-ui";
-import { Config, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
+import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
 
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -36,12 +37,28 @@ import { abbreviate } from "../utils";
 import clsx from "clsx";
 
 const OrderHistoryModal = () => {
-  const { isLoading, openOrdersCount } = useTwap().orderHistoryPanel;
+  const { isLoading, openOrdersCount, statuses, onSelectStatus, selectedStatus, orderIdsToCancel, onCancelOrders, isCancelOrdersLoading, onToggleCancelOrdersMode, cancelOrdersMode } = useTwap().orderHistoryPanel;
   const [isOpen, setIsOpen] = useState(false);
+  const onSelect = useCallback((item: SelectMeuItem) => onSelectStatus(item?.value as OrderStatus), [onSelectStatus]);
+
   return (
     <>
       <Popup isOpen={Boolean(isOpen)} onClose={() => setIsOpen(false)}>
-        <Components.OrderHistory SelectMenu={SelectMenu} Label={Label} Button={TwapButton} useToken={useToken} Checkbox={TwapCheckbox} />
+
+        <div className="twap-orders__list-header">
+        <SelectMenu items={statuses} selected={statuses.find((it) => it.value === selectedStatus)} onSelect={onSelect} />
+
+        <div className="twap-orders__list-header-select-toggle-container">
+        <Button onClick={() => onToggleCancelOrdersMode(!cancelOrdersMode)}>Select</Button>
+          {cancelOrdersMode  && (
+            <Button onClick={() => onCancelOrders(orderIdsToCancel || [])} loading={isCancelOrdersLoading} className="twap-orders__list-header-select-toggle-cancel">
+              <HiOutlineTrash className="twap-orders__list-header-select-toggle-cancel-icon" />
+              <p>{`Cancel (${orderIdsToCancel?.length || 0})`}</p>
+            </Button>
+          )}
+        </div>
+      </div>
+        <Components.OrderHistory Label={Label} Button={TwapButton} useToken={useToken} Checkbox={TwapCheckbox} />
       </Popup>
       <button onClick={() => setIsOpen(true)} className="twap-orders__button">
         {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Orders</Typography>}

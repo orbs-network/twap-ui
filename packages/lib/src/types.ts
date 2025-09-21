@@ -25,6 +25,7 @@ export interface Translations {
   stopLossLabel: string;
   confirmationDeadlineTooltip: string;
   confirmationTradeSizeTooltip: string;
+  allOrders: string;
   triggerPrice: string;
   confirmationTotalTradesTooltip: string;
   confirmationMinDstAmountTooltipLimit: string;
@@ -407,7 +408,6 @@ export type OrderHistoryCallbacks = {
 };
 
 export type OrderHistoryProps = {
-  SelectMenu: FC<SelectMenuProps>;
   ListOrder?: FC<OrderHistoryListOrderProps>;
   SelectedOrder?: FC<OrderHistorySelectedOrderProps>;
   listLoader?: ReactNode;
@@ -548,6 +548,9 @@ export interface State {
 
   selectedOrderID?: string;
   orderHistoryStatusFilter?: OrderStatus;
+
+  cancelOrdersMode?: boolean;
+  orderIdsToCancel?: string[];
 
   swapExecution: SwapExecution;
   swap: SwapData;

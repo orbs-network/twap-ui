@@ -66,14 +66,14 @@ export const useDurationPanel = () => {
     (value: string) => {
       setDuration({ unit: duration.unit, value: Number(value) });
     },
-    [setDuration, duration],
+    [setDuration, duration]
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setDuration({ unit, value: duration.value });
     },
-    [setDuration, duration],
+    [setDuration, duration]
   );
 
   const tooltip = useMemo(() => {
@@ -224,10 +224,13 @@ export const useTriggerPricePanel = () => {
 };
 
 export const useOrderHistoryPanel = () => {
+  const { translations: t } = useTwapContext();
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
   const updateState = useTwapStore((s) => s.updateState);
   const selectedStatus = useTwapStore((s) => s.state.orderHistoryStatusFilter);
+  const cancelOrdersMode = useTwapStore((s) => s.state.cancelOrdersMode);
+  const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
 
   const onClosePreview = useCallback(() => {
     updateState({ selectedOrderID: undefined });
@@ -237,7 +240,7 @@ export const useOrderHistoryPanel = () => {
     (orderIds: string[], callbacks?: OrderHistoryCallbacks) => {
       return cancelOrder({ orderIds, callbacks });
     },
-    [cancelOrder],
+    [cancelOrder]
   );
 
   const onSelectStatus = useMemo(() => {
@@ -245,6 +248,18 @@ export const useOrderHistoryPanel = () => {
       updateState({ orderHistoryStatusFilter: status });
     };
   }, [selectedStatus]);
+
+  const statuses = useMemo(() => {
+    const result = Object.keys(OrderStatus).map((it) => {
+      return {
+        text: it,
+        value: it,
+      };
+    });
+    return [{ text: t.allOrders, value: "" }, ...result];
+  }, [t]);
+
+  const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [cancelOrdersMode, updateState]);
 
   return {
     orders,
@@ -255,8 +270,12 @@ export const useOrderHistoryPanel = () => {
     onCancelOrders,
     openOrdersCount: orders?.OPEN?.length || 0,
     isCancelOrdersLoading,
-    selectedStatus,
+    selectedStatus: selectedStatus || statuses[0].value,
     onSelectStatus,
+    statuses,
+    onToggleCancelOrdersMode,
+    cancelOrdersMode,
+    orderIdsToCancel,
   };
 };
 
@@ -290,7 +309,7 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken],
+    [updateState, isSrcToken]
   );
 
   const value = isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(dstAmount || "", 8);
@@ -397,7 +416,7 @@ export const useSubmitSwapPanel = () => {
     (callbacks?: SwapCallbacks) => {
       return submitSwapMutation.mutateAsync(callbacks);
     },
-    [submitSwapMutation],
+    [submitSwapMutation]
   );
 
   return useMemo(() => {

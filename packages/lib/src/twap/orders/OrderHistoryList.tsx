@@ -1,10 +1,7 @@
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
-
 import { Order, OrderType } from "@orbs-network/twap-sdk";
 import * as React from "react";
 import { useTwapContext } from "../../context";
-import { OrderHistoryMenu } from "./OrderHistorySelect";
 import { useOrderName, useOrders } from "../../hooks/order-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
@@ -14,7 +11,6 @@ import { FC } from "react";
 import { TokenLogoProps, UseToken } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { useOrderHistoryContext } from "./context";
-import { useMutation } from "@tanstack/react-query";
 
 const ListLoader = () => {
   const { listLoader } = useOrderHistoryContext();
@@ -23,11 +19,9 @@ const ListLoader = () => {
 
 export const OrderHistoryList = () => {
   const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
-  const status = useTwapStore((s) => s.state.orderHIstoryStatusFilter);
-  const { Button, callbacks } = useOrderHistoryContext();
+  const status = useTwapStore((s) => s.state.orderHistoryStatusFilter);
   const [selectedOrders, setSelectedOrders] = React.useState<string[]>([]);
-  const [selectMode, setSelectMode] = React.useState(false);
-  const { mutateAsync: cancelOrder } = useCancelOrderMutation();
+  const cancelOrdersMode = useTwapStore((s) => s.state.cancelOrdersMode);
 
   const { orders: allOrders, isLoading } = useOrders();
   const orders = React.useMemo(() => (!allOrders ? [] : !status ? allOrders.all : allOrders[status.toUpperCase() as keyof typeof allOrders]), [allOrders, status]);
@@ -41,36 +35,12 @@ export const OrderHistoryList = () => {
     });
   }, []);
 
-  const onToggleSelectMode = React.useCallback(() => {
-    setSelectMode((prev) => !prev);
-    setSelectedOrders([]);
-  }, []);
-
-  const { mutate: onCancelOrders, isLoading: isCancelOrdersLoading } = useMutation({
-    mutationFn: () => {
-      return cancelOrder({ orderIds: selectedOrders, callbacks });
-    },
-  });
 
   if (selectedOrderID !== undefined) return null;
 
   return (
     <>
-      <div className="twap-orders__list-header">
-        <OrderHistoryMenu />
-
-        <div className="twap-orders__list-header-select-toggle-container">
-          <Button className={`twap-orders__list-header-select-toggle ${selectMode ? "twap-orders__list-header-select-toggle-active" : ""}`} onClick={onToggleSelectMode}>
-            <p> Select Mode</p>
-          </Button>
-          {selectedOrders.length > 0 && (
-            <Button onClick={onCancelOrders} loading={isCancelOrdersLoading} className="twap-orders__list-header-select-toggle-cancel">
-              <HiOutlineTrash className="twap-orders__list-header-select-toggle-cancel-icon" />
-              <p>{`Cancel (${selectedOrders.length})`}</p>
-            </Button>
-          )}
-        </div>
-      </div>
+    
       {isLoading ? (
         <ListLoader />
       ) : !orders.length ? (
@@ -80,7 +50,7 @@ export const OrderHistoryList = () => {
           <Virtuoso
             style={{ height: "100%" }}
             data={orders}
-            itemContent={(index, order) => <ListOrder selectMode={selectMode} selected={selectedOrders.includes(order.id)} key={index} selectOrder={onSelectOrder} order={order} />}
+            itemContent={(index, order) => <ListOrder cancelOrdersMode={Boolean(cancelOrdersMode)} selected={selectedOrders.includes(order.id)} key={index} selectOrder={onSelectOrder} order={order} />}
           />
         </div>
       )}
@@ -88,7 +58,7 @@ export const OrderHistoryList = () => {
   );
 };
 
-const ListOrder = ({ order, selectOrder, selected, selectMode }: { order: Order; selectOrder: (id: string) => void; selected: boolean; selectMode: boolean }) => {
+const ListOrder = ({ order, selectOrder, selected, cancelOrdersMode }: { order: Order; selectOrder: (id: string) => void; selected: boolean; cancelOrdersMode: boolean }) => {
   const { mutateAsync: cancelOrder } = useCancelOrderMutation();
   const { useToken, ListOrder: CustomListOrder, Checkbox, callbacks } = useOrderHistoryContext();
   const updateState = useTwapStore((s) => s.updateState);
@@ -102,20 +72,20 @@ const ListOrder = ({ order, selectOrder, selected, selectMode }: { order: Order;
   }, [cancelOrder, order]);
 
   const onClick = React.useCallback(() => {
-    if (selectMode) {
+    if (cancelOrdersMode) {
       selectOrder(order?.id);
     } else {
       onShowOrder();
     }
-  }, [selectMode, selectOrder, onShowOrder, order?.id]);
+  }, [cancelOrdersMode, selectOrder, onShowOrder, order?.id]);
 
   if (CustomListOrder) {
     return <CustomListOrder order={order} selectOrder={onClick} cancelOrder={handleCancelOrder} selected={selected} />;
   }
 
   return (
-    <div className={`twap-orders__list-item twap-orders__list-item-${order.status} ${selectMode ? "twap-orders__list-item-select-mode" : ""}`} onClick={onClick}>
-      {selectMode && <Checkbox checked={selected} setChecked={() => {}} />}
+    <div className={`twap-orders__list-item twap-orders__list-item-${order.status} ${cancelOrdersMode ? "twap-orders__list-item-select-mode" : ""}`} onClick={onClick}>
+      {cancelOrdersMode && <Checkbox checked={selected} setChecked={() => {}} />}
 
       <div className="twap-orders__list-item-content">
         <ListItemHeader order={order} />
@@ -131,7 +101,7 @@ const ListOrder = ({ order, selectOrder, selected, selectMode }: { order: Order;
 };
 
 const EmptyList = () => {
-  const status = useTwapStore((s) => s.state.orderHIstoryStatusFilter);
+  const status = useTwapStore((s) => s.state.orderHistoryStatusFilter);
   const t = useTwapContext().translations;
   const name = React.useMemo(() => {
     if (!status) {
