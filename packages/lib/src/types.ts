@@ -288,14 +288,6 @@ export type TransactionModalCancelOrderLoadingViewProps = {
   orderId: string;
 };
 
-export interface Components {
-  // shared
-  Label?: FC<LabelProps>;
-  TokenLogo?: FC<TokenLogoProps>;
-  Button: FC<ButtonProps>;
-}
-
-
 interface CreateOrderSuccessCallbackArgs extends SwapData {
   receipt?: TransactionReceipt;
 }
@@ -406,7 +398,6 @@ export type SubmitOrderPanelProps = {
   reviewDetails?: ReactNode;
   Label: FC<LabelProps>;
   Button: FC<ButtonProps>;
-  callbacks?: SwapCallbacks;
 };
 
 export type OrderHistoryCallbacks = {
@@ -520,11 +511,12 @@ export type SwapData = {
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
+  dstMinAmountPerTrade: string;
   srcUsdAmount: string;
   dstUsdAmount: string;
 };
 
-export type Swap = SwapData & {
+export type SwapExecution = {
   status?: SwapStatus;
   error?: string;
   step?: Steps;
@@ -557,7 +549,8 @@ export interface State {
   selectedOrderID?: string;
   orderHIstoryStatusFilter?: OrderStatus;
 
-  swap: Swap;
+  swapExecution: SwapExecution;
+  swap: SwapData;
 }
 
 export { SwapStatus };

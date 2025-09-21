@@ -5,26 +5,25 @@ import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Steps, SubmitOrderPanelProps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { SwapFlowComponent } from "../swap-flow";
-import { useChunks } from "../../hooks/use-chunks";
 import { useOrderName } from "../../hooks/order-hooks";
 import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
 import { SubmitOrderContextProvider, useSubmitOrderPanelContext } from "./context";
 import { Failed } from "./Failed";
 import { Main } from "./Main";
+import { useTrades } from "../../hooks/use-trades";
 import { useDerivedSwap } from "../../hooks/use-derived-swap";
-import { useSubmitSwapPanel } from "../twap";
 
 const useTitle = () => {
   const { translations: t } = useTwapContext();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const { chunks } = useChunks();
-  const orderName = useOrderName(isMarketOrder, chunks);
+  const { trades } = useTrades();
+  const orderName = useOrderName(isMarketOrder, trades);
   return t.createOrderAction.replace("{name}", orderName);
 };
 
 const useStep = () => {
   const { translations: t, srcToken } = useTwapContext();
-  const { step, wrapTxHash, approveTxHash } = useDerivedSwap();
+  const { step, wrapTxHash, approveTxHash } = useTwapStore((s) => s.state.swapExecution);
   const network = useNetwork();
   const wrapExplorerUrl = useExplorerLink(wrapTxHash);
   const unwrapExplorerUrl = useExplorerLink(wrapTxHash);
@@ -62,10 +61,10 @@ const useStep = () => {
 };
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
-  const { status, stepIndex, totalSteps } = useDerivedSwap();
-  const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link, callbacks } = props;
+  const { status, stepIndex, totalSteps } = useTwapStore((s) => s.state.swapExecution);
+  const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link } = props;
 
-  const { srcAmount, dstAmount, srcToken, dstToken, onSubmitOrder, isLoading } = useSubmitSwapPanel(callbacks);
+  const { srcAmount, dstAmount, srcToken, dstToken } = useDerivedSwap();
 
   return (
     <SubmitOrderContextProvider {...props}>
@@ -76,7 +75,7 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
         currentStepIndex={stepIndex}
         failedContent={<Failed />}
         successContent={<SuccessContent />}
-        mainContent={<Main isLoading={Boolean(isLoading)} onSubmitOrder={onSubmitOrder} />}
+        mainContent={<Main />}
         LoadingView={LoadingView}
         srcAmount={srcAmount}
         dstAmount={dstAmount}

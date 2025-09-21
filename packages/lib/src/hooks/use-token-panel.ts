@@ -37,7 +37,7 @@ export const useTokenPanel = ({ isSrcToken, dstAmount }: { isSrcToken: boolean; 
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken]
+    [updateState, isSrcToken],
   );
 
   return {

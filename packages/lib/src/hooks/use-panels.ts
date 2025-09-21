@@ -1,19 +1,25 @@
-import { amountUi, Module, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountUi, Module, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import { useFillDelay } from "./use-fill-delay";
-import { useChunks } from "./use-chunks";
 import { useDuration } from "./use-duration";
 import BN from "bignumber.js";
 import { useTwapStore } from "../useTwapStore";
 import { ORBS_WEBSITE_URL } from "../consts";
-import { useLimitPrice } from "./use-limit-price";
-import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, useLimitPriceToggle, useOrders } from "..";
+import { useLimitPrice, useLimitPriceToggle } from "./use-limit-price";
+import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapData, SwapStatus } from "..";
 import { useDefaultLimitPricePercent, useDefaultTriggerPricePercent } from "./use-default-values";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useAmountBN, useAmountUi, useShouldWrapOrUnwrapOnly, useUsdAmount } from "./helper-hooks";
-import { useMaxSrcAmount } from "./use-src-amount";
+import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
+import { useDstMinAmountPerTrade, useDstTokenAmount } from "./use-dst-amount";
+import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
+import { useTrades } from "./use-trades";
+import { useOrders } from "./order-hooks";
+import { useMutation } from "@tanstack/react-query";
+import { useDerivedSwap } from "./use-derived-swap";
+import { useSubmitOrderMutation } from "./use-submit-order";
 
 export const useFillDelayPanel = () => {
   const { onChange, fillDelay, error } = useFillDelay();
@@ -26,7 +32,7 @@ export const useFillDelayPanel = () => {
     onUnitSelect,
     onChange,
     milliseconds: fillDelay.unit * fillDelay.value,
-    value: fillDelay,
+    fillDelay,
     error,
     label: t.tradeIntervalTitle,
     tooltip: t.tradeIntervalTootlip,
@@ -35,13 +41,14 @@ export const useFillDelayPanel = () => {
 
 export const useTradesPanel = () => {
   const { translations: t, srcToken, dstToken } = useTwapContext();
-  const { onChange, amount, amountPerTradeUsd, amountPerTrade, error, maxAmount } = useChunks();
+  const { onChange, trades, amountPerTradeUsd, amountPerTradeUI, error, maxTrades, amountPerTradeWei } = useTrades();
 
   return {
     error,
-    maxAmount,
-    value: amount,
-    amountPerTrade,
+    maxTrades,
+    trades,
+    amountPerTrade: amountPerTradeUI,
+    amountPerTradeWei,
     onChange,
     label: t.tradesAmountTitle,
     tooltip: t.totalTradesTooltip,
@@ -51,22 +58,22 @@ export const useTradesPanel = () => {
   };
 };
 
-export const useDurationPanel = (chunks: number, fillDelay: TimeDuration) => {
+export const useDurationPanel = () => {
   const { translations: t, module } = useTwapContext();
-  const { duration, setDuration, error } = useDuration(chunks, fillDelay);
+  const { duration, setDuration, error } = useDuration();
 
   const onInputChange = useCallback(
     (value: string) => {
       setDuration({ unit: duration.unit, value: Number(value) });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setDuration({ unit, value: duration.value });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
 
   const tooltip = useMemo(() => {
@@ -77,7 +84,7 @@ export const useDurationPanel = (chunks: number, fillDelay: TimeDuration) => {
   }, [t, module]);
 
   return {
-    value: duration,
+    duration,
     onChange: setDuration,
     milliseconds: duration.unit * duration.value,
     onInputChange,
@@ -88,7 +95,7 @@ export const useDurationPanel = (chunks: number, fillDelay: TimeDuration) => {
   };
 };
 
-export const useMarketPriceDisplay = () => {
+export const useMarketPricePanel = () => {
   const { srcToken, dstToken, marketPrice } = useTwapContext();
   const [invert, setInvert] = useState(false);
 
@@ -106,6 +113,7 @@ export const useMarketPriceDisplay = () => {
     sellToken: invert ? dstToken : srcToken,
     buyToken: invert ? srcToken : dstToken,
     price,
+    priceWei: useAmountBN(dstToken?.decimals, marketPrice),
     onInvert: useCallback(() => setInvert(!invert), [invert]),
   };
 };
@@ -122,20 +130,6 @@ export const useDisclaimer = () => {
   }, [isMarketOrder, t]);
 };
 
-export const useTriggerPriceWarning = () => {
-  const { triggerPricePercent } = useTwapStore((s) => s.state);
-  const { translations: t, module } = useTwapContext();
-
-  return useMemo(() => {
-    if (module !== Module.STOP_LOSS) return;
-
-    return {
-      text: t.triggerMarketPriceDisclaimer,
-      url: ORBS_WEBSITE_URL,
-    };
-  }, [triggerPricePercent, t, module]);
-};
-
 export const useLimitPricePanel = () => {
   const { translations: t, module, srcToken, dstToken, marketPrice, marketPriceLoading } = useTwapContext();
   const { amountUI, onChange, onPercentageChange, usd, percentDiffFromMarketPrice, percentage, error } = useLimitPrice();
@@ -144,6 +138,16 @@ export const useLimitPricePanel = () => {
   const isInverted = useTwapStore((s) => s.state.isInvertedTrade);
   const defaultLimitPricePercent = useDefaultLimitPricePercent();
   const { isLimitPrice, toggleLimitPrice } = useLimitPriceToggle();
+  const { triggerPricePercent } = useTwapStore((s) => s.state);
+
+  const warning = useMemo(() => {
+    if (module !== Module.STOP_LOSS) return;
+
+    return {
+      text: t.triggerMarketPriceDisclaimer,
+      url: ORBS_WEBSITE_URL,
+    };
+  }, [triggerPricePercent, t, module]);
 
   const reset = useCallback(() => {
     updateState({ typedLimitPrice: undefined });
@@ -163,6 +167,7 @@ export const useLimitPricePanel = () => {
   return {
     price: amountUI,
     error,
+    warning,
     label: t.limitPrice,
     tooltip,
     onChange,
@@ -214,6 +219,7 @@ export const useTriggerPricePanel = () => {
     selectedPercentage: percentage,
     prefix: module === Module.STOP_LOSS ? prefixStopsLoss : prefixTakeProfit,
     isLoading: marketPriceLoading || !marketPrice,
+    isInverted,
   };
 };
 
@@ -230,7 +236,7 @@ export const useOrderHistoryPanel = () => {
     (orderIds: string[], callbacks?: OrderHistoryCallbacks) => {
       return cancelOrder({ orderIds, callbacks });
     },
-    [cancelOrder]
+    [cancelOrder],
   );
 
   return {
@@ -275,13 +281,16 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken]
+    [updateState, isSrcToken],
   );
+
+  const value = isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(dstAmount || "", 8);
 
   return {
     balance,
     usd: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
-    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(dstAmount || "", 8),
+    value,
+    valueWei: useAmountBN(token?.decimals, value),
     onChange,
     isLoading: isSrcToken ? false : marketPriceLoading,
     token,
@@ -293,6 +302,106 @@ export const useSrcTokenPanel = () => {
   return useTokenPanel(true);
 };
 
-export const useDstTokenPanel = (dstAmount?: string) => {
+export const useDstTokenPanel = () => {
+  const dstAmount = useDstTokenAmount().amountUI;
   return useTokenPanel(false, dstAmount);
+};
+
+export const useOpenSubmitModalButton = (inputsError?: InputError) => {
+  const { srcUsd1Token, translations: t, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity } = useTwapContext();
+
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const minChunkSizeUsd = useMinChunkSizeUsd();
+
+  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
+  const isLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
+  const disabled = Boolean(inputsError || noLiquidity || isLoading);
+
+  const text = useMemo(() => {
+    if (noLiquidity) {
+      return t.noLiquidity;
+    }
+    if (BN(typedSrcAmount || "0").isZero()) {
+      return t.enterAmount;
+    }
+    if (inputsError?.type === InputErrors.INSUFFICIENT_BALANCE) {
+      return t.insufficientFunds;
+    }
+    return t.placeOrder;
+  }, [inputsError, t, typedSrcAmount, noLiquidity]);
+
+  return {
+    disabled,
+    isLoading,
+    text,
+  };
+};
+
+export const useSubmitSwapPanel = () => {
+  const updateSwap = useTwapStore((s) => s.updateSwap);
+  const { srcToken, dstToken, srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const submitOrderMutation = useSubmitOrderMutation();
+
+  const srcAmount = useSrcAmount().amountUI;
+  const dstAmount = useDstTokenAmount().amountUI;
+  const srcUsdAmount = useUsdAmount(srcAmount, srcUsd1Token);
+  const dstUsdAmount = useUsdAmount(dstAmount, dstUsd1Token);
+  const dstMinAmountPerTrade = useDstMinAmountPerTrade().amountUI;
+  const resetSwap = useTwapStore((s) => s.resetState);
+  const swapExecution = useTwapStore((s) => s.state.swapExecution);
+
+  const swap = useDerivedSwap();
+  const onCloseModal = useCallback(() => {
+    if (swapExecution?.status === SwapStatus.SUCCESS) {
+      resetSwap();
+    }
+  }, [swapExecution?.status, resetSwap]);
+
+  const onOpenModal = useCallback(() => {
+    if (swapExecution?.status !== SwapStatus.LOADING) {
+      updateSwap({} as SwapData);
+    }
+  }, [swap, updateSwap]);
+
+  const submitSwapMutation = useMutation(async (callbacks?: SwapCallbacks) => {
+    const data: SwapData = {
+      srcToken: srcToken!,
+      dstToken: dstToken!,
+      srcAmount: srcAmount!,
+      dstAmount,
+      srcUsdAmount,
+      dstUsdAmount,
+      dstMinAmountPerTrade,
+    };
+    updateSwap(data);
+
+    callbacks?.createOrder?.onRequest?.(data);
+    const result = await submitOrderMutation.mutateAsync(callbacks);
+    callbacks?.createOrder?.onSuccess?.({
+      ...data,
+      receipt: result?.receipt,
+    });
+    return result;
+  });
+
+  const onSubmitOrder = useCallback(
+    (callbacks?: SwapCallbacks) => {
+      return submitSwapMutation.mutateAsync(callbacks);
+    },
+    [submitSwapMutation],
+  );
+
+  return useMemo(() => {
+    return {
+      resetSwap,
+      updateSwap,
+      onCloseModal,
+      onOpenModal,
+      onSubmitOrder,
+      ...swap,
+      ...swapExecution,
+      isLoading: swapExecution?.status === SwapStatus.LOADING,
+      isSubmitted: Boolean(swapExecution?.status),
+    };
+  }, [resetSwap, updateSwap, onCloseModal, onSubmitOrder, swap, swapExecution]);
 };

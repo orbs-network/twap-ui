@@ -5,9 +5,11 @@ import { useTwapStore } from "../useTwapStore";
 import { useInputWithPercentage } from "./use-input-with-percentage";
 import { InputError, InputErrors, Module } from "../types";
 import { useDefaultTriggerPricePercent } from "./use-default-values";
-import { getStopLossPriceError, getTakeProfitPriceError } from "@orbs-network/twap-sdk";
+import { getStopLossPriceError, getTakeProfitPriceError, getTriggerPricePerChunk } from "@orbs-network/twap-sdk";
+import { useAmountUi } from "./helper-hooks";
+import { useTrades } from "./use-trades";
 
-export const useTriggerPriceError = (triggerPriceWei = '') => {
+export const useTriggerPriceError = (triggerPriceWei = "") => {
   const { module, marketPrice, translations: t } = useTwapContext();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
@@ -42,6 +44,21 @@ export const useTriggerPriceError = (triggerPriceWei = '') => {
   }, [marketPrice, triggerPriceWei, module, t, typedSrcAmount]);
 };
 
+export const useTriggerAmountPerChunk = (triggerPrice?: string) => {
+  const { srcToken, dstToken, module } = useTwapContext();
+  const amountPerTrade = useTrades().amountPerTradeWei;
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+
+  const result = useMemo(() => {
+    return getTriggerPricePerChunk(module, amountPerTrade, triggerPrice, srcToken?.decimals || 0);
+  }, [triggerPrice, amountPerTrade, isMarketOrder, srcToken?.decimals, module]);
+
+  return {
+    amountWei: result,
+    amountUI: useAmountUi(dstToken?.decimals || 0, result),
+  };
+};
+
 export const useTriggerPrice = () => {
   const { dstToken, marketPrice, module } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
@@ -62,7 +79,7 @@ export const useTriggerPrice = () => {
   const percentage = typedPercent === undefined ? defaultTriggerPricePercent : typedPercent;
   const enabled = module === Module.STOP_LOSS || module === Module.TAKE_PROFIT;
 
-  const result =  useInputWithPercentage({
+  const result = useInputWithPercentage({
     typedValue: useTwapStore((s) => s.state.typedTriggerPrice),
     percentage,
     tokenDecimals: dstToken?.decimals,
@@ -71,12 +88,14 @@ export const useTriggerPrice = () => {
     setPercentage,
   });
   const error = useTriggerPriceError(result.amountWei);
+  const { amountWei: triggerAmountPerChunk, amountUI: triggerAmountPerChunkUI } = useTriggerAmountPerChunk(result.amountWei);
 
   return useMemo(() => {
     return {
       ...result,
       error,
+      amountPerTradeWei: triggerAmountPerChunk,
+      amountPerTradeUI: triggerAmountPerChunkUI,
     };
-  }, [result, error]);
+  }, [result, error, triggerAmountPerChunk, triggerAmountPerChunkUI]);
 };
-

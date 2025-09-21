@@ -62,7 +62,7 @@ export const useLimitPrice = () => {
         const result = module === Module.STOP_LOSS ? -Math.abs(limitPricePercent || 0) : Math.abs(limitPricePercent || 0);
         updateState({ limitPricePercent: limitPricePercent === null ? null : result });
       },
-      [updateState, module]
+      [updateState, module],
     ),
   });
   const error = useLimitPriceError(result.amountWei);

@@ -241,4 +241,3 @@ export const useOrders = () => {
 const filterAndSortOrders = (orders: Order[], status: OrderStatus) => {
   return orders.filter((order) => order.status === status).sort((a, b) => b.createdAt - a.createdAt);
 };
-

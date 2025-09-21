@@ -5,11 +5,11 @@ import { useUnwrapToken } from "../../hooks/use-unwrap";
 import { useCallback } from "react";
 import { useTwapContext } from "../../context";
 import { useSubmitOrderPanelContext } from "./context";
-import { useDerivedSwap } from "../../hooks/use-derived-swap";
 import { useTwapStore } from "../../useTwapStore";
 
 const TxError = ({ error }: { error?: any }) => {
-  const { step } = useDerivedSwap();
+  const { step } = useTwapStore((s) => s.state.swapExecution);
+  const updatedSwapExecution = useTwapStore((s) => s.updateSwapExecution);
   const { mutateAsync: unwrap, isLoading } = useUnwrapToken();
   const network = useNetwork();
   const t = useTwapContext().translations;
@@ -18,14 +18,14 @@ const TxError = ({ error }: { error?: any }) => {
 
   const onUnwrap = useCallback(async () => {
     try {
-      updateSwap({ status: SwapStatus.LOADING, totalSteps: 1, stepIndex: 0 });
+      updatedSwapExecution({ status: SwapStatus.LOADING, totalSteps: 1, stepIndex: 0 });
       await unwrap();
-      updateSwap({ status: SwapStatus.SUCCESS });
+      updatedSwapExecution({ status: SwapStatus.SUCCESS });
     } catch (error) {
       if (isTxRejected(error)) {
-        updateSwap({ status: SwapStatus.FAILED });
+        updatedSwapExecution({ status: SwapStatus.FAILED });
       } else {
-        updateSwap({ status: SwapStatus.FAILED, error: (error as any).message, step: undefined });
+        updatedSwapExecution({ status: SwapStatus.FAILED, error: (error as any).message, step: undefined });
       }
     }
   }, [unwrap, updateSwap]);

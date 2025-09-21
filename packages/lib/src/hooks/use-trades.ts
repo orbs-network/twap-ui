@@ -9,12 +9,11 @@ import { useSrcAmount } from "./use-src-amount";
 import { useAmountUi } from "./helper-hooks";
 import BN from "bignumber.js";
 
-export const useChunksError = (amount: number, maxAmount: number) => {
+const useTradesError = (amount: number, maxAmount: number) => {
   const { module, srcUsd1Token } = useTwapContext();
   const t = useTwapContext().translations;
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const minChunkSizeUsd = useMinChunkSizeUsd();
-
 
   return useMemo((): InputError | undefined => {
     if (!amount) {
@@ -44,14 +43,14 @@ export const useChunksError = (amount: number, maxAmount: number) => {
   }, [amount, maxAmount, module, typedSrcAmount, srcUsd1Token, minChunkSizeUsd, t]);
 };
 
-export const useChunks = () => {
+export const useTrades = () => {
   const { module, srcToken, srcUsd1Token } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const updateState = useTwapStore((s) => s.updateState);
-  const maxAmount = useMaxChunks();
+  const maxTrades = useMaxTrades();
   const srcAmountWei = useSrcAmount().amountWei;
 
-  const amount = useMemo(() => getChunks(maxAmount, module, typedChunks), [maxAmount, typedChunks]);
+  const trades = useMemo(() => getChunks(maxTrades, module, typedChunks), [maxTrades, typedChunks]);
 
   const onChange = useCallback(
     (typedChunks: number) => {
@@ -62,7 +61,7 @@ export const useChunks = () => {
     [updateState],
   );
 
-  const amountPerTrade = useMemo(() => getSrcTokenChunkAmount(srcAmountWei || "", amount), [srcAmountWei, amount]);
+  const amountPerTrade = useMemo(() => getSrcTokenChunkAmount(srcAmountWei || "", trades), [srcAmountWei, trades]);
   const amountPerTradeUI = useAmountUi(srcToken?.decimals, amountPerTrade);
 
   const usd = useMemo(() => {
@@ -73,17 +72,17 @@ export const useChunks = () => {
   }, [amountPerTradeUI, srcUsd1Token]);
 
   return {
-    amount,
-    maxAmount,
-    amountPerTrade: amountPerTradeUI,
+    trades,
+    maxTrades,
+    amountPerTradeUI,
     amountPerTradeWei: amountPerTrade,
     amountPerTradeUsd: usd,
     onChange,
-    error: useChunksError(amount, maxAmount),
+    error: useTradesError(trades, maxTrades),
   };
 };
 
-const useMaxChunks = () => {
+const useMaxTrades = () => {
   const { srcUsd1Token } = useTwapContext();
   const minChunkSizeUsd = useMinChunkSizeUsd();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
@@ -91,5 +90,3 @@ const useMaxChunks = () => {
 
   return useMemo(() => getMaxPossibleChunks(fillDelay, typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, minChunkSizeUsd, fillDelay]);
 };
-
-

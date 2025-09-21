@@ -7,7 +7,7 @@ import { initiateWallet } from "./lib";
 import { useListener } from "./hooks/use-default-values";
 import { useAllowanceListener } from "./hooks/use-allowance";
 import { ErrorBoundary } from "react-error-boundary";
-import { UserContext } from "./user-context";
+import { UserProvider } from "./use-twap";
 
 const TwapFallbackUI = () => {
   return (
@@ -82,7 +82,7 @@ const Content = (props: TwapProps) => {
     >
       <Listeners />
       <ErrorWrapper>
-        <UserContext>{props.children}</UserContext>
+        <UserProvider>{props.children}</UserProvider>
       </ErrorWrapper>
     </TwapContext.Provider>
   );
