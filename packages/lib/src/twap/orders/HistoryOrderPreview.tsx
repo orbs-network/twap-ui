@@ -164,7 +164,7 @@ const CreatedAt = ({ order }: { order: Order }) => {
     return moment(order?.createdAt).format("DD/MM/YYYY HH:mm");
   }, [order?.createdAt, dateFormat]);
   return (
-    <OrderDetails.DetailRow title={t.createdAt}>
+    <OrderDetails.DetailRow title={t.createdAt} className="twap-order-details__detail-row-created-at">
       <p>{createdAtUi}</p>
     </OrderDetails.DetailRow>
   );
@@ -179,7 +179,7 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
   if (BN(order.filledDstAmount || 0).isZero()) return null;
 
   return (
-    <OrderDetails.DetailRow title={t.amountReceived}>
+    <OrderDetails.DetailRow title={t.amountReceived} className="twap-order-details__detail-row-amount-received">
       <p>
         {amount || "-"} {dstToken?.symbol}
       </p>
@@ -195,7 +195,7 @@ const AmountIn = ({ order }: { order: Order }) => {
   const amount = useFormatNumber({ value: srcAmountUi, decimalScale: 3 });
 
   return (
-    <OrderDetails.DetailRow title={t.amountOut}>
+    <OrderDetails.DetailRow title={t.amountOut} className="twap-order-details__detail-row-amount-out">
       <p>
         {amount || 0} {srcToken?.symbol}
       </p>
@@ -211,7 +211,7 @@ const AmountInFilled = ({ order }: { order: Order }) => {
   const amount = useFormatNumber({ value: srcFilledAmountUi, decimalScale: 3 });
 
   return (
-    <OrderDetails.DetailRow title={t.amountSent}>
+    <OrderDetails.DetailRow title={t.amountSent} className="twap-order-details__detail-row-amount-sent">
       <p>
         {amount || "-"} {srcToken?.symbol}
       </p>
@@ -223,7 +223,7 @@ const OrderStatusComponent = ({ order }: { order: Order }) => {
   const text = !order ? "" : order.status;
 
   return (
-    <OrderDetails.DetailRow title={t.status}>
+    <OrderDetails.DetailRow title={t.status} className="twap-order-details__detail-row-status">
       <p>{text}</p>
     </OrderDetails.DetailRow>
   );
@@ -234,7 +234,7 @@ const Progress = ({ order }: { order: Order }) => {
   const progress = useFormatNumber({ value: order?.progress, decimalScale: 2 });
   if (order?.chunks === 1) return null;
   return (
-    <OrderDetails.DetailRow title={t.progress}>
+    <OrderDetails.DetailRow title={t.progress} className="twap-order-details__detail-row-progress">
       <p>{progress || 0}%</p>
     </OrderDetails.DetailRow>
   );
@@ -272,7 +272,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {
   const _price = useFormatNumber({ value: price, decimalScale: 3 });
   return (
-    <OrderDetails.DetailRow title={title}>
+    <OrderDetails.DetailRow title={title} className="twap-order-details__detail-row-price">
       {BN(price || 0).isZero() ? (
         <p>-</p>
       ) : (

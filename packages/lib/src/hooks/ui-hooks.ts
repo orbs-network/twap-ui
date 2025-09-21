@@ -585,7 +585,7 @@ export const useShowOrderConfirmationModalButton = () => {
 
 export const useOrderHistoryPanel = () => {
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
-  const { isOpen, onClose, onOpen, selectedOrderId, selectOrder } = useOrderHistoryContext();
+  const { isOpen, onClose, onOpen, selectedOrderId, selectOrder, setStatus, status } = useOrderHistoryContext();
 
   const selectedOrder = useMemo(() => {
     if (!selectedOrderId) return;
@@ -616,6 +616,8 @@ export const useOrderHistoryPanel = () => {
     selectedOrder,
     selectedOrderTitle,
     closeSelectedOrder,
+    onStatusSelect: setStatus,
+    selectedStatus: status,
   };
 };
 

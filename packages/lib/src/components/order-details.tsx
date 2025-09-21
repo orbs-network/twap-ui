@@ -11,7 +11,7 @@ const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
   const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
   return (
-    <DetailRow title={t.expiration} tooltip={t.confirmationDeadlineTooltip}>
+    <DetailRow title={t.expiration} tooltip={t.confirmationDeadlineTooltip} className="twap-order-details__detail-row-expiration">
       {res}
     </DetailRow>
   );
@@ -25,7 +25,7 @@ const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: stri
   if (chunks === 1) return null;
 
   return (
-    <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
+    <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip} className="twap-order-details__detail-row-chunk-size">
       {`${srcChunkAmount ? _srcChunkAmount : "-"} ${srcToken?.symbol || ""}`}
     </DetailRow>
   );
@@ -48,7 +48,11 @@ const MinDestAmount = ({
   if (isMarketOrder || !dstToken) return null;
 
   return (
-    <DetailRow title={totalChunks === 1 ? t.minReceived : t.minReceivedPerTrade} tooltip={t.confirmationMinDstAmountTooltipLimit}>
+    <DetailRow
+      title={totalChunks === 1 ? t.minReceived : t.minReceivedPerTrade}
+      tooltip={t.confirmationMinDstAmountTooltipLimit}
+      className="twap-order-details__detail-row-min-dest-amount"
+    >
       {`${dstMinAmountOut ? formattedValue : "-"} ${dstToken?.symbol}`}
     </DetailRow>
   );
@@ -60,7 +64,7 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
   if (chunks === 1) return null;
 
   return (
-    <DetailRow title={t.numberOfTrades} tooltip={t.confirmationTotalTradesTooltip}>
+    <DetailRow title={t.numberOfTrades} tooltip={t.confirmationTotalTradesTooltip} className="twap-order-details__detail-row-chunks-amount">
       {chunks}
     </DetailRow>
   );
@@ -76,7 +80,7 @@ const Recipient = () => {
       {!explorerUrl ? (
         makerAddress
       ) : (
-        <a href={`${explorerUrl}/address/${account}`} target="_blank">
+        <a href={`${explorerUrl}/address/${account}`} target="_blank" className="twap-order-details__detail-row-recipient">
           {makerAddress}
         </a>
       )}
@@ -91,7 +95,7 @@ const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; 
   if (chunks === 1) return null;
 
   return (
-    <DetailRow title={t.tradeInterval} tooltip={t.tradeIntervalTootlip}>
+    <DetailRow title={t.tradeInterval} tooltip={t.tradeIntervalTootlip} className="twap-order-details__detail-row-trade-interval">
       {text}
     </DetailRow>
   );
@@ -114,7 +118,7 @@ const TxHash = ({ txHash }: { txHash?: string }) => {
   if (!txHash) return null;
 
   return (
-    <DetailRow title={t.txHash}>
+    <DetailRow title={t.txHash} className="twap-order-details__detail-row-tx-hash">
       {!explorerUrl ? (
         txHashAddress
       ) : (

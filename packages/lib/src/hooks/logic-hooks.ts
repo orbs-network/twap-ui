@@ -174,7 +174,7 @@ export const useChunksError = () => {
       return {
         type: InputErrors.MIN_CHUNKS,
         value: 1,
-        message: `${t.minChunksError} 1`,
+        message: t.minChunksError,
       };
     }
     const { isError } = twapSDK.getMaxChunksError(chunks, maxChunks, Boolean(isLimitPanel));
