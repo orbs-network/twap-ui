@@ -27,7 +27,7 @@ export const useDstMinAmountPerTrade = () => {
   const tradePrice = useTradePrice();
   const chunkPerTrade = useTrades().amountPerTradeWei;
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  
+
   const amountWei = useMemo(
     () => getDestTokenMinAmountPerChunk(chunkPerTrade, tradePrice, Boolean(isMarketOrder), srcToken?.decimals || 0),
     [chunkPerTrade, tradePrice, isMarketOrder, srcToken?.decimals],

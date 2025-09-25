@@ -189,4 +189,4 @@ export const numberToHex = (value: number | bigint, padding = 0): string => {
   }
 
   return "0x" + hex;
-}
+};

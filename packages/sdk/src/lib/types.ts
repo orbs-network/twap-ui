@@ -1,4 +1,4 @@
-import { EIP712_TYPES } from "./consts";
+import { EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "./consts";
 
 export type Config = {
   chainName: string;
@@ -133,16 +133,22 @@ export interface OrderData {
   nonce: string;
   deadline: string;
   witness: {
-    info: {
-      reactor: Address;
-      swapper: Address;
-      nonce: string;
-      deadline: string;
-      additionalValidationContract: Address;
-      additionalValidationData: Hex;
+    reactor: Address;
+    executor: Address;
+    exchange: {
+      adapter: Address;
+      ref: Address;
+      share: string;
+      data: Hex;
     };
-    exclusiveFiller: Address;
-    exclusivityOverrideBps: string;
+    swapper: Address;
+    nonce: string;
+    deadline: string;
+    chainid: string;
+    exclusivity: string;
+    epoch: string;
+    slippage: string;
+    freshness: string;
     input: {
       token: Address;
       amount: string;
@@ -154,10 +160,6 @@ export interface OrderData {
       recipient: Address;
       maxAmount: string;
     };
-    epoch: string; // No epoch for stop-loss orders
-    slippage: string; // 1% slippage
-    trigger: string; // Stop-loss trigger amount in wei
-    chainId: string; // BNB Smart Chain
   };
 }
 
@@ -169,7 +171,7 @@ export interface RePermitTypedData {
     chainId: number;
     verifyingContract: Address;
   };
-  primaryType: "RePermitWitnessTransferFrom";
+  primaryType: typeof REPERMIT_PRIMARY_TYPE;
   types: typeof EIP712_TYPES;
   message: OrderData;
 }

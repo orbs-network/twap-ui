@@ -1,6 +1,4 @@
-import { EXCLUSIVITY_OVERRIDE_BPS } from "./consts";
 import { getSpotConfig } from "./lib";
-import { zeroAddress } from "./networks";
 import { Address, BuildRePermitOrderDataProps, OrderData } from "./types";
 import { safeBNString } from "./utils";
 
@@ -16,7 +14,6 @@ export const buildRePermitOrderData = ({
   srcAmountPerChunk,
   dstMinAmountPerChunk,
   triggerAmountPerChunk,
-  limitAmountPerChunk,
 }: BuildRePermitOrderDataProps) => {
   const nonce = (Date.now() * 1000).toString();
   const epoch = safeBNString(fillDelayMillis / 1000);
@@ -31,19 +28,25 @@ export const buildRePermitOrderData = ({
       amount: srcAmount,
     },
     spender: spotConfig.reactor,
-    nonce: nonce,
-    deadline: deadline,
+    nonce,
+    deadline,
     witness: {
-      info: {
-        reactor: spotConfig.reactor,
-        swapper: account as Address,
-        nonce: nonce,
-        deadline: deadline,
-        additionalValidationContract: zeroAddress,
-        additionalValidationData: "0x",
+      reactor: spotConfig.reactor,
+      executor: spotConfig.executor,
+      exchange: {
+        adapter: spotConfig.dex.thena.adapter,
+        ref: spotConfig.dex.thena.fee,
+        share: "0",
+        data: "0x",
       },
-      exclusiveFiller: zeroAddress,
-      exclusivityOverrideBps: EXCLUSIVITY_OVERRIDE_BPS,
+      swapper: account as Address,
+      nonce,
+      deadline,
+      chainid: chainId.toString(),
+      exclusivity: '0',
+      epoch,
+      slippage: slippage.toString(),
+      freshness: '10',
       input: {
         token: srcToken as Address,
         amount: srcAmountPerChunk,
@@ -53,12 +56,8 @@ export const buildRePermitOrderData = ({
         token: dstToken as Address,
         amount: dstMinAmountPerChunk || "0",
         recipient: account as Address,
-        maxAmount: limitAmountPerChunk || "",
+        maxAmount: triggerAmountPerChunk || "",
       },
-      epoch,
-      slippage: slippage.toString(),
-      trigger: triggerAmountPerChunk || "",
-      chainId: chainId.toString(),
     },
   };
 

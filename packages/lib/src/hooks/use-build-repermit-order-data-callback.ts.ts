@@ -20,8 +20,6 @@ export const useBuildRePermitOrderDataCallback = () => {
   const fillDelay = useFillDelay().fillDelay;
   const limitAmountPerChunk = useLimitPrice().amountWei;
   const slippage = _slippage * 100;
-  
-  
 
   return useCallback(() => {
     const srcTokenAddress = isNativeAddress(srcToken?.address || "") ? getNetwork(chainId)?.wToken.address : srcToken?.address;

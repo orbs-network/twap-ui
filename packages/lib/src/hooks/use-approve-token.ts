@@ -3,21 +3,38 @@ import { useTwapContext } from "../context";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { Token } from "../types";
 import { erc20Abi, maxUint256 } from "viem";
-import { ensureWrappedToken } from "../utils";
-import { useEnsureAllowanceCallback } from "./use-allowance";
 import BN from "bignumber.js";
+
+export const useHasAllowanceCallback = () => {
+  const { account, publicClient, chainId, spotConfig } = useTwapContext();
+
+  return useMutation({
+    mutationFn: async (tokenAddress: string) => {
+      if (!publicClient || !chainId || !account || !spotConfig) throw new Error("missing required parameters");
+      const allowance = await publicClient
+        .readContract({
+          address: tokenAddress as `0x${string}`,
+          abi: erc20Abi,
+          functionName: "allowance",
+          args: [account as `0x${string}`, spotConfig.repermit],
+        })
+        .then((res) => res.toString());
+
+        return { allowance, approvalRequired: !BN(allowance || "0").gte(maxUint256.toString()) };
+    },
+  });
+};
 
 export const useApproveToken = () => {
   const { account, walletClient, publicClient, overrides, chainId, spotConfig } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
-  const { refetch: refetchAllowance } = useEnsureAllowanceCallback();
 
-  return useMutation(async ({ token: _token, onHash }: { token: Token; onHash: (hash: string) => void }) => {
+  return useMutation(async ({ token, onHash }: { token: Token; onHash: (hash: string) => void }) => {
     if (!account || !walletClient || !publicClient || !chainId || !spotConfig) {
       throw new Error("missing required parameters");
     }
 
-    const token = ensureWrappedToken(_token, chainId);
+
 
     let hash: `0x${string}` | undefined;
     if (overrides?.approveOrder) {
@@ -43,19 +60,10 @@ export const useApproveToken = () => {
       throw new Error("failed to approve token");
     }
 
-    const hasAllowance = false;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const allowance = await refetchAllowance();
-      const hasAllowance = BN(allowance || "0").gte(maxUint256.toString());
-      if (hasAllowance) break;
-      if (attempt < 2) {
-        await new Promise((resolve) => setTimeout(resolve, 3000)); // 3s delay
-      }
-    }
+    console.log("approve token success", receipt);
+    
 
-    if (!hasAllowance) {
-      throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
-    }
+
     return receipt;
   });
 };

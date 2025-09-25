@@ -5,7 +5,6 @@ import { TwapProps, TwapContextType, Translations } from "./types";
 import defaultTranslations from "./i18n/en.json";
 import { initiateWallet } from "./lib";
 import { useListener } from "./hooks/use-default-values";
-import { useAllowanceListener } from "./hooks/use-allowance";
 import { ErrorBoundary } from "react-error-boundary";
 import { UserProvider } from "./use-twap";
 
@@ -53,7 +52,6 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
 
 const Listeners = () => {
   useListener();
-  useAllowanceListener();
 
   return null;
 };
@@ -62,6 +60,7 @@ const Content = (props: TwapProps) => {
   const translations = useTranslations(props.overrides?.translations);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const spotConfig = useMemo(() => (!props.chainId ? undefined : getSpotConfig(props.chainId)), [props.chainId]);
+console.log(spotConfig);
 
   useEffect(() => {
     analytics.init(props.config);

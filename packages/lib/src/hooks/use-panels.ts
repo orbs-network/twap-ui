@@ -500,6 +500,7 @@ export const useSubmitSwapPanel = () => {
   const dstMinAmountPerTrade = useDstMinAmountPerTrade().amountUI;
   const resetSwap = useTwapStore((s) => s.resetState);
   const swapExecution = useTwapStore((s) => s.state.swapExecution);
+  const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
 
   const swap = useDerivedSwap();
   const onCloseModal = useCallback(() => {
@@ -551,8 +552,8 @@ export const useSubmitSwapPanel = () => {
       onSubmitOrder,
       ...swap,
       ...swapExecution,
-      isLoading: swapExecution?.status === SwapStatus.LOADING,
+      isLoading: swapExecution?.status === SwapStatus.LOADING || fetchingAllowance,
       isSubmitted: Boolean(swapExecution?.status),
     };
-  }, [resetSwap, updateSwap, onCloseModal, onSubmitOrder, swap, swapExecution]);
+  }, [resetSwap, updateSwap, onCloseModal, onSubmitOrder, swap, swapExecution, fetchingAllowance]);
 };
