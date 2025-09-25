@@ -1,5 +1,5 @@
 import { AddressPadding, OrderType, Token } from "./types";
-import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration, TimeUnit, TwapAbi } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration, TimeUnit, TWAP_ABI } from "@orbs-network/twap-sdk";
 import { decodeEventLog, TransactionReceipt } from "viem";
 export { getOrderLimitPriceRate } from "@orbs-network/twap-sdk";
 
@@ -135,7 +135,7 @@ export const getMinNativeBalance = (chainId: number) => {
 export function getOrderIdFromCreateOrderEvent(receipt: TransactionReceipt) {
   try {
     const decodedLog = (decodeEventLog as any)({
-      abi: TwapAbi,
+      abi: TWAP_ABI,
       data: receipt.logs[0].data,
       topics: receipt.logs[0].topics,
       eventName: "OrderCreated",

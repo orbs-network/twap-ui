@@ -1,5 +1,5 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Module, Order, OrderStatus, OrderType, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, Module, Order, OrderStatus, OrderType, SpotConfig, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -408,13 +408,10 @@ export type OrderHistoryCallbacks = {
 };
 
 export type OrderHistoryProps = {
-  ListOrder?: FC<OrderHistoryListOrderProps>;
-  SelectedOrder?: FC<OrderHistorySelectedOrderProps>;
   listLoader?: ReactNode;
   TokenLogo?: FC<TokenLogoProps>;
   Label: FC<LabelProps>;
   Button: FC<ButtonProps>;
-  Checkbox: FC<{ checked: boolean; setChecked: () => void }>;
   useToken: UseToken;
   dateFormat?: (date: number) => string;
   callbacks?: OrderHistoryCallbacks;
@@ -463,6 +460,7 @@ export interface TwapContextType extends TwapProps {
   marketPriceLoading?: boolean;
   account?: `0x${string}`;
   noLiquidity?: boolean;
+  spotConfig?: SpotConfig;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };

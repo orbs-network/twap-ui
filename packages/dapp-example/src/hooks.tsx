@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Token } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
-import { amountBN, amountUi, Configs, eqIgnoreCase, erc20abi, getNetwork, isNativeAddress, networks } from "@orbs-network/twap-sdk";
+import { amountBN, amountUi, Configs, eqIgnoreCase, getNetwork, isNativeAddress, networks } from "@orbs-network/twap-sdk";
 import _ from "lodash";
 import { useAccount, usePublicClient, useReadContracts } from "wagmi";
 import { api } from "./api";
@@ -52,7 +52,7 @@ export const useTokenListBalances = () => {
       const multicallResponse = await client.multicall({
         contracts: addresses.map((address) => {
           return {
-            abi: erc20abi as any,
+            abi: erc20Abi as any,
             address: address as `0x${string}`,
             functionName: "balanceOf",
             args: [account as `0x${string}`],

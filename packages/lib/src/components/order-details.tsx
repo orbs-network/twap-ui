@@ -6,7 +6,6 @@ import { useFormatNumber } from "../hooks/useFormatNumber";
 import { useTwapContext } from "../context";
 import { useAmountBN, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
-import { useCopyToClipboard } from "../hooks/use-copy";
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
   const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
@@ -47,7 +46,7 @@ const LimitPrice = ({ price, dstToken, percentage, isMarketOrder }: { price?: st
   );
 };
 
-const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: string; srcToken?: Token; chunks: number }) => {
+const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: string; srcToken?: Token; chunks?: number }) => {
   const translations = useTwapContext().translations;
 
   const _srcChunkAmount = useFormatNumber({ value: srcChunkAmount, decimalScale: 3 });
@@ -144,13 +143,7 @@ const DetailRow = ({
 };
 
 const OrderID = ({ id }: { id: string }) => {
-  const copy = useCopyToClipboard();
-
-  return (
-    <DetailRow title="ID" onClick={() => copy(id)} style={{ cursor: "pointer" }}>
-      {makeElipsisAddress(id)}
-    </DetailRow>
-  );
+  return <DetailRow title="ID">{Number.isInteger(Number(id)) ? id : makeElipsisAddress(id)}</DetailRow>;
 };
 
 export function OrderDetails({ children, className = "" }: { children?: ReactNode; className?: string }) {

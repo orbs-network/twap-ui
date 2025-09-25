@@ -2848,6 +2848,11 @@
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
 
+"@orbs-network/spot@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@orbs-network/spot/-/spot-0.0.2.tgz#868d6159156393a9633c689749ca82a87c398628"
+  integrity sha512-G9nDwpNvwfdqvELgv35Zg+u595QWmSiNz/Fvkz1pGPhp1PEfvNWfVKhWUWnTtt4c5ARX/Q8pzbWWFCYX208fCQ==
+
 "@orbs-network/swap-ui@^0.0.44":
   version "0.0.44"
   resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.44.tgz#3ac9127c0b6d16f6b4eebd6014b3567eabc56393"

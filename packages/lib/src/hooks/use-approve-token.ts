@@ -2,19 +2,18 @@ import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { Token } from "../types";
-import { REPERMIT_ADDRESS } from "@orbs-network/twap-sdk";
 import { erc20Abi, maxUint256 } from "viem";
 import { ensureWrappedToken } from "../utils";
 import { useEnsureAllowanceCallback } from "./use-allowance";
 import BN from "bignumber.js";
 
 export const useApproveToken = () => {
-  const { account, walletClient, publicClient, overrides, chainId } = useTwapContext();
+  const { account, walletClient, publicClient, overrides, chainId, spotConfig } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const { refetch: refetchAllowance } = useEnsureAllowanceCallback();
 
   return useMutation(async ({ token: _token, onHash }: { token: Token; onHash: (hash: string) => void }) => {
-    if (!account || !walletClient || !publicClient || !chainId) {
+    if (!account || !walletClient || !publicClient || !chainId || !spotConfig) {
       throw new Error("missing required parameters");
     }
 
@@ -22,14 +21,14 @@ export const useApproveToken = () => {
 
     let hash: `0x${string}` | undefined;
     if (overrides?.approveOrder) {
-      hash = await overrides.approveOrder({ tokenAddress: token.address, spenderAddress: REPERMIT_ADDRESS, amount: maxUint256 });
+      hash = await overrides.approveOrder({ tokenAddress: token.address, spenderAddress: spotConfig.repermit, amount: maxUint256 });
     } else {
       hash = await walletClient.writeContract({
         abi: erc20Abi,
         functionName: "approve",
         account: account as `0x${string}`,
         address: token.address as `0x${string}`,
-        args: [REPERMIT_ADDRESS as `0x${string}`, maxUint256],
+        args: [spotConfig.repermit, maxUint256],
         chain: walletClient.chain,
       });
     }

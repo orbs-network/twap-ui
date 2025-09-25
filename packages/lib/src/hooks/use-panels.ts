@@ -1,4 +1,4 @@
-import { amountUi, Module, OrderStatus, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountUi, getOrderFillDelayMillis, Module, OrderStatus, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import { useFillDelay } from "./use-fill-delay";
@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { useTwapStore } from "../useTwapStore";
 import { ORBS_WEBSITE_URL } from "../consts";
 import { useLimitPrice, useLimitPriceToggle } from "./use-limit-price";
-import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapData, SwapStatus } from "..";
+import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapData, SwapStatus, useFormatNumber } from "..";
 import { useDefaultLimitPricePercent, useDefaultTriggerPricePercent } from "./use-default-values";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTriggerPrice } from "./use-trigger-price";
@@ -16,10 +16,11 @@ import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
 import { useDstMinAmountPerTrade, useDstTokenAmount } from "./use-dst-amount";
 import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { useTrades } from "./use-trades";
-import { useOrders } from "./order-hooks";
+import { useOrderAvgExcecutionPrice, useOrderLimitPrice, useOrderName, useOrders } from "./order-hooks";
 import { useMutation } from "@tanstack/react-query";
 import { useDerivedSwap } from "./use-derived-swap";
 import { useSubmitOrderMutation } from "./use-submit-order";
+import { useOrderHistoryContext } from "../twap/orders/context";
 
 export const useFillDelayPanel = () => {
   const { onChange, fillDelay, error } = useFillDelay();
@@ -66,14 +67,14 @@ export const useDurationPanel = () => {
     (value: string) => {
       setDuration({ unit: duration.unit, value: Number(value) });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setDuration({ unit, value: duration.value });
     },
-    [setDuration, duration]
+    [setDuration, duration],
   );
 
   const tooltip = useMemo(() => {
@@ -223,11 +224,117 @@ export const useTriggerPricePanel = () => {
   };
 };
 
+export const usePreviewOrder = () => {
+  const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
+  const { orders } = useOrders();
+  const { useToken } = useOrderHistoryContext();
+  const { translations: t, config } = useTwapContext();
+  const selectedOrder = useMemo(() => orders?.all.find((order) => order.id === selectedOrderID), [orders, selectedOrderID]);
+  const title = useOrderName(selectedOrder?.isMarketOrder, selectedOrder?.chunks);
+
+  const srcToken = useToken?.(selectedOrder?.srcTokenAddress);
+  const dstToken = useToken?.(selectedOrder?.dstTokenAddress);
+  const selectedOrderLimitPrice = useOrderLimitPrice(srcToken, dstToken, selectedOrder);
+  const excecutionPrice = useOrderAvgExcecutionPrice(srcToken, dstToken, selectedOrder);
+  const amountIn = useAmountUi(srcToken?.decimals, selectedOrder?.srcAmount);
+  const srcChunkAmount = useAmountUi(srcToken?.decimals, selectedOrder?.srcAmountPerChunk);
+  const dstMinAmountOut = useAmountUi(dstToken?.decimals, selectedOrder?.dstMinAmountPerChunk);
+  const srcFilledAmount = useAmountUi(srcToken?.decimals, selectedOrder?.filledSrcAmount);
+  const dstFilledAmount = useAmountUi(dstToken?.decimals, selectedOrder?.filledDstAmount);
+  const progress = useFormatNumber({ value: selectedOrder?.progress, decimalScale: 2 });
+
+  return useMemo(() => {
+    if (!selectedOrder) return;
+    return {
+      ...selectedOrder,
+      title,
+      srcToken,
+      dstToken,
+      details: {
+        id: {
+          label: "id",
+          value: selectedOrder.id,
+        },
+        limitPrice: {
+          label: "limit price",
+          value: selectedOrderLimitPrice,
+        },
+        createdAt: {
+          label: "created at",
+          value: selectedOrder.createdAt,
+        },
+        deadline: {
+          label: "deadline",
+          value: selectedOrder.deadline,
+        },
+        amountIn: {
+          label: "amount in",
+          value: amountIn,
+        },
+        chunkSize: {
+          label: "chunk size",
+          value: srcChunkAmount,
+        },
+        chunksAmount: {
+          label: "chunks amount",
+          value: selectedOrder.chunks,
+        },
+        minDestAmountPerChunk: {
+          label: "min dest amount",
+          value: BN(selectedOrder.dstMinAmountPerChunk).lte(1) ? "" : dstMinAmountOut,
+        },
+        tradeInterval: {
+          label: "trade interval",
+          value: selectedOrder.chunks === 1 ? undefined : getOrderFillDelayMillis(selectedOrder, config),
+        },
+        recipient: {
+          label: "recipient",
+          value: selectedOrder.maker,
+        },
+        amountInFilled: {
+          label: t.amountSent,
+          value: srcFilledAmount,
+        },
+        amountOutFilled: {
+          label: t.amountReceived,
+          value: dstFilledAmount,
+        },
+        progress: {
+          label: t.amountReceived,
+          value: selectedOrder.chunks === 1 ? undefined : progress,
+        },
+        excecutionPrice: {
+          label: selectedOrder.chunks === 1 ? t.finalExcecutionPrice : t.AverageExecutionPrice,
+          value: excecutionPrice,
+        },
+      },
+    };
+  }, [
+    orders,
+    selectedOrderID,
+    t,
+    config,
+    srcToken,
+    dstToken,
+    excecutionPrice,
+    selectedOrderLimitPrice,
+    amountIn,
+    srcChunkAmount,
+    dstMinAmountOut,
+    srcFilledAmount,
+    dstFilledAmount,
+    progress,
+    selectedOrder,
+    title,
+  ]);
+};
+
 export const useOrderHistoryPanel = () => {
   const { translations: t } = useTwapContext();
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
   const updateState = useTwapStore((s) => s.updateState);
+
   const selectedStatus = useTwapStore((s) => s.state.orderHistoryStatusFilter);
   const cancelOrdersMode = useTwapStore((s) => s.state.cancelOrdersMode);
   const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
@@ -240,7 +347,7 @@ export const useOrderHistoryPanel = () => {
     (orderIds: string[], callbacks?: OrderHistoryCallbacks) => {
       return cancelOrder({ orderIds, callbacks });
     },
-    [cancelOrder]
+    [cancelOrder],
   );
 
   const onSelectStatus = useMemo(() => {
@@ -259,21 +366,37 @@ export const useOrderHistoryPanel = () => {
     return [{ text: t.allOrders, value: "" }, ...result];
   }, [t]);
 
-  const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [cancelOrdersMode, updateState]);
+  const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [updateState]);
+
+  const onSelectOrder = useCallback(
+    (id: string) => {
+      if (orderIdsToCancel?.includes(id)) {
+        updateState({ orderIdsToCancel: orderIdsToCancel?.filter((orderId) => orderId !== id) });
+      } else {
+        updateState({ orderIdsToCancel: [...(orderIdsToCancel || []), id] });
+      }
+    },
+    [updateState, orderIdsToCancel],
+  );
+
+  const previewOrder = usePreviewOrder();
 
   return {
-    orders,
-    isLoading: orderLoading,
     refetch,
-    isRefetching,
     onClosePreview,
     onCancelOrders,
+    onSelectStatus,
+    onToggleCancelOrdersMode,
+    onSelectOrder,
+    isRefetching,
+    orders,
+    selectedOrders: !selectedStatus ? orders.all : orders[selectedStatus?.toUpperCase() as keyof typeof orders] || [],
+    isLoading: orderLoading,
+    previewOrder,
     openOrdersCount: orders?.OPEN?.length || 0,
     isCancelOrdersLoading,
     selectedStatus: selectedStatus || statuses[0].value,
-    onSelectStatus,
     statuses,
-    onToggleCancelOrdersMode,
     cancelOrdersMode,
     orderIdsToCancel,
   };
@@ -309,7 +432,7 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken]
+    [updateState, isSrcToken],
   );
 
   const value = isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(dstAmount || "", 8);
@@ -416,7 +539,7 @@ export const useSubmitSwapPanel = () => {
     (callbacks?: SwapCallbacks) => {
       return submitSwapMutation.mutateAsync(callbacks);
     },
-    [submitSwapMutation]
+    [submitSwapMutation],
   );
 
   return useMemo(() => {

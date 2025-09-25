@@ -6,12 +6,10 @@ import { OrderHistoryProvider } from "./context";
 
 export const OrderHistory = (props: OrderHistoryProps) => {
   const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
+  const isPreviewOrder = selectedOrderID !== undefined;
   return (
     <OrderHistoryProvider {...props}>
-      <div className={`twap-orders ${selectedOrderID !== undefined ? "twap-orders__show-selected" : ""}`}>
-        <HistoryOrderPreview />
-        <OrderHistoryList />
-      </div>
+      <div className={`twap-orders ${selectedOrderID !== undefined ? "twap-orders__show-selected" : ""}`}>{isPreviewOrder ? <HistoryOrderPreview /> : <OrderHistoryList />}</div>
     </OrderHistoryProvider>
   );
 };

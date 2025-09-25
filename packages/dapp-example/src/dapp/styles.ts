@@ -197,10 +197,14 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       },
     },
     ".twap-orders__selected-order-header": {
-      gap: 10,
-      marginBottom: 20,
+      "&-back-icon": {
+        cursor: "pointer",
+      },
       "&-title": {
-        fontSize: 13,
+        fontWeight: 500,
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
       },
     },
     ".twap-orders__list": {
@@ -225,6 +229,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       justifyContent: "space-between",
       gap: 10,
       width: "100%",
+      marginBottom: 20,
     },
     ".twap-orders__list-header-select-toggle-container": {
       display: "flex",

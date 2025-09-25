@@ -113,7 +113,7 @@ export type BuildRePermitOrderDataProps = {
   srcAmountPerChunk: string;
   dstMinAmountPerChunk?: string;
   triggerAmountPerChunk?: string;
-  exchangeAddress: string;
+  limitAmountPerChunk?: string;
 };
 export type Address = `0x${string}`;
 export type Hex = `0x${string}`;
@@ -124,41 +124,41 @@ export interface TokenPermissions {
   amount: string;
 }
 
-export interface PermitDataOrder {
-  reactor: Address;
-  executor: Address;
-  exchange: {
-    adapter: Address;
-    ref: Address;
-    share: string;
-    data: Hex;
-  };
-  swapper: Address;
-  nonce: string;
-  deadline: string;
-  exclusivity: string;
-  epoch: string;
-  slippage: string;
-  freshness: string;
-  input: {
+export interface OrderData {
+  permitted: {
     token: Address;
     amount: string;
-    maxAmount: string;
   };
-  output: {
-    token: Address;
-    amount: string;
-    maxAmount: string;
-    recipient: Address;
-  };
-}
-
-export interface RePermitWitnessTransferFrom {
-  permitted: TokenPermissions;
   spender: Address;
   nonce: string;
   deadline: string;
-  witness: PermitDataOrder;
+  witness: {
+    info: {
+      reactor: Address;
+      swapper: Address;
+      nonce: string;
+      deadline: string;
+      additionalValidationContract: Address;
+      additionalValidationData: Hex;
+    };
+    exclusiveFiller: Address;
+    exclusivityOverrideBps: string;
+    input: {
+      token: Address;
+      amount: string;
+      maxAmount: string;
+    };
+    output: {
+      token: Address;
+      amount: string;
+      recipient: Address;
+      maxAmount: string;
+    };
+    epoch: string; // No epoch for stop-loss orders
+    slippage: string; // 1% slippage
+    trigger: string; // Stop-loss trigger amount in wei
+    chainId: string; // BNB Smart Chain
+  };
 }
 
 // Full typed-data container
@@ -171,7 +171,7 @@ export interface RePermitTypedData {
   };
   primaryType: "RePermitWitnessTransferFrom";
   types: typeof EIP712_TYPES;
-  message: RePermitWitnessTransferFrom;
+  message: OrderData;
 }
 
 export type Signature = {
@@ -257,5 +257,22 @@ export type RawOrderNew = {
     nextEligibleTime: string;
     lastEligibleCheck: string;
     status: "eligible";
+  };
+};
+
+export type SpotConfig = {
+  wm: Address;
+  repermit: Address;
+  cosigner: Address;
+  reactor: Address;
+  executor: Address;
+  refinery: Address;
+  dex: {
+    thena: {
+      type: string;
+      router: Address;
+      adapter: Address;
+      fee: Address;
+    };
   };
 };

@@ -1,29 +1,39 @@
-import { buildOrder, getOrderFillDelayMillis, getUserOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { buildOrder, getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getUserOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
-import { Module, Token } from "../types";
+import { Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
 
-export const useOrderName = (isMarketOrder = false, chunks = 1) => {
+export const useGetOrderName = () => {
   const { translations: t, module } = useTwapContext();
+  return useCallback(
+    (isMarketOrder = false, chunks = 1) => {
+      // if (module === Module.STOP_LOSS) {
+      //   return t.stopLoss;
+      // }
+      // if (module === Module.TAKE_PROFIT) {
+      //   return t.takeProfit;
+      // }
+      if (isMarketOrder) {
+        return t.twapMarket;
+      }
+      if (chunks === 1) {
+        return t.limit;
+      }
+      return t.twapLimit;
+    },
+    [t, module],
+  );
+};
+
+export const useOrderName = (isMarketOrder = false, chunks = 1) => {
+  const getOrderName = useGetOrderName();
   return useMemo(() => {
-    if (module === Module.STOP_LOSS) {
-      return t.stopLoss;
-    }
-    if (module === Module.TAKE_PROFIT) {
-      return t.takeProfit;
-    }
-    if (isMarketOrder) {
-      return t.twapMarket;
-    }
-    if (chunks === 1) {
-      return t.limit;
-    }
-    return t.twapLimit;
-  }, [t, isMarketOrder, chunks, module]);
+    return getOrderName(isMarketOrder, chunks);
+  }, [getOrderName, isMarketOrder, chunks]);
 };
 
 const useOrdersQueryKey = () => {
@@ -34,14 +44,7 @@ const useOrdersQueryKey = () => {
 export const usePersistedOrdersStore = () => {
   const { account, config } = useTwapContext();
 
-  const ordersKey = `orders-${account}-${config.exchangeAddress}`;
   const cancelledOrderIdsKey = `cancelled-orders-${account}-${config.exchangeAddress}`;
-
-  const getCreatedOrders = useCallback((): Order[] => {
-    const res = localStorage.getItem(ordersKey);
-    if (!res) return [];
-    return JSON.parse(res);
-  }, [ordersKey]);
 
   const getCancelledOrderIds = useCallback((): number[] => {
     const res = localStorage.getItem(cancelledOrderIdsKey);
@@ -49,15 +52,6 @@ export const usePersistedOrdersStore = () => {
     return JSON.parse(res);
   }, [cancelledOrderIdsKey]);
 
-  const addCreatedOrder = useCallback(
-    (order: Order) => {
-      const orders = getCreatedOrders();
-      if (orders.some((o) => o.id === order.id)) return;
-      orders.push(order);
-      localStorage.setItem(ordersKey, JSON.stringify(orders));
-    },
-    [getCreatedOrders, ordersKey],
-  );
   const addCancelledOrderId = useCallback(
     (orderId: number) => {
       const cancelledOrderIds = getCancelledOrderIds();
@@ -69,13 +63,7 @@ export const usePersistedOrdersStore = () => {
     },
     [getCancelledOrderIds, cancelledOrderIdsKey],
   );
-  const deleteCreatedOrder = useCallback(
-    (id: number) => {
-      // const orders = getCreatedOrders().filter((order) => order.id !== id);
-      // localStorage.setItem(ordersKey, JSON.stringify(orders));
-    },
-    [getCreatedOrders, ordersKey],
-  );
+
   const deleteCancelledOrderId = useCallback(
     (orderId: number) => {
       const cancelledOrderIds = getCancelledOrderIds().filter((id) => id !== orderId);
@@ -85,17 +73,13 @@ export const usePersistedOrdersStore = () => {
   );
 
   return {
-    getCreatedOrders,
     getCancelledOrderIds,
-    addCreatedOrder,
     addCancelledOrderId,
-    deleteCreatedOrder,
     deleteCancelledOrderId,
   };
 };
 
 export const useOptimisticAddOrder = () => {
-  const persistedOrdersStore = usePersistedOrdersStore();
   const queryClient = useQueryClient();
   const { account, config } = useTwapContext();
   const queryKey = useOrdersQueryKey();
@@ -121,14 +105,13 @@ export const useOptimisticAddOrder = () => {
         status: OrderStatus.Open,
       });
 
-      persistedOrdersStore.addCreatedOrder(order);
       queryClient.setQueryData(queryKey, (orders?: Order[]) => {
         if (!orders) return [order];
         if (orders?.some((o) => o.id === order.id)) return orders;
         return [order, ...orders];
       });
     },
-    [persistedOrdersStore.addCreatedOrder, queryClient, queryKey, config, account],
+    [queryClient, queryKey, config, account],
   );
 };
 
@@ -155,19 +138,10 @@ export const useOptimisticCancelOrder = () => {
 };
 
 const useHandlePersistedOrders = () => {
-  const { getCreatedOrders, getCancelledOrderIds, deleteCreatedOrder, deleteCancelledOrderId } = usePersistedOrdersStore();
+  const { getCancelledOrderIds, deleteCancelledOrderId } = usePersistedOrdersStore();
   const { config } = useTwapContext();
   return useCallback(
     (orders: Order[]) => {
-      getCreatedOrders().forEach((localStorageOrder) => {
-        if (orders.some((order) => order.id.toString() === localStorageOrder.id.toString())) {
-          console.log(`removing order: ${localStorageOrder.id}`);
-          // deleteCreatedOrder(localStorageOrder.id);
-        } else {
-          console.log(`adding order: ${localStorageOrder.id}`);
-          orders.unshift(localStorageOrder);
-        }
-      });
       const cancelledOrderIds = new Set(getCancelledOrderIds());
 
       orders.forEach((order, index) => {
@@ -182,7 +156,7 @@ const useHandlePersistedOrders = () => {
         }
       });
     },
-    [getCreatedOrders, deleteCreatedOrder, getCancelledOrderIds, deleteCancelledOrderId, config],
+    [getCancelledOrderIds, deleteCancelledOrderId, config],
   );
 };
 
@@ -240,4 +214,18 @@ export const useOrders = () => {
 
 const filterAndSortOrders = (orders: Order[], status: OrderStatus) => {
   return orders.filter((order) => order.status === status).sort((a, b) => b.createdAt - a.createdAt);
+};
+
+export const useOrderLimitPrice = (srcToken?: Token, dstToken?: Token, order?: Order) => {
+  return useMemo(() => {
+    if (!srcToken || !dstToken || !order || order?.isMarketOrder) return;
+    return getOrderLimitPriceRate(order, srcToken?.decimals, dstToken?.decimals);
+  }, [order, srcToken, dstToken]);
+};
+
+export const useOrderAvgExcecutionPrice = (srcToken?: Token, dstToken?: Token, order?: Order) => {
+  return useMemo(() => {
+    if (!srcToken || !dstToken || !order) return;
+    return getOrderExcecutionRate(order, srcToken.decimals, dstToken.decimals);
+  }, [order, srcToken, dstToken]);
 };

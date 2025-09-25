@@ -1,4 +1,4 @@
-import { iwethabi } from "@orbs-network/twap-sdk";
+import { IWETH_ABI } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
@@ -28,7 +28,7 @@ export const useUnwrapToken = () => {
         hash = await overrides.unwrap(value);
       } else {
         hash = await walletClient.writeContract({
-          abi: iwethabi,
+          abi: IWETH_ABI,
           functionName: "withdraw",
           account: account,
           address: wTokenAddress as `0x${string}`,

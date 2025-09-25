@@ -8,6 +8,7 @@ import { useDstMinAmountPerTrade } from "./use-dst-amount";
 import { useSrcAmount } from "./use-src-amount";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useTrades } from "./use-trades";
+import { useLimitPrice } from "./use-limit-price";
 
 export const useBuildRePermitOrderDataCallback = () => {
   const { srcToken, dstToken, chainId, account, slippage: _slippage, config } = useTwapContext();
@@ -17,7 +18,10 @@ export const useBuildRePermitOrderDataCallback = () => {
   const triggerAmountPerChunk = useTriggerPrice().amountPerTradeWei;
   const dstMinAmountPerChunk = useDstMinAmountPerTrade().amountWei;
   const fillDelay = useFillDelay().fillDelay;
+  const limitAmountPerChunk = useLimitPrice().amountWei;
   const slippage = _slippage * 100;
+  
+  
 
   return useCallback(() => {
     const srcTokenAddress = isNativeAddress(srcToken?.address || "") ? getNetwork(chainId)?.wToken.address : srcToken?.address;
@@ -37,7 +41,21 @@ export const useBuildRePermitOrderDataCallback = () => {
       srcAmountPerChunk: srcChunkAmount,
       dstMinAmountPerChunk,
       triggerAmountPerChunk,
-      exchangeAddress: config.exchangeAddress,
+      limitAmountPerChunk,
     });
-  }, [srcToken, dstToken, chainId, account, srcAmountWei, deadlineMillis, srcChunkAmount, triggerAmountPerChunk, slippage, dstMinAmountPerChunk, fillDelay, config]);
+  }, [
+    srcToken,
+    dstToken,
+    chainId,
+    account,
+    srcAmountWei,
+    deadlineMillis,
+    srcChunkAmount,
+    triggerAmountPerChunk,
+    slippage,
+    dstMinAmountPerChunk,
+    fillDelay,
+    config,
+    limitAmountPerChunk,
+  ]);
 };

@@ -22,7 +22,13 @@ const useSignOrder = () => {
       throw new Error("missing required parameters");
     }
 
-    const { orderData, domain } = buildRePermitOrderData();
+    const repermitOrderData = buildRePermitOrderData();
+
+    if (!repermitOrderData) {
+      throw new Error("repermitOrderData is not defined");
+    }
+
+    const { orderData, domain } = repermitOrderData;
 
     console.log({
       domain,
@@ -38,7 +44,7 @@ const useSignOrder = () => {
     console.log(`Account address: ${account}`);
 
     const signature = await walletClient?.signTypedData({
-      domain,
+      domain: domain as Record<string, any>,
       types: EIP712_TYPES,
       primaryType: REPERMIT_PRIMARY_TYPE,
       message: orderData as Record<string, any>,
@@ -64,8 +70,7 @@ const useCreateOrder = () => {
 
       const { signature, orderData } = await signOrder.mutateAsync();
 
-      await submitOrder(orderData, signature || "");
-      // analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
+      await submitOrder(orderData, signature);
 
       return {
         orderId: 0,

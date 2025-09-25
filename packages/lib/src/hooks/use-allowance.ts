@@ -1,4 +1,3 @@
-import { REPERMIT_ADDRESS } from "@orbs-network/twap-sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { ensureWrappedTokenAddress } from "../utils";
@@ -6,18 +5,18 @@ import { erc20Abi } from "viem";
 import { useCallback, useMemo } from "react";
 
 const useAllowanceCallback = () => {
-  const { account, publicClient, chainId } = useTwapContext();
+  const { account, publicClient, chainId, spotConfig } = useTwapContext();
 
   return useMutation({
     mutationFn: async (tokenAddress: string) => {
-      if (!publicClient || !chainId || !account) throw new Error("missing required parameters");
+      if (!publicClient || !chainId || !account || !spotConfig) throw new Error("missing required parameters");
 
       const allowance = await publicClient
         .readContract({
           address: ensureWrappedTokenAddress(tokenAddress, chainId) as `0x${string}`,
           abi: erc20Abi,
           functionName: "allowance",
-          args: [account as `0x${string}`, REPERMIT_ADDRESS as `0x${string}`],
+          args: [account as `0x${string}`, spotConfig.repermit],
         })
         .then((res) => res.toString());
 
@@ -70,7 +69,7 @@ export function useEnsureAllowanceCallback() {
     if (!enabled) throw new Error("Allowance check not ready (missing deps)");
     if (!query.isStale && query.data !== undefined) return query.data;
     return queryClient.ensureQueryData({ queryKey, queryFn, staleTime: 60_000 });
-  }, [enabled, query.isStale, query.data, queryClient, queryKey, queryFn]);
+  }, [enabled, query, queryClient, queryKey, queryFn]);
 
   const refetch = useCallback(async () => {
     const result = await query.refetch();

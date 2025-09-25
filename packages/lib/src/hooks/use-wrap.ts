@@ -1,4 +1,4 @@
-import { analytics, iwethabi } from "@orbs-network/twap-sdk";
+import { analytics, IWETH_ABI } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
@@ -25,7 +25,7 @@ export const useWrapToken = () => {
       hash = await overrides.wrap(amountWei);
     } else {
       hash = await walletClient.writeContract({
-        abi: iwethabi,
+        abi: IWETH_ABI,
         functionName: "deposit",
         account,
         address: wToken.address as `0x${string}`,

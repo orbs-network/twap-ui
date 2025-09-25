@@ -160,3 +160,33 @@ export const getConfigByExchange = (exchange: string, chainId: number): Config |
   // 3. Not found
   return undefined;
 };
+
+export const HexToNumber = (hexStr: string) => {
+  // Remove 0x prefix if present
+  const trimmed = hexStr.replace("0x", "");
+  // Parse as base 16
+  const val = parseInt(trimmed, 16);
+  if (isNaN(val)) {
+    return 0;
+  }
+  return val;
+};
+
+export const numberToHex = (value: number | bigint, padding = 0): string => {
+  if (typeof value !== "bigint" && !Number.isSafeInteger(value)) {
+    throw new Error("Value must be a safe integer or bigint");
+  }
+
+  // Convert to BigInt for consistency
+  const bigVal = BigInt(value);
+
+  // Convert to hex without 0x prefix
+  let hex = bigVal.toString(16);
+
+  // Apply zero-padding if requested (e.g., 32 bytes = 64 chars)
+  if (padding > 0) {
+    hex = hex.padStart(padding, "0");
+  }
+
+  return "0x" + hex;
+}

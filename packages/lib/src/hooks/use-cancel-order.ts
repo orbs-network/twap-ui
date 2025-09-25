@@ -1,5 +1,5 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { analytics, REPERMIT_ADDRESS, RePermitAbi } from "@orbs-network/twap-sdk";
+import { analytics, REPERMIT_ABI } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { isTxRejected } from "../utils";
@@ -8,13 +8,13 @@ import { useTwapStore } from "../useTwapStore";
 import { OrderHistoryCallbacks } from "../types";
 
 export const useCancelOrderMutation = () => {
-  const { account, walletClient, publicClient, overrides } = useTwapContext();
+  const { account, walletClient, publicClient, overrides, spotConfig } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
 
   const mutation = useMutation(async ({ orderIds, callbacks }: { orderIds: string[]; callbacks?: OrderHistoryCallbacks }) => {
     try {
-      if (!account || !walletClient || !publicClient) {
+      if (!account || !walletClient || !publicClient || !spotConfig) {
         throw new Error("missing required parameters");
       }
 
@@ -32,8 +32,8 @@ export const useCancelOrderMutation = () => {
       } else {
         hash = await walletClient.writeContract({
           account: account as `0x${string}`,
-          address: REPERMIT_ADDRESS as `0x${string}`,
-          abi: RePermitAbi,
+          address: spotConfig.repermit,
+          abi: REPERMIT_ABI,
           functionName: "cancel",
           args: orderIds, // pass nonce, that is part of the order
           chain: walletClient.chain,

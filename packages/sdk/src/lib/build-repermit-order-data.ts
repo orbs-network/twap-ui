@@ -1,5 +1,7 @@
-import { EXCLUSIVITY_OVERRIDE_BPS, EXECUTOR_ADDRESS, REACTOR_ADDRESS, REPERMIT_ADDRESS } from "./consts";
-import { Address, BuildRePermitOrderDataProps, RePermitWitnessTransferFrom } from "./types";
+import { EXCLUSIVITY_OVERRIDE_BPS } from "./consts";
+import { getSpotConfig } from "./lib";
+import { zeroAddress } from "./networks";
+import { Address, BuildRePermitOrderDataProps, OrderData } from "./types";
 import { safeBNString } from "./utils";
 
 export const buildRePermitOrderData = ({
@@ -14,36 +16,34 @@ export const buildRePermitOrderData = ({
   srcAmountPerChunk,
   dstMinAmountPerChunk,
   triggerAmountPerChunk,
-  exchangeAddress,
+  limitAmountPerChunk,
 }: BuildRePermitOrderDataProps) => {
   const nonce = (Date.now() * 1000).toString();
   const epoch = safeBNString(fillDelayMillis / 1000);
   const deadline = safeBNString(deadlineMilliseconds / 1000);
+  const spotConfig = getSpotConfig(chainId);
 
-  const orderData: RePermitWitnessTransferFrom = {
+  if (!spotConfig) return;
+
+  const orderData: OrderData = {
     permitted: {
       token: srcToken as Address,
       amount: srcAmount,
     },
-    spender: REACTOR_ADDRESS,
+    spender: spotConfig.reactor,
     nonce: nonce,
     deadline: deadline,
     witness: {
-      reactor: REACTOR_ADDRESS,
-      executor: EXECUTOR_ADDRESS,
-      exchange: {
-        adapter: exchangeAddress as Address,
-        ref: "0xfeE0000a55d378afbcbBAEAEf29b58F8872b7F02",
-        share: "5000",
-        data: "0x",
+      info: {
+        reactor: spotConfig.reactor,
+        swapper: account as Address,
+        nonce: nonce,
+        deadline: deadline,
+        additionalValidationContract: zeroAddress,
+        additionalValidationData: "0x",
       },
-      swapper: account as Address,
-      nonce: nonce,
-      deadline: deadline,
-      exclusivity: EXCLUSIVITY_OVERRIDE_BPS,
-      epoch,
-      slippage: slippage.toString(),
-      freshness: "10",
+      exclusiveFiller: zeroAddress,
+      exclusivityOverrideBps: EXCLUSIVITY_OVERRIDE_BPS,
       input: {
         token: srcToken as Address,
         amount: srcAmountPerChunk,
@@ -52,17 +52,21 @@ export const buildRePermitOrderData = ({
       output: {
         token: dstToken as Address,
         amount: dstMinAmountPerChunk || "0",
-        maxAmount: triggerAmountPerChunk || "",
         recipient: account as Address,
+        maxAmount: limitAmountPerChunk || "",
       },
+      epoch,
+      slippage: slippage.toString(),
+      trigger: triggerAmountPerChunk || "",
+      chainId: chainId.toString(),
     },
   };
 
   const domain = {
     name: "RePermit",
     version: "1",
-    chainId: chainId,
-    verifyingContract: REPERMIT_ADDRESS as Address,
+    chainId,
+    verifyingContract: spotConfig.repermit,
   };
 
   return {
