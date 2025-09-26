@@ -1,16 +1,15 @@
 import { API_ENDPOINT } from "./consts";
+import { buildSinkOrder, Order } from "./orders";
 import { OrderData, Signature } from "./types";
 
-
-export const submitOrder = async (order: OrderData, signature: Signature) => {
+export const submitOrder = async (order: OrderData, signature: Signature): Promise<Order> => {
   const body = {
     signature,
     order,
     status: "pending",
   };
 
-  console.log({signature});
-  
+  console.log({ signature });
 
   console.log("order", order);
   console.log("signature", signature);
@@ -21,5 +20,5 @@ export const submitOrder = async (order: OrderData, signature: Signature) => {
     body: JSON.stringify(body),
   });
   const data = await response.json();
-  return data;
+  return buildSinkOrder(data);
 };

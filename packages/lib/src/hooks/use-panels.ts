@@ -449,9 +449,7 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
   };
 };
 
-export const useSrcTokenPanel = () => {
-  return useTokenPanel(true);
-};
+export const useSrcTokenPanel = () => useTokenPanel(true)
 
 export const useDstTokenPanel = () => {
   const dstAmount = useDstTokenAmount().amountUI;
@@ -529,10 +527,10 @@ export const useSubmitSwapPanel = () => {
 
     callbacks?.createOrder?.onRequest?.(data);
     const result = await submitOrderMutation.mutateAsync(callbacks);
-    callbacks?.createOrder?.onSuccess?.({
-      ...data,
-      receipt: result?.receipt,
-    });
+    // callbacks?.createOrder?.onSuccess?.({
+    //   ...data,
+    //   receipt: " " ,
+    // });
     return result;
   });
 

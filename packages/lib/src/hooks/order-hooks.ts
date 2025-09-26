@@ -1,8 +1,7 @@
-import { buildOrder, getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getUserOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getUserOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
-import moment from "moment";
 import { useTwapContext } from "../context";
 import { Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
@@ -84,27 +83,7 @@ export const useOptimisticAddOrder = () => {
   const { account, config } = useTwapContext();
   const queryKey = useOrdersQueryKey();
   return useCallback(
-    (orderId: number, txHash: string, params: string[], srcToken: Token, dstToken: Token) => {
-      const order = buildOrder({
-        srcAmount: params[3],
-        srcTokenAddress: srcToken!.address,
-        dstTokenAddress: dstToken!.address,
-        srcAmountPerChunk: params[4],
-        deadline: Number(params[6]) * 1000,
-        dstMinAmountPerChunk: params[5],
-        tradeDollarValueIn: "",
-        blockNumber: 0,
-        id: "",
-        fillDelay: Number(params[8]),
-        createdAt: moment().utc().valueOf(),
-        txHash,
-        maker: account!,
-        exchange: config.exchangeAddress,
-        twapAddress: config.twapAddress,
-        chainId: config.chainId,
-        status: OrderStatus.Open,
-      });
-
+    (order: Order) => {
       queryClient.setQueryData(queryKey, (orders?: Order[]) => {
         if (!orders) return [order];
         if (orders?.some((o) => o.id === order.id)) return orders;

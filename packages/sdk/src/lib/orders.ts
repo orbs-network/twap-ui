@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-constant-condition */
-import { Config, LensOrder, OrderStatus, OrderType, ParsedFills, RawOrder, TwapFill, RawOrderNew } from "./types";
+import { Config, OrderStatus, OrderType, ParsedFills, RawOrder, TwapFill, SinkOrder } from "./types";
 import BN from "bignumber.js";
 import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl, normalizeSubgraphList } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
@@ -550,36 +550,38 @@ export const getOrderFillDelayMillis = (order: Order, config: Config) => {
   return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
 };
 
-export const getApiOrders = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account?: string }): Promise<Order[]> => {
+export const buildSinkOrder = (order: SinkOrder) => {
+  return buildOrder({
+    id: order.hash,
+    srcAmount: order.order.witness.input.maxAmount,
+    srcTokenAddress: order.order.witness.input.token,
+    dstTokenAddress: order.order.witness.output.token,
+    srcAmountPerChunk: order.order.witness.input.amount,
+    deadline: Number(order.order.deadline) * 1000,
+    dstMinAmountPerChunk: order.order.witness.output.maxAmount,
+    tradeDollarValueIn: "",
+    fillDelay: Number(order.order.witness.epoch),
+    createdAt: new Date(order.timestamp).getTime(),
+    txHash: order.hash,
+    maker: order.order.witness.info.swapper,
+    exchange: "",
+    twapAddress: "",
+    chainId: Number(order.order.witness.chainId),
+    status: OrderStatus.Open,
+    srcTokenSymbol: "",
+    dstTokenSymbol: "",
+  });
+};
+
+export const getSinkOrders = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account?: string }): Promise<Order[]> => {
   if (!account) return [];
   const response = await fetch(`${API_ENDPOINT}/orders?swapper=${account}&chainId=${chainId}`, {
     signal,
   });
 
-  const payload = (await response.json()) as { orders: RawOrderNew[] };
+  const payload = (await response.json()) as { orders: SinkOrder[] };
 
-  return payload.orders.map((it) => {
-    return buildOrder({
-      id: it.hash,
-      srcAmount: it.order.witness.input.maxAmount,
-      srcTokenAddress: it.order.witness.input.token,
-      dstTokenAddress: it.order.witness.output.token,
-      srcAmountPerChunk: it.order.witness.input.amount,
-      deadline: Number(it.order.deadline) * 1000,
-      dstMinAmountPerChunk: it.order.witness.output.maxAmount,
-      tradeDollarValueIn: "",
-      fillDelay: Number(it.order.witness.epoch),
-      createdAt: new Date(it.timestamp).getTime(),
-      txHash: it.hash,
-      maker: it.order.witness.info.swapper,
-      exchange: "",
-      twapAddress: "",
-      chainId: Number(it.order.witness.chainId),
-      status: OrderStatus.Open,
-      srcTokenSymbol: "",
-      dstTokenSymbol: "",
-    });
-  });
+  return payload.orders.map(buildSinkOrder);
 };
 
 export const getUserOrders = async ({
@@ -597,7 +599,7 @@ export const getUserOrders = async ({
 }): Promise<Order[]> => {
   return Promise.all([
     getOrdersFromGraph({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }),
-    getApiOrders({ chainId: config.chainId, signal, account }),
+    getSinkOrders({ chainId: config.chainId, signal, account }),
   ]).then(([graphOrders, apiOrders]) => {
     return [...graphOrders, ...apiOrders];
   });

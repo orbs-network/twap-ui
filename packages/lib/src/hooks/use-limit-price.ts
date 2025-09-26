@@ -79,15 +79,16 @@ export const useLimitPriceToggle = () => {
   const { module } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const defaultLimitPricePercent = useDefaultLimitPricePercent();
   const triggerPricePercent = useTwapStore((s) => s.state.triggerPricePercent) || 0;
 
   const toggleLimitPrice = useCallback(() => {
     if (!isMarketOrder && module === Module.STOP_LOSS) {
-      updateState({ limitPricePercent: triggerPricePercent - 5 });
+      updateState({ limitPricePercent: defaultLimitPricePercent });
     }
 
     updateState({ isMarketOrder: !isMarketOrder });
-  }, [updateState, triggerPricePercent, module, isMarketOrder]);
+  }, [updateState, triggerPricePercent, module, isMarketOrder, defaultLimitPricePercent]);
 
   return {
     isLimitPrice: !isMarketOrder,

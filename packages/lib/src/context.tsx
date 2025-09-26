@@ -60,7 +60,7 @@ const Content = (props: TwapProps) => {
   const translations = useTranslations(props.overrides?.translations);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const spotConfig = useMemo(() => (!props.chainId ? undefined : getSpotConfig(props.chainId)), [props.chainId]);
-console.log(spotConfig);
+  console.log(spotConfig);
 
   useEffect(() => {
     analytics.init(props.config);

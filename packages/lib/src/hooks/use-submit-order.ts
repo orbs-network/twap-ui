@@ -1,16 +1,60 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { isNativeAddress, submitOrder } from "@orbs-network/twap-sdk";
+import BN from "bignumber.js";
+import { analytics, isNativeAddress, IWETH_ABI, submitOrder } from "@orbs-network/twap-sdk";
 import { SwapCallbacks, Steps, Token } from "../types";
 import { ensureWrappedToken, isTxRejected } from "../utils";
-import { useApproveToken, useHasAllowanceCallback } from "./use-approve-token";
-import { useWrapToken } from "./use-wrap";
 import { useSrcAmount } from "./use-src-amount";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../useTwapStore";
 import { EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/twap-sdk";
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
-import { numberToHex, parseSignature } from "viem";
+import { erc20Abi, maxUint256, numberToHex, parseSignature } from "viem";
+import { useOptimisticAddOrder } from "./order-hooks";
+import { useNetwork } from "./helper-hooks";
+import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
+
+const useWrapToken = () => {
+  const { account, walletClient, overrides } = useTwapContext();
+  const wToken = useNetwork()?.wToken;
+  const getTransactionReceipt = useGetTransactionReceipt();
+  const srcAmount = useSrcAmount().amountWei;
+
+  return useMutation(async ({ onHash }: { onHash?: (hash: string) => void }) => {
+    if (!account || !walletClient || !srcAmount) {
+      throw new Error("missing required parameters");
+    }
+    if (!wToken) {
+      throw new Error("tokenAddress is not defined");
+    }
+
+    let hash: `0x${string}` | undefined;
+    if (overrides?.wrap) {
+      hash = await overrides.wrap(BigInt(srcAmount));
+    } else {
+      hash = await walletClient.writeContract({
+        abi: IWETH_ABI,
+        functionName: "deposit",
+        account,
+        address: wToken.address as `0x${string}`,
+        value: BigInt(srcAmount),
+        chain: walletClient.chain,
+      });
+    }
+    onHash?.(hash);
+    const receipt = await getTransactionReceipt(hash);
+    if (!receipt) {
+      throw new Error("failed to get transaction receipt");
+    }
+
+    if (receipt.status === "reverted") {
+      throw new Error("failed to wrap token");
+    }
+
+    analytics.onWrapSuccess(hash);
+    return receipt;
+  });
+};
 
 const useSignAndSend = () => {
   const { account, walletClient, chainId } = useTwapContext();
@@ -57,11 +101,7 @@ const useSignAndSend = () => {
       s: parsedSignature.s,
     };
 
-    await submitOrder(orderData, signature);
-    return {
-      orderId: 0,
-      receipt: undefined,
-    };
+    return submitOrder(orderData, signature);
   });
 };
 
@@ -71,10 +111,7 @@ const useEnsureUserApprovedToken = () => {
   return useMutation(async (token: Token) => {
     let userApprovedSuccessfully = false;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { approvalRequired, allowance } = await hasAllowanceCallback(token.address);
-      console.log("approvalRequired", approvalRequired);
-      console.log("allowance", allowance);
-      console.log("token", token);
+      const { approvalRequired } = await hasAllowanceCallback(token.address);
 
       if (!approvalRequired) {
         userApprovedSuccessfully = true;
@@ -91,6 +128,65 @@ const useEnsureUserApprovedToken = () => {
   });
 };
 
+const useHasAllowanceCallback = () => {
+  const { account, publicClient, chainId, spotConfig } = useTwapContext();
+
+  return useMutation({
+    mutationFn: async (tokenAddress: string) => {
+      if (!publicClient || !chainId || !account || !spotConfig) throw new Error("missing required parameters");
+      const allowance = await publicClient
+        .readContract({
+          address: tokenAddress as `0x${string}`,
+          abi: erc20Abi,
+          functionName: "allowance",
+          args: [account as `0x${string}`, spotConfig.repermit],
+        })
+        .then((res) => res.toString());
+
+      return { allowance, approvalRequired: !BN(allowance || "0").gte(maxUint256.toString()) };
+    },
+  });
+};
+
+const useApproveToken = () => {
+  const { account, walletClient, publicClient, overrides, chainId, spotConfig } = useTwapContext();
+  const getTransactionReceipt = useGetTransactionReceipt();
+
+  return useMutation(async ({ token, onHash }: { token: Token; onHash: (hash: string) => void }) => {
+    if (!account || !walletClient || !publicClient || !chainId || !spotConfig) {
+      throw new Error("missing required parameters");
+    }
+
+    let hash: `0x${string}` | undefined;
+    if (overrides?.approveOrder) {
+      hash = await overrides.approveOrder({ tokenAddress: token.address, spenderAddress: spotConfig.repermit, amount: maxUint256 });
+    } else {
+      hash = await walletClient.writeContract({
+        abi: erc20Abi,
+        functionName: "approve",
+        account: account as `0x${string}`,
+        address: token.address as `0x${string}`,
+        args: [spotConfig.repermit, maxUint256],
+        chain: walletClient.chain,
+      });
+    }
+    onHash(hash);
+    const receipt = await getTransactionReceipt(hash);
+
+    if (!receipt) {
+      throw new Error("failed to get transaction receipt");
+    }
+
+    if (receipt.status === "reverted") {
+      throw new Error("failed to approve token");
+    }
+
+    console.log("approve token success", receipt);
+
+    return receipt;
+  });
+};
+
 export const useSubmitOrderMutation = () => {
   const { srcToken, dstToken, chainId } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
@@ -100,7 +196,8 @@ export const useSubmitOrderMutation = () => {
   const { mutateAsync: ensureUserApprovedToken } = useEnsureUserApprovedToken();
   const { mutateAsync: hasAllowanceCallback } = useHasAllowanceCallback();
   const updateSwapExecution = useTwapStore((s) => s.updateSwapExecution);
-  const { amountWei: srcAmount, amountUI: srcAmountUI = "" } = useSrcAmount();
+  const { amountUI: srcAmountUI = "" } = useSrcAmount();
+  const addOrder = useOptimisticAddOrder();
 
   return useMutation(async (callbacks?: SwapCallbacks) => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
@@ -125,7 +222,7 @@ export const useSubmitOrderMutation = () => {
       if (wrapRequired) {
         updateSwapExecution({ step: Steps.WRAP });
         callbacks?.wrap?.onRequest?.(srcAmountUI);
-        const wrapReceipt = await wrapCallback({ amount: srcAmount, onHash: (hash) => updateSwapExecution({ wrapTxHash: hash }) });
+        const wrapReceipt = await wrapCallback({ onHash: (hash) => updateSwapExecution({ wrapTxHash: hash }) });
         stepIndex++;
         updateSwapExecution({ stepIndex });
         wrapSuccess = true;
@@ -146,6 +243,7 @@ export const useSubmitOrderMutation = () => {
       const order = await createOrderCallback();
 
       updateSwapExecution({ status: SwapStatus.SUCCESS });
+      addOrder(order);
       return order;
     } catch (error) {
       if (wrapSuccess) {

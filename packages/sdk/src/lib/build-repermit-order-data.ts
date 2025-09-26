@@ -43,10 +43,10 @@ export const buildRePermitOrderData = ({
       nonce,
       deadline,
       chainid: chainId.toString(),
-      exclusivity: '0',
+      exclusivity: "0",
       epoch,
       slippage: slippage.toString(),
-      freshness: '10',
+      freshness: "10",
       input: {
         token: srcToken as Address,
         amount: srcAmountPerChunk,
