@@ -836,6 +836,15 @@ export const useShowSwapModalButton = () => {
       disabled: true,
     };
   }
+
+  if (limit) {
+    return {
+      text: placeOrderText,
+      onClick: () => {},
+      loading: false,
+      disabled: true,
+    };
+  }
   if (marketPriceLoading) {
     return { text: translations.searchingForBestPrice, onClick: undefined, disabled: true };
   }
