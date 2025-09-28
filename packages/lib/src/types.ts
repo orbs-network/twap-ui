@@ -1,5 +1,5 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Module, Order, OrderStatus, OrderType, SpotConfig, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, Module, OrderStatus, OrderType, SpotConfig, TimeDuration } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -7,59 +7,39 @@ export { OrderStatus, type TwapFill, OrderType, Module } from "@orbs-network/twa
 
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
-  minReceived: string;
-  orderHistory: string;
-  orderCancelled: string;
-  cancelOrderModalTitle: string;
-  tradePrice: string;
-  takeProfit: string;
-  stopLossLimitPriceTooltip: string;
-  StopLossTriggerPriceError: string;
-  TakeProfitTriggerPriceError: string;
-  stopLossDurationTooltip: string;
-  emptyTriggerPrice: string;
-  triggerLimitPriceError: string;
-  perTrade: string;
-  triggerMarketPriceDisclaimer: string;
-  stopLossTooltip: string;
-  stopLossLabel: string;
-  confirmationDeadlineTooltip: string;
-  confirmationTradeSizeTooltip: string;
-  allOrders: string;
-  triggerPrice: string;
-  confirmationTotalTradesTooltip: string;
-  confirmationMinDstAmountTooltipLimit: string;
-  marketPriceTooltip: string;
-  stopLoss: string;
-  limitPriceTooltip: string;
+  deadlineTooltip: string;
   tradeSizeTooltip: string;
+  totalTradesTooltip: string;
+  minDstAmountTooltip: string;
+  marketPriceTooltip: string;
+  limitPriceTooltip: string;
+  outAmountLoading: string;
   maxDurationTooltip: string;
   tradeIntervalTootlip: string;
-  totalTradesTooltip: string;
-  connect: string;
+  triggerPriceTooltip: string;
+  triggerPriceMarket: string;
+  triggerPriceLimit: string;
   link: string;
   days: string;
   hours: string;
   minutes: string;
-  noLiquidity: string;
   seconds: string;
-  switchNetwork: string;
   placeOrder: string;
-  excecutionSummary: string;
-  orderInfo: string;
   confirmOrder: string;
   enterAmount: string;
+  emptyLimitPrice: string;
   insufficientFunds: string;
+  every: string;
+  over: string;
+  tradeInterval: string;
   deadline: string;
-  noOrders: string;
-  order: string;
   filled: string;
   remaining: string;
-  tradeInterval: string;
   cancelOrder: string;
   marketOrder: string;
   limitOrder: string;
   limitPrice: string;
+  finalExcecutionPrice: string;
   marketPrice: string;
   from: string;
   to: string;
@@ -71,17 +51,18 @@ export interface Translations {
   Canceled: string;
   confirmTx: string;
   expiration: string;
+  perTrade: string;
   minReceivedPerTrade: string;
+  triggerPricePerChunk: string;
   poweredBy: string;
-  minFillDelayError: string;
-  maxFillDelayError: string;
-  outAmountLoading: string;
-  emptyLimitPrice: string;
+  trades: string;
   maxChunksError: string;
   minChunksError: string;
   minTradeSizeError: string;
+  allOrders: string;
   weeks: string;
-  trades: string;
+  minFillDelayError: string;
+  maxFillDelayError: string;
   recipient: string;
   accept: string;
   disclaimer: string;
@@ -100,55 +81,47 @@ export interface Translations {
   numberOfTrades: string;
   AverageExecutionPrice: string;
   twapMarket: string;
-  twapLimit: string;
   twapMarketOrder: string;
-  every: string;
-  over: string;
-  selectToken: string;
+  twapLimit: string;
+  stopLoss: string;
+  takeProfit: string;
+  All: string;
+  minReceived: string;
   wrap: string;
   unwrap: string;
   balance: string;
+  noOrders: string;
+  order: string;
+  noLiquidity: string;
+  excecutionSummary: string;
+  orderInfo: string;
   wrapAction: string;
-  unwrapAction: string;
   approveAction: string;
   createOrderAction: string;
   orderModalConfirmOrder: string;
-  CreateOrderModalNativeBalanceError: string;
-  CreateOrderModalOrderCreated: string;
+  orderHistory: string;
   amountReceived: string;
   createdAt: string;
   amountOut: string;
   amountSent: string;
   status: string;
   progress: string;
-  finalExcecutionPrice: string;
   tradeIntervalTitle: string;
   tradesAmountTitle: string;
-  tradesAmountSmallText: string;
+  stopLossTooltip: string;
+  stopLossLabel: string;
+  StopLossTriggerPriceError: string;
+  TakeProfitTriggerPriceError: string;
+  triggerLimitPriceError: string;
+  takeProfitLimitPriceLessThanTriggerPrice: string;
+  triggerPrice: string;
+  tradePrice: string;
+  triggerMarketPriceDisclaimer: string;
+  stopLossLimitPriceTooltip: string;
+  stopLossDurationTooltip: string;
+  emptyTriggerPrice: string;
+  id: string;
 }
-
-export type MessageVariant = "error" | "warning" | "info";
-
-export type OrderHistoryModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children?: ReactNode;
-};
-
-export type LimitPanelPercentSelectProps = {
-  buttons: {
-    text: string;
-    selected: boolean;
-    onClick: () => void;
-    isReset: boolean;
-  }[];
-};
-
-export type MessageProps = {
-  variant: MessageVariant;
-  text: ReactNode;
-};
 
 export type SelectMenuProps = {
   items: SelectMeuItem[];
@@ -156,35 +129,9 @@ export type SelectMenuProps = {
   selected?: SelectMeuItem;
 };
 
-export type OrderHistoryListOrderProps = {
-  order: Order;
-  selectOrder: () => void;
-  cancelOrder: () => Promise<TransactionReceipt | undefined>;
-  selected: boolean;
-};
-
-export type LimitPanelInvertButtonProps = {
-  onClick: () => void;
-};
-
-export type OrderHistorySelectedOrderProps = {
-  order: Order;
-  onBackClick: () => void;
-  children: ReactNode;
-};
-
-export type DurationSelectButtonsProps = {
-  onSelect: (unit: TimeUnit) => void;
-  selected: number;
-};
-
 export type LabelProps = {
   text: string;
   tooltip?: string;
-};
-
-export type SwitchTokensProps = {
-  onClick: () => void;
 };
 
 export type TokenLogoProps = {
@@ -207,16 +154,6 @@ export type LinkProps = {
 export type USDProps = {
   value: string;
   isLoading: boolean;
-};
-
-export type CancelOrderButtonProps = {
-  order: Order;
-  isLoading: boolean;
-  onClick: () => void;
-  className?: string;
-  error?: string;
-  txHash?: string;
-  status?: SwapStatus;
 };
 
 export type TransactionModalCreateOrderSuccessProps = {
@@ -289,10 +226,6 @@ export type TransactionModalCancelOrderLoadingViewProps = {
   orderId: string;
 };
 
-interface CreateOrderSuccessCallbackArgs extends SwapData {
-  receipt?: TransactionReceipt;
-}
-
 export type InputError = {
   type: InputErrors;
   value: string | number;
@@ -325,9 +258,20 @@ type Callbacks = {
   onTriggerPriceChange?: (weiValue: string, uiValue: string) => void;
 };
 
+export type onCreateOrderRequest = {
+  srcToken: Token;
+  dstToken: Token;
+  srcAmount: string;
+  dstAmount: string;
+};
+
+interface CreateOrderSuccessCallbackArgs extends onCreateOrderRequest {
+  receipt?: TransactionReceipt;
+}
+
 export type SwapCallbacks = {
   createOrder?: {
-    onRequest?: (args: SwapData) => void;
+    onRequest?: (args: onCreateOrderRequest) => void;
     onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
   };
   approve?: {
@@ -398,7 +342,6 @@ export type SubmitOrderPanelProps = {
   USD?: FC<USDProps>;
   reviewDetails?: ReactNode;
   Label: FC<LabelProps>;
-  Button: FC<ButtonProps>;
 };
 
 export type OrderHistoryCallbacks = {
@@ -501,19 +444,7 @@ export enum Steps {
   WRAP = "wrap",
   APPROVE = "approve",
   CREATE = "create",
-  UNWRAP = "unwrap",
 }
-
-export type SwapData = {
-  srcToken: Token;
-  dstToken: Token;
-  srcAmount: string;
-  dstAmount: string;
-  dstMinAmountPerTrade: string;
-  srcUsdAmount: string;
-  dstUsdAmount: string;
-};
-
 export type SwapExecution = {
   status?: SwapStatus;
   error?: string;
@@ -551,7 +482,8 @@ export interface State {
   orderIdsToCancel?: string[];
 
   swapExecution: SwapExecution;
-  swap: SwapData;
+  acceptedMarketPrice?: string;
+  acceptedSrcAmount?: string;
 }
 
 export { SwapStatus };

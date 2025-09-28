@@ -1,17 +1,40 @@
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { useMemo } from "react";
 import { useTwapContext } from "../../context";
-import { isNativeAddress } from "@orbs-network/twap-sdk";
+import { isNativeAddress, Module } from "@orbs-network/twap-sdk";
 import { Steps, SubmitOrderPanelProps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { SwapFlowComponent } from "../swap-flow";
-import { useOrderName } from "../../hooks/order-hooks";
 import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
 import { SubmitOrderContextProvider, useSubmitOrderPanelContext } from "./context";
 import { Failed } from "./Failed";
 import { Main } from "./Main";
 import { useTrades } from "../../hooks/use-trades";
-import { useDerivedSwap } from "../../hooks/use-derived-swap";
+import { useSrcAmount } from "../../hooks/use-src-amount";
+import { useDstTokenAmount } from "../../hooks/use-dst-amount";
+
+ const useOrderName = (isMarketOrder = false, chunks = 1) => {
+  const { translations: t, module } = useTwapContext();
+  return useMemo(
+    () => {
+      if (module === Module.STOP_LOSS) {
+        return t.stopLoss;
+      }
+      if (module === Module.TAKE_PROFIT) {
+        return t.takeProfit;
+      }
+      if (isMarketOrder) {
+        return t.twapMarket;
+      }
+      if (chunks === 1) {
+        return t.limit;
+      }
+      return t.twapLimit;
+    },
+    [t, module, isMarketOrder, chunks],
+  );
+};
+
 
 const useTitle = () => {
   const { translations: t } = useTwapContext();
@@ -35,13 +58,6 @@ const useStep = () => {
   const swapTitle = useTitle();
 
   return useMemo((): Step | undefined => {
-    if (step === Steps.UNWRAP) {
-      return {
-        title: t.unwrapAction.replace("{symbol}", wSymbol || ""),
-        explorerUrl: unwrapExplorerUrl,
-        hideTokens: true,
-      };
-    }
     if (step === Steps.WRAP) {
       return {
         title: t.wrapAction.replace("{symbol}", symbol),
@@ -64,7 +80,9 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const { status, stepIndex, totalSteps } = useTwapStore((s) => s.state.swapExecution);
   const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link } = props;
 
-  const { srcAmount, dstAmount, srcToken, dstToken } = useDerivedSwap();
+  const { srcToken, dstToken } = useTwapContext();
+  const srcAmount = useSrcAmount().amountUI;
+  const dstAmount = useDstTokenAmount().amountUI;
 
   return (
     <SubmitOrderContextProvider {...props}>

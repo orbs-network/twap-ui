@@ -10,7 +10,7 @@ const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
   const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
   return (
-    <DetailRow title={t.expiration} tooltip={t.confirmationDeadlineTooltip}>
+    <DetailRow title={t.expiration} tooltip={t.deadlineTooltip}>
       {res}
     </DetailRow>
   );
@@ -20,8 +20,10 @@ const TriggerPrice = ({ price, dstToken, percentage }: { price?: string; dstToke
   const t = useTwapContext()?.translations;
   const priceF = useFormatNumber({ value: price });
 
+  if (BN(price || 0).isZero()) return null;
+
   return (
-    <DetailRow title={t.triggerPrice} tooltip={t.confirmationDeadlineTooltip}>
+    <DetailRow title={t.triggerPrice} tooltip={t.triggerPriceTooltip}>
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         {`${priceF ? priceF : "-"} ${dstToken?.symbol}`}
         {percentage && <small>{`(${percentage}%)`}</small>}
@@ -37,7 +39,7 @@ const LimitPrice = ({ price, dstToken, percentage, isMarketOrder }: { price?: st
   if (isMarketOrder) return null;
 
   return (
-    <DetailRow title={t.limitPrice} tooltip={t.confirmationDeadlineTooltip}>
+    <DetailRow title={t.limitPrice} tooltip={t.limitPriceTooltip}>
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         {`${priceF ? priceF : "-"} ${dstToken?.symbol}`}
         {percentage && <small>{`(${percentage}%)`}</small>}
@@ -54,7 +56,7 @@ const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: stri
   if (chunks === 1) return null;
 
   return (
-    <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
+    <DetailRow title={translations.individualTradeSize} tooltip={translations.tradeSizeTooltip}>
       {`${srcChunkAmount ? _srcChunkAmount : "-"} ${srcToken?.symbol || ""}`}
     </DetailRow>
   );
@@ -69,7 +71,7 @@ const MinDestAmount = ({ dstToken, dstMinAmountOut, totalChunks = 1 }: { dstToke
   if (BN(amountWei).lte(1)) return null;
 
   return (
-    <DetailRow title={totalChunks === 1 ? t.minReceived : t.minReceivedPerTrade} tooltip={t.confirmationMinDstAmountTooltipLimit}>
+    <DetailRow title={totalChunks === 1 ? t.minReceived : t.minReceivedPerTrade} tooltip={t.minDstAmountTooltip}>
       {`${dstMinAmountOut ? formattedValue : "-"} ${dstToken?.symbol}`}
     </DetailRow>
   );
@@ -81,7 +83,7 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
   if (chunks === 1) return null;
 
   return (
-    <DetailRow title={t.numberOfTrades} tooltip={t.confirmationTotalTradesTooltip}>
+    <DetailRow title={t.numberOfTrades} tooltip={t.totalTradesTooltip}>
       {chunks}
     </DetailRow>
   );
@@ -105,7 +107,7 @@ const Recipient = () => {
   );
 };
 
-const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; chunks: number }) => {
+const TradeInterval = ({ fillDelayMillis, chunks = 0 }: { fillDelayMillis?: number; chunks?: number }) => {
   const t = useTwapContext()?.translations;
   const text = useMemo(() => fillDelayText(fillDelayMillis), [fillDelayMillis]);
 
@@ -143,7 +145,9 @@ const DetailRow = ({
 };
 
 const OrderID = ({ id }: { id: string }) => {
-  return <DetailRow title="ID">{Number.isInteger(Number(id)) ? id : makeElipsisAddress(id)}</DetailRow>;
+  console.log("id", id, typeof id);
+
+  return <DetailRow title="ID">{typeof id === "number" ? id : makeElipsisAddress(id)}</DetailRow>;
 };
 
 export function OrderDetails({ children, className = "" }: { children?: ReactNode; className?: string }) {

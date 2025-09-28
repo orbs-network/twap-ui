@@ -15,8 +15,8 @@ export const buildRePermitOrderData = ({
   dstMinAmountPerChunk,
   triggerAmountPerChunk,
 }: BuildRePermitOrderDataProps) => {
-  const nonce = (Date.now() * 1000).toString();
-  const epoch = safeBNString(fillDelayMillis / 1000);
+  const nonce = safeBNString(Date.now() * 1000);
+  const epoch = parseInt((fillDelayMillis / 1000).toFixed(0));
   const deadline = safeBNString(deadlineMilliseconds / 1000);
   const spotConfig = getSpotConfig(chainId);
 
@@ -36,17 +36,17 @@ export const buildRePermitOrderData = ({
       exchange: {
         adapter: spotConfig.dex.thena.adapter,
         ref: spotConfig.dex.thena.fee,
-        share: "0",
+        share: 0,
         data: "0x",
       },
       swapper: account as Address,
       nonce,
       deadline,
-      chainid: chainId.toString(),
-      exclusivity: "0",
+      chainid: chainId,
+      exclusivity: 0,
       epoch,
-      slippage: slippage.toString(),
-      freshness: "10",
+      slippage,
+      freshness: 30,
       input: {
         token: srcToken as Address,
         amount: srcAmountPerChunk,

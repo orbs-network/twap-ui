@@ -1,4 +1,4 @@
-import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD } from "../hooks";
+import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD, useUnwrapToken } from "../hooks";
 import { NumberInput, Popup, PanelToggle } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar } from "antd";
@@ -18,12 +18,12 @@ import {
   Components,
   useTwap,
 } from "@orbs-network/twap-ui";
-import { Config, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, useChainId, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useDappContext } from "../context";
 import { GlobalStyles } from "./styles";
@@ -95,8 +95,25 @@ const OrderHistoryModal = () => {
   );
 };
 
+const ErrorView = () => {
+  const { resetSwap, srcAmountWei } = useTwap().submitSwapPanel;
+  const chainId = useChainId();
+  const network = getNetwork(chainId);
+  const { mutateAsync: onUnwrap } = useUnwrapToken();
+
+  return (
+    <div>
+      <p>Transaction Failed</p>
+      <p>
+        Note: {network?.native.symbol} was wrapped to {network?.wToken.symbol}
+      </p>
+      <Button onClick={() => onUnwrap({ onSuccess: resetSwap, srcAmount: srcAmountWei })}>Unwrap</Button>
+    </div>
+  );
+};
+
 const SubmitOrderPanelModal = () => {
-  const { onCloseModal, onOpenModal, isSubmitted, onSubmitOrder, isLoading } = useTwap().submitSwapPanel;
+  const { onCloseModal, onOpenModal, onSubmitOrder, swapLoading, wrapTxHash } = useTwap().submitSwapPanel;
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -114,8 +131,8 @@ const SubmitOrderPanelModal = () => {
     <>
       <Popup isOpen={isOpen} onClose={onClose}>
         <Components.SubmitOrderPanel
-          Button={TwapButton}
           Label={Label}
+          ErrorView={wrapTxHash ? <ErrorView /> : null}
           reviewDetails={
             <>
               <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
@@ -127,23 +144,25 @@ const SubmitOrderPanelModal = () => {
                 </Flex>
                 <Switch checked={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Flex>
-              <TwapButton onClick={onSubmitOrder} disabled={!disclaimerAccepted} loading={isLoading}>
+              <TwapButton onClick={onSubmitOrder} disabled={!disclaimerAccepted} loading={swapLoading}>
                 Confirm Order
               </TwapButton>
             </>
           }
         />
       </Popup>
-      {!isSubmitted && <ConfirmationButton onClick={onOpen} />}
+      <ConfirmationButton onClick={onOpen}  />
     </>
   );
 };
 
-const StyledButton = styled(Button)`
+const StyledButton = styled(Button)<{ disabled?: boolean }>`
   background: #141414 !important;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  color: white;
+  color: white!important;
+  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 `;
 
 const useUSD = (address?: string) => {
@@ -603,7 +622,7 @@ const TriggerLimitPrice = () => {
 };
 
 const TriggerPrice = () => {
-  const { price, sellToken, buyToken, onSetMarketRate, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error } = useTwap().triggerPricePanel;
+  const { price, sellToken, buyToken, onSetDefault, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error } = useTwap().triggerPricePanel;
   const { onInvert, isInverted } = useTwap().invertTradePanel;
 
   return (
@@ -619,7 +638,7 @@ const TriggerPrice = () => {
       <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
         <div className="flex flex-row gap-2 justify-between items-center w-full">
           <Label text={label} tooltip={tooltip} />
-          <ResetButton onClick={onSetMarketRate} text="set market rate" />
+          <ResetButton onClick={onSetDefault} text="set to default" />
         </div>
         <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
           <SymbolInput isLoading={isLoading} error={Boolean(error)} token={buyToken} onChange={onChange} value={price} />

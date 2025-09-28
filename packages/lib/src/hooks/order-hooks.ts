@@ -1,4 +1,4 @@
-import { getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getUserOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getUserOrders, Module, Order, OrderStatus, OrderType } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -6,34 +6,28 @@ import { useTwapContext } from "../context";
 import { Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
 
-export const useGetOrderName = () => {
-  const { translations: t, module } = useTwapContext();
-  return useCallback(
-    (isMarketOrder = false, chunks = 1) => {
-      // if (module === Module.STOP_LOSS) {
-      //   return t.stopLoss;
-      // }
-      // if (module === Module.TAKE_PROFIT) {
-      //   return t.takeProfit;
-      // }
-      if (isMarketOrder) {
-        return t.twapMarket;
-      }
-      if (chunks === 1) {
-        return t.limit;
-      }
+
+
+export const useOrderName = (order?: Order) => {
+  const { translations: t } = useTwapContext();
+  return useMemo(() => {
+    if (!order) return t.twapMarket;
+    if (order.type === OrderType.TRIGGER_PRICE_MARKET) {
+      return t.triggerPriceMarket;
+    }
+    if (order.type === OrderType.TRIGGER_PRICE_LIMIT) {
+      return t.triggerPriceLimit;
+    }
+    if (order.type === OrderType.TWAP_MARKET) {
+      return t.twapMarket;
+    }
+    if (order.type === OrderType.TWAP_LIMIT) {
       return t.twapLimit;
-    },
-    [t, module],
-  );
+    }
+    return t.twapMarket;
+  }, [t, order?.type]);
 };
 
-export const useOrderName = (isMarketOrder = false, chunks = 1) => {
-  const getOrderName = useGetOrderName();
-  return useMemo(() => {
-    return getOrderName(isMarketOrder, chunks);
-  }, [getOrderName, isMarketOrder, chunks]);
-};
 
 const useOrdersQueryKey = () => {
   const { account, config } = useTwapContext();

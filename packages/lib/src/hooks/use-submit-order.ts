@@ -201,7 +201,6 @@ export const useSubmitOrderMutation = () => {
 
   return useMutation(async (callbacks?: SwapCallbacks) => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
-    let wrapSuccess = false;
     try {
       if (!srcToken || !dstToken || !chainId) {
         throw new Error("missing required parameters");
@@ -225,7 +224,6 @@ export const useSubmitOrderMutation = () => {
         const wrapReceipt = await wrapCallback({ onHash: (hash) => updateSwapExecution({ wrapTxHash: hash }) });
         stepIndex++;
         updateSwapExecution({ stepIndex });
-        wrapSuccess = true;
         callbacks?.wrap?.onSuccess?.(wrapReceipt, srcAmountUI);
       }
 
@@ -246,9 +244,7 @@ export const useSubmitOrderMutation = () => {
       addOrder(order);
       return order;
     } catch (error) {
-      if (wrapSuccess) {
-        updateSwapExecution({ step: Steps.UNWRAP, status: SwapStatus.FAILED, stepIndex: undefined });
-      } else if (isTxRejected(error)) {
+      if (isTxRejected(error)) {
         updateSwapExecution({ step: undefined, status: undefined, stepIndex: undefined });
       } else {
         updateSwapExecution({ status: SwapStatus.FAILED, error: (error as any).message });

@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Token } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
-import { amountBN, amountUi, Configs, eqIgnoreCase, getNetwork, isNativeAddress, networks } from "@orbs-network/twap-sdk";
+import { amountBN, amountUi, Configs, eqIgnoreCase, getNetwork, isNativeAddress, IWETH_ABI, networks } from "@orbs-network/twap-sdk";
 import _ from "lodash";
-import { useAccount, usePublicClient, useReadContracts } from "wagmi";
+import { useAccount, useChainId, usePublicClient, useReadContracts, useWalletClient, useWriteContract } from "wagmi";
 import { api } from "./api";
 import { erc20Abi } from "viem";
 import { useDappContext } from "./context";
@@ -399,4 +399,37 @@ export const useToken = (address?: string) => {
     token,
     isLoading,
   };
+};
+
+export const useUnwrapToken = () => {
+  const chainId = useChainId();
+  const walletClient = useWalletClient();
+  const { address: account } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
+  const wTokenAddress = getNetwork(chainId)?.wToken.address;
+  return useMutation(async ({ srcAmount, onSuccess }: { srcAmount: string; onSuccess: () => void }) => {
+    try {
+      if (!wTokenAddress) throw new Error("wTokenAddress is not defined");
+      const value = BigInt(BN(srcAmount).decimalPlaces(0).toFixed());
+
+      const hash = await writeContractAsync({
+        abi: IWETH_ABI,
+        functionName: "withdraw",
+        account: account,
+        address: wTokenAddress as `0x${string}`,
+        args: [value],
+        chain: walletClient.data?.chain,
+      });
+      const receipt = await publicClient?.getTransactionReceipt({ hash });
+      if (!receipt) {
+        throw new Error("failed to get transaction receipt");
+      }
+
+      onSuccess();
+      return receipt;
+    } catch (error) {
+      console.error("failed to unwrap token", error);
+    }
+  });
 };

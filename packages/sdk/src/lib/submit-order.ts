@@ -9,8 +9,6 @@ export const submitOrder = async (order: OrderData, signature: Signature): Promi
     status: "pending",
   };
 
-  console.log({ signature });
-
   console.log("order", order);
   console.log("signature", signature);
   console.log("parsed signature", signature);
@@ -20,5 +18,5 @@ export const submitOrder = async (order: OrderData, signature: Signature): Promi
     body: JSON.stringify(body),
   });
   const data = await response.json();
-  return buildSinkOrder(data);
+  return buildSinkOrder(data.signedOrder);
 };

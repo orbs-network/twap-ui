@@ -7,6 +7,7 @@ import { initiateWallet } from "./lib";
 import { useListener } from "./hooks/use-default-values";
 import { ErrorBoundary } from "react-error-boundary";
 import { UserProvider } from "./use-twap";
+import { useTwapStore } from "./useTwapStore";
 
 const TwapFallbackUI = () => {
   return (
@@ -58,9 +59,9 @@ const Listeners = () => {
 
 const Content = (props: TwapProps) => {
   const translations = useTranslations(props.overrides?.translations);
+  const acceptedMarketPrice = useTwapStore((s) => s.state.acceptedMarketPrice);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const spotConfig = useMemo(() => (!props.chainId ? undefined : getSpotConfig(props.chainId)), [props.chainId]);
-  console.log(spotConfig);
 
   useEffect(() => {
     analytics.init(props.config);
@@ -75,9 +76,9 @@ const Content = (props: TwapProps) => {
         isWrongChain: !props.account || !props.chainId ? false : props.config.chainId !== props.chainId,
         walletClient,
         publicClient,
-        marketPrice: props.marketReferencePrice.value,
-        marketPriceLoading: props.marketReferencePrice.isLoading,
-        noLiquidity: props.marketReferencePrice.noLiquidity,
+        marketPrice: acceptedMarketPrice || props.marketReferencePrice.value,
+        marketPriceLoading: !acceptedMarketPrice && props.marketReferencePrice.isLoading,
+        noLiquidity: !acceptedMarketPrice && props.marketReferencePrice.noLiquidity,
         spotConfig,
       }}
     >

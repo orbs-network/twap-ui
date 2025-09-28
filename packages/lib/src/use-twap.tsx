@@ -17,10 +17,8 @@ import {
 } from "./hooks/use-panels";
 import BN from "bignumber.js";
 import { InputError, Translations } from "./types";
-import { useDerivedSwap } from "./hooks/use-derived-swap";
 import { useInvertTrade } from "./hooks/use-invert-trade";
 type UserContextType = {
-  derivedSwap: ReturnType<typeof useDerivedSwap>;
   inputsError: InputError | undefined;
   tradesPanel: ReturnType<typeof useTradesPanel>;
   fillDelayPanel: ReturnType<typeof useFillDelayPanel>;
@@ -47,7 +45,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const fillDelayPanel = useFillDelayPanel();
   const durationPanel = useDurationPanel();
   const marketPricePanel = useMarketPricePanel();
-  const derivedSwap = useDerivedSwap();
   const srcTokenPanel = useSrcTokenPanel();
   const dstTokenPanel = useDstTokenPanel();
   const triggerPricePanel = useTriggerPricePanel();
@@ -55,19 +52,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const disclaimerPanel = useDisclaimerPanel();
   const orderHistoryPanel = useOrderHistoryPanel();
   const invertTradePanel = useInvertTrade();
-  const openSubmitModalButtonPanel = useOpenSubmitModalButton();
   const submitSwapPanel = useSubmitSwapPanel();
 
   const inputsError =
     BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()
       ? undefined
       : srcTokenPanel.isInsufficientBalance || triggerPricePanel.error || limitPricePanel.error || tradesPanel.error || fillDelayPanel.error || durationPanel.error;
+  const openSubmitModalButtonPanel = useOpenSubmitModalButton(inputsError);
 
   return (
     <Context.Provider
       value={{
         inputsError,
-        derivedSwap,
         tradesPanel,
         fillDelayPanel,
         durationPanel,

@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import BN from "bignumber.js";
-import { useDerivedSwap } from "../../hooks/use-derived-swap";
+import { useDstTokenAmount } from "../../hooks/use-dst-amount";
+import { useSrcAmount } from "../../hooks/use-src-amount";
 
 export const useTradePrice = () => {
-  const { dstAmount, srcAmount } = useDerivedSwap();
+  const srcAmount = useSrcAmount().amountUI;
+  const dstAmount = useDstTokenAmount().amountUI;
 
   const price = useMemo(
     () =>

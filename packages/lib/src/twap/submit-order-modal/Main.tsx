@@ -15,8 +15,8 @@ import { useSubmitOrderPanelContext } from "./context";
 import BN from "bignumber.js";
 import { useTradePrice } from "./usePrice";
 import { useTrades } from "../../hooks/use-trades";
-import { useDerivedSwap } from "../../hooks/use-derived-swap";
-import { useDstMinAmountPerTrade } from "../../hooks/use-dst-amount";
+import { useDstMinAmountPerTrade, useDstTokenAmount } from "../../hooks/use-dst-amount";
+import { useAmountsUsd } from "../../hooks/use-amounts-usd";
 
 const Price = () => {
   const { srcToken, dstToken, translations: t } = useTwapContext();
@@ -43,10 +43,10 @@ const FillDelaySummary = () => {
 
 export const Main = () => {
   const { translations } = useTwapContext();
-  const { srcUsdAmount, dstUsdAmount } = useDerivedSwap();
+  const { srcAmountUsd, dstAmountUsd } = useAmountsUsd();
   const isSubmitted = useTwapStore((s) => Boolean(s.state.swapExecution?.status));
-  const inUsd = useFormatNumber({ value: srcUsdAmount, decimalScale: 2 });
-  const outUsd = useFormatNumber({ value: dstUsdAmount, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });
   const { Label, USD, reviewDetails, MainView } = useSubmitOrderPanelContext();
   if (MainView) {
     return MainView;
@@ -57,8 +57,8 @@ export const Main = () => {
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
-        inUsd={USD ? <USD value={srcUsdAmount || ""} isLoading={false} /> : `$${inUsd}`}
-        outUsd={USD ? <USD value={dstUsdAmount || ""} isLoading={false} /> : `$${outUsd}`}
+        inUsd={USD ? <USD value={srcAmountUsd || ""} isLoading={false} /> : `$${inUsd}`}
+        outUsd={USD ? <USD value={dstAmountUsd || ""} isLoading={false} /> : `$${outUsd}`}
       />
       {!isSubmitted && (
         <div className="twap-create-order-bottom">
@@ -72,8 +72,7 @@ export const Main = () => {
 };
 const useFees = () => {
   const { fees } = useTwapContext();
-
-  const { dstAmount } = useDerivedSwap();
+  const { amountUI: dstAmount } = useDstTokenAmount();
 
   const amount = useMemo(() => {
     if (!fees || !dstAmount) return "";

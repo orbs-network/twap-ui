@@ -97,6 +97,7 @@ const OrderInfo = () => {
       <ChunksAmount />
       <MinDestAmount />
       <TradeInterval />
+      <TriggerPricePerChunk />
       <OrderDetails.Recipient />
     </OrderDetails>
   );
@@ -126,6 +127,11 @@ const Expiry = () => {
 const TradeInterval = () => {
   const { order } = useOrderContext();
   return <OrderDetails.TradeInterval fillDelayMillis={order.details.tradeInterval.value} chunks={order.details.chunksAmount.value} />;
+};
+
+const TriggerPricePerChunk = () => {
+  const { order } = useOrderContext();
+  return <OrderDetails.TriggerPrice dstToken={order?.dstToken} price={order.details.triggerPricePerChunk.value} />;
 };
 
 const OrderID = () => {

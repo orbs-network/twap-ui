@@ -52,6 +52,7 @@ export const useTriggerAmountPerChunk = (triggerPrice?: string) => {
   const result = useMemo(() => {
     return getTriggerPricePerChunk(module, amountPerTrade, triggerPrice, srcToken?.decimals || 0);
   }, [triggerPrice, amountPerTrade, isMarketOrder, srcToken?.decimals, module]);
+  
 
   return {
     amountWei: result,
@@ -94,8 +95,8 @@ export const useTriggerPrice = () => {
     return {
       ...result,
       error,
-      amountPerTradeWei: triggerAmountPerChunk,
-      amountPerTradeUI: triggerAmountPerChunkUI,
+      priceWei: triggerAmountPerChunk,
+      priceUI: triggerAmountPerChunkUI,
     };
   }, [result, error, triggerAmountPerChunk, triggerAmountPerChunkUI]);
 };

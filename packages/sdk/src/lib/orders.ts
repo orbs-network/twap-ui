@@ -127,13 +127,22 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
 
 export type Order = ReturnType<typeof buildOrder>;
 
-const getOrderType = (dstMinAmount: string, chunks: number) => {
+const getOrderType = ({ dstMinAmount, chunks, triggerPrice }: { dstMinAmount: string; chunks: number, triggerPrice?: string }) => {
   const isLimit = BN(dstMinAmount || 0).gt(1);
-  const isTwap = chunks > 1;
-  if (isTwap && chunks === 1) {
+  const isTriggerPrice = BN(triggerPrice || 0).gt(0);
+
+  if(isTriggerPrice && isLimit) {
+    return OrderType.TRIGGER_PRICE_LIMIT;
+  }
+
+  if(isTriggerPrice) {
+    return OrderType.TRIGGER_PRICE_MARKET;
+  }
+
+  if (!isLimit && chunks === 1) {
     return OrderType.TWAP_MARKET;
   }
-  if (isTwap && isLimit) {
+  if (chunks > 1 && isLimit) {
     return OrderType.TWAP_LIMIT;
   }
 
@@ -185,6 +194,7 @@ export const buildOrder = ({
   filledSrcAmount: _filledSrcAmount,
   srcTokenSymbol,
   dstTokenSymbol,
+  triggerPricePerChunk,
 }: {
   fills?: TwapFill[];
   srcAmount: string;
@@ -207,17 +217,21 @@ export const buildOrder = ({
   filledSrcAmount?: string;
   srcTokenSymbol?: string;
   dstTokenSymbol?: string;
+  triggerPricePerChunk?: string;
 }) => {
   const { filledDstAmount, filledSrcAmount: filledSrcAmountFromFills, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
   const chunks = new BN(srcAmount || 0)
     .div(srcAmountPerChunk) // Avoid division by zero
     .integerValue(BN.ROUND_FLOOR)
     .toNumber();
-  const type = getOrderType(dstMinAmountPerChunk, chunks);
+  const type = getOrderType({ dstMinAmount: dstMinAmountPerChunk, chunks, triggerPrice: triggerPricePerChunk });
   const isFilled = fills?.length === chunks;
   const filledDate = isFilled ? fills?.[fills?.length - 1]?.timestamp : undefined;
   const filledSrcAmount = _filledSrcAmount || filledSrcAmountFromFills;
   const progress = getOrderProgress(srcAmount, filledSrcAmount);
+
+  
+
   return {
     id,
     type,
@@ -240,6 +254,7 @@ export const buildOrder = ({
     createdAt,
     srcAmount,
     dstMinAmountPerChunk: Number(dstMinAmountPerChunk) === 1 ? "" : dstMinAmountPerChunk,
+    triggerPricePerChunk: BN(triggerPricePerChunk || 0).isZero() ? undefined : triggerPricePerChunk,
     srcAmountPerChunk,
     txHash,
     chunks,
@@ -558,18 +573,19 @@ export const buildSinkOrder = (order: SinkOrder) => {
     dstTokenAddress: order.order.witness.output.token,
     srcAmountPerChunk: order.order.witness.input.amount,
     deadline: Number(order.order.deadline) * 1000,
-    dstMinAmountPerChunk: order.order.witness.output.maxAmount,
+    dstMinAmountPerChunk: order.order.witness.output.amount,
     tradeDollarValueIn: "",
     fillDelay: Number(order.order.witness.epoch),
     createdAt: new Date(order.timestamp).getTime(),
     txHash: order.hash,
-    maker: order.order.witness.info.swapper,
+    maker: order.order.witness.swapper,
     exchange: "",
     twapAddress: "",
-    chainId: Number(order.order.witness.chainId),
+    chainId: order.order.witness.chainid,
     status: OrderStatus.Open,
     srcTokenSymbol: "",
     dstTokenSymbol: "",
+    triggerPricePerChunk: order.order.witness.output.maxAmount,
   });
 };
 
@@ -597,10 +613,13 @@ export const getUserOrders = async ({
   config: Config;
   account: string;
 }): Promise<Order[]> => {
-  return Promise.all([
+  const allOrders = await Promise.all([
     getOrdersFromGraph({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }),
     getSinkOrders({ chainId: config.chainId, signal, account }),
   ]).then(([graphOrders, apiOrders]) => {
     return [...graphOrders, ...apiOrders];
   });
+  const sortedOrders = allOrders.sort((a, b) => b.createdAt - a.createdAt);
+  console.log("sortedOrders", sortedOrders);
+  return sortedOrders;
 };

@@ -43,6 +43,8 @@ export enum OrderType {
   LIMIT = "limit",
   TWAP_LIMIT = "twap-limit",
   TWAP_MARKET = "twap-market",
+  TRIGGER_PRICE_MARKET = "trigger-price-market",
+  TRIGGER_PRICE_LIMIT = "trigger-price-limit",
 }
 
 export interface getAskParamsProps {
@@ -109,17 +111,17 @@ export interface OrderData {
     exchange: {
       adapter: Address;
       ref: Address;
-      share: string;
+      share: number;
       data: Hex;
     };
     swapper: Address;
     nonce: string;
     deadline: string;
-    chainid: string;
-    exclusivity: string;
-    epoch: string;
-    slippage: string;
-    freshness: string;
+    chainid: number;
+    exclusivity: number;
+    epoch: number;
+    slippage: number;
+    freshness: number;
     input: {
       token: Address;
       amount: string;
@@ -184,55 +186,25 @@ export type ParsedFills = {
 
 export type SinkOrder = {
   hash: string;
-  order: {
-    permitted: {
-      token: string;
-      amount: string;
-    };
-    spender: string;
-    nonce: string;
-    deadline: string;
-    witness: {
-      info: {
-        reactor: string;
-        swapper: string;
-        nonce: string;
-        deadline: string;
-        additionalValidationContract: string;
-        additionalValidationData: string;
-      };
-      exclusiveFiller: string;
-      exclusivityOverrideBps: string;
-      input: {
-        token: string;
-        amount: string;
-        maxAmount: string;
-      };
-      output: {
-        token: string;
-        amount: string;
-        recipient: string;
-        maxAmount: string;
-      };
-      epoch: string;
-      slippage: string;
-      trigger: string;
-      chainId: string;
-    };
-  };
-  signature: {
-    v: string;
-    r: string;
-    s: string;
-  };
-  timestamp: string;
   metadata: {
+    chunks: [
+      {
+        blockId: number;
+        description: string;
+        index: number;
+        status: string;
+        timestamp: string;
+      },
+    ];
+    expectedChunks: number;
+    lastPriceCheck: string;
     nextEligibleTime: string;
-    lastEligibleCheck: string;
-    status: "eligible";
+    status: string;
   };
+  order: OrderData;
+  signature: string;
+  timestamp: string;
 };
-
 export type SpotConfig = {
   wm: Address;
   repermit: Address;

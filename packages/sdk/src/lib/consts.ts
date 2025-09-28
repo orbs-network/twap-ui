@@ -3,11 +3,8 @@ import { networks } from "./networks";
 import { Config, TimeDuration, TimeUnit } from "./types";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import * as SpotConfigs from "@orbs-network/spot";
 
 export const API_ENDPOINT = "https://order-sink.orbs.network";
-
-console.log(SpotConfigs);
 
 export const SUGGEST_CHUNK_VALUE = 100;
 
@@ -218,3 +215,9 @@ export const EIP712_TYPES = {
     },
   ],
 };
+
+export const ORBS_TWAP_FAQ_URL = "https://www.orbs.com/dtwap-and-dlimit-faq/";
+export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg";
+export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";
+export const ORBS_WEBSITE_URL = "https://www.orbs.com/";
+export const DISCLAIMER_URL = "https://www.orbs.com/dtwap-dlimit-disclaimer";

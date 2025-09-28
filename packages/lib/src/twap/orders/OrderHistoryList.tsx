@@ -2,7 +2,6 @@ import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { Order } from "@orbs-network/twap-sdk";
 import * as React from "react";
 import { useTwapContext } from "../../context";
-import { useOrderName } from "../../hooks/order-hooks";
 import { Virtuoso } from "react-virtuoso";
 import moment from "moment";
 import TokenLogo from "../../components/TokenLogo";
@@ -11,6 +10,8 @@ import { TokenLogoProps, UseToken } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { useOrderHistoryContext } from "./context";
 import { useOrderHistoryPanel } from "../../hooks/use-panels";
+import { useOrderName } from "../../hooks/order-hooks";
+
 
 const ListLoader = () => {
   const { listLoader } = useOrderHistoryContext();
@@ -65,7 +66,9 @@ const ListOrder = ({ order, selectOrder, selected, cancelOrdersMode }: { order: 
 
   return (
     <div
-      className={`twap-orders__list-item twap-orders__list-item-${order.status} ${cancelOrdersMode ? "twap-orders__list-item-select-mode" : ""} ${selected ? "twap-orders__list-item-selected" : ""}`}
+      className={`twap-orders__list-item twap-orders__list-item-${order.status} ${cancelOrdersMode ? "twap-orders__list-item-select-mode" : ""} ${
+        selected ? "twap-orders__list-item-selected" : ""
+      }`}
       onClick={onClick}
     >
       <div className="twap-orders__list-item-content">
@@ -101,7 +104,7 @@ const EmptyList = () => {
 const ListItemHeader = ({ order }: { order: Order }) => {
   const status = order && order.status;
   const { dateFormat } = useOrderHistoryContext();
-  const name = useOrderName(order.isMarketOrder, order.chunks);
+  const name = useOrderName(order);
   const formattedDate = React.useMemo(() => {
     if (!order.createdAt) return "";
     if (dateFormat) return dateFormat(order.createdAt);

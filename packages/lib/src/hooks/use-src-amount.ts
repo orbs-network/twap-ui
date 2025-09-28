@@ -21,10 +21,13 @@ export const useSrcAmount = () => {
   const { srcToken, translations: t } = useTwapContext();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const acceptedSrcAmount = useTwapStore((s) => s.state.acceptedSrcAmount);
+
+  const value = acceptedSrcAmount || typedSrcAmount;
 
   return {
-    amountWei: useAmountBN(srcToken?.decimals, typedSrcAmount),
-    amountUI: typedSrcAmount,
-    error: BN(typedSrcAmount || 0).isZero() ? t.enterAmount : undefined,
+    amountWei: useAmountBN(srcToken?.decimals, value),
+    amountUI: value,
+    error: BN(value || 0).isZero() ? t.enterAmount : undefined,
   };
 };
