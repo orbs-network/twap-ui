@@ -1,8 +1,9 @@
 import { amountBN, amountUi, getNetwork } from "@orbs-network/twap-sdk";
 import { useMemo } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import BN from "bignumber.js";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
+import moment from "moment";
 
 export const useAmountBN = (decimals?: number, value?: string) => {
   return useMemo(() => amountBN(decimals, value), [decimals, value]);
@@ -55,4 +56,14 @@ export const useShouldWrapOrUnwrapOnly = () => {
   const unwrap = useShouldUnwrap();
 
   return wrap || unwrap;
+};
+
+export const useDateFormat = (date?: number) => {
+  const { overrides } = useTwapContext();
+  return useMemo(() => {
+    if (overrides?.dateFormat) {
+      return overrides.dateFormat(date || 0);
+    }
+    return moment(date).format("DD/MM/YYYY HH:mm");
+  }, [date, overrides?.dateFormat]);
 };

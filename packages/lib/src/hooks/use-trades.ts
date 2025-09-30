@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { InputError, InputErrors } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
@@ -46,18 +46,23 @@ const useTradesError = (amount: number, maxAmount: number) => {
 export const useTrades = () => {
   const { module, srcToken, srcUsd1Token } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
+  const fillDelay = useFillDelay().fillDelay;
+  const minChunkSizeUsd = useMinChunkSizeUsd();
   const updateState = useTwapStore((s) => s.updateState);
-  const maxTrades = useMaxTrades();
-  const srcAmountWei = useSrcAmount().amountWei;
+  const { amountWei: srcAmountWei, amountUI: srcAmountUI } = useSrcAmount();
 
-  const trades = useMemo(() => getChunks(maxTrades, module, typedChunks), [maxTrades, typedChunks]);
+  const maxTrades = useMemo(
+    () => getMaxPossibleChunks(fillDelay, srcAmountUI || "", srcUsd1Token || "", minChunkSizeUsd || 0),
+    [srcAmountUI, srcUsd1Token, minChunkSizeUsd, fillDelay],
+  );
+
+  const trades = useMemo(() => getChunks(maxTrades, module, typedChunks), [maxTrades, typedChunks, module]);
 
   const onChange = useCallback(
-    (typedChunks: number) => {
+    (typedChunks: number) =>
       updateState({
         typedChunks,
-      });
-    },
+      }),
     [updateState],
   );
 
@@ -80,13 +85,4 @@ export const useTrades = () => {
     onChange,
     error: useTradesError(trades, maxTrades),
   };
-};
-
-const useMaxTrades = () => {
-  const { srcUsd1Token } = useTwapContext();
-  const minChunkSizeUsd = useMinChunkSizeUsd();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const fillDelay = useFillDelay().fillDelay;
-
-  return useMemo(() => getMaxPossibleChunks(fillDelay, typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, minChunkSizeUsd, fillDelay]);
 };

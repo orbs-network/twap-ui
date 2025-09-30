@@ -1,6 +1,6 @@
 import { getDestTokenAmount, getDestTokenMinAmountPerChunk } from "@orbs-network/twap-sdk";
 import { useMemo } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { useAmountBN, useAmountUi } from "./helper-hooks";
 import { useTradePrice } from "./use-trade-price";

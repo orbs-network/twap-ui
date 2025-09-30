@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import BN from "bignumber.js";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { useInputWithPercentage } from "./use-input-with-percentage";
 import { InputError, InputErrors, Module } from "../types";
@@ -52,7 +52,6 @@ export const useTriggerAmountPerChunk = (triggerPrice?: string) => {
   const result = useMemo(() => {
     return getTriggerPricePerChunk(module, amountPerTrade, triggerPrice, srcToken?.decimals || 0);
   }, [triggerPrice, amountPerTrade, isMarketOrder, srcToken?.decimals, module]);
-  
 
   return {
     amountWei: result,
@@ -95,8 +94,8 @@ export const useTriggerPrice = () => {
     return {
       ...result,
       error,
-      priceWei: triggerAmountPerChunk,
-      priceUI: triggerAmountPerChunkUI,
+      pricePerChunkWei: triggerAmountPerChunk,
+      pricePerChunkUI: triggerAmountPerChunkUI,
     };
   }, [result, error, triggerAmountPerChunk, triggerAmountPerChunkUI]);
 };

@@ -1,37 +1,39 @@
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { Order } from "@orbs-network/twap-sdk";
 import * as React from "react";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../../context/twap-context";
 import { Virtuoso } from "react-virtuoso";
-import moment from "moment";
-import TokenLogo from "../../components/TokenLogo";
+import TokenLogo from "../../../components/TokenLogo";
 import { FC } from "react";
-import { TokenLogoProps, UseToken } from "../../types";
-import { useTwapStore } from "../../useTwapStore";
-import { useOrderHistoryContext } from "./context";
-import { useOrderHistoryPanel } from "../../hooks/use-panels";
-import { useOrderName } from "../../hooks/order-hooks";
-
+import { TokenLogoProps, UseToken } from "../../../types";
+import { useTwapStore } from "../../../useTwapStore";
+import { useOrderHistoryContext } from "../../../context/order-history-context";
+import { useOrderName, useOrders, useOrderToDisplay, useSelectedOrderIdsToCancel } from "../../../hooks/order-hooks";
+import { useDateFormat } from "../../../hooks/helper-hooks";
 
 const ListLoader = () => {
   const { listLoader } = useOrderHistoryContext();
   return <div className="twap-orders__loader">{listLoader || <p>Loading...</p>}</div>;
 };
 
-export const OrderHistoryList = () => {
-  const { isLoading, selectedOrders, cancelOrdersMode, onSelectOrder, orderIdsToCancel } = useOrderHistoryPanel();
+export const OrdersList = () => {
+  const { isLoading } = useOrders();
+  const ordersToDisplay = useOrderToDisplay();
+  const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
+  const cancelOrdersMode = useTwapStore((s) => s.state.cancelOrdersMode);
+  const onSelectOrder = useSelectedOrderIdsToCancel();
 
   return (
     <>
       {isLoading ? (
         <ListLoader />
-      ) : !selectedOrders.length ? (
+      ) : !ordersToDisplay?.length ? (
         <EmptyList />
       ) : (
-        <div className="twap-orders__list">
+        <div className={`twap-orders__list ${cancelOrdersMode ? "twap-orders__list-select-mode" : ""}`}>
           <Virtuoso
             style={{ height: "100%" }}
-            data={selectedOrders}
+            data={ordersToDisplay}
             itemContent={(index, order) => (
               <ListOrder
                 cancelOrdersMode={Boolean(cancelOrdersMode)}
@@ -103,13 +105,8 @@ const EmptyList = () => {
 
 const ListItemHeader = ({ order }: { order: Order }) => {
   const status = order && order.status;
-  const { dateFormat } = useOrderHistoryContext();
   const name = useOrderName(order);
-  const formattedDate = React.useMemo(() => {
-    if (!order.createdAt) return "";
-    if (dateFormat) return dateFormat(order.createdAt);
-    return moment(order.createdAt).format("DD/MM/YYYY HH:mm");
-  }, [order.createdAt, dateFormat]);
+  const formattedDate = useDateFormat(order.createdAt);
 
   return (
     <div className="twap-orders__list-item-header">

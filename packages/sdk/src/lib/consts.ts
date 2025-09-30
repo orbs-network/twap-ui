@@ -187,22 +187,10 @@ export const EIP712_TYPES = {
     },
   ],
   Output: [
-    {
-      name: "token",
-      type: "address",
-    },
-    {
-      name: "amount",
-      type: "uint256",
-    },
-    {
-      name: "maxAmount",
-      type: "uint256",
-    },
-    {
-      name: "recipient",
-      type: "address",
-    },
+    { name: "token", type: "address" },
+    { name: "limit", type: "uint256" },
+    { name: "stop", type: "uint256" },
+    { name: "recipient", type: "address" },
   ],
   TokenPermissions: [
     {

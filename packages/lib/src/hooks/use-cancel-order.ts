@@ -1,73 +1,92 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { analytics, REPERMIT_ABI } from "@orbs-network/twap-sdk";
+import { analytics, Order, REPERMIT_ABI, TWAP_ABI } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { isTxRejected } from "../utils";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { useTwapStore } from "../useTwapStore";
 import { OrderHistoryCallbacks } from "../types";
+import { useOptimisticCancelOrder } from "./order-hooks";
 
 export const useCancelOrderMutation = () => {
-  const { account, walletClient, publicClient, overrides, spotConfig } = useTwapContext();
+  const { account, walletClient, publicClient, spotConfig } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
+  const optimisticCancelOrder = useOptimisticCancelOrder();
 
-  const mutation = useMutation(async ({ orderIds, callbacks }: { orderIds: string[]; callbacks?: OrderHistoryCallbacks }) => {
+  const cancelOrdersV1 = async (orders: Order[]) => {
+    const hashes = await Promise.all(
+      orders.map((order) =>
+        walletClient!.writeContract({
+          account: account as `0x${string}`,
+          address: order.twapAddress as `0x${string}`,
+          abi: TWAP_ABI,
+          functionName: "cancel",
+          args: [order.id],
+          chain: walletClient!.chain,
+        }),
+      ),
+    );
+
+    const receipts = await Promise.all(hashes.map((hash) => getTransactionReceipt(hash)));
+
+    return receipts.filter((receipt) => receipt !== undefined);
+  };
+
+  const cancelOrdersV2 = async (orders: Order[], callbacks?: OrderHistoryCallbacks) => {
+    const hash = await walletClient!.writeContract({
+      account: account as `0x${string}`,
+      address: spotConfig!.repermit,
+      abi: REPERMIT_ABI,
+      functionName: "cancel",
+      args: [orders.map((order) => order.hash)],
+      chain: walletClient!.chain,
+    });
+
+    const receipt = await getTransactionReceipt(hash!);
+    if (!receipt) throw new Error("failed to get transaction receipt");
+    if (receipt.status === "reverted") throw new Error("failed to cancel order");
+
+    analytics.onCancelOrderSuccess(hash);
+    callbacks?.onCancelSuccess?.(orders, receipt);
+
+    return receipt;
+  };
+
+  return useMutation(async ({ orders, callbacks }: { orders: Order[]; callbacks?: OrderHistoryCallbacks }) => {
+    if (!account || !walletClient || !publicClient || !spotConfig) {
+      throw new Error("missing required parameters");
+    }
+
     try {
-      if (!account || !walletClient || !publicClient || !spotConfig) {
-        throw new Error("missing required parameters");
-      }
+      callbacks?.onCancelRequest?.(orders);
 
       updateState({
         cancelOrderStatus: SwapStatus.LOADING,
         cancelOrderTxHash: undefined,
         cancelOrderError: undefined,
-        // cancelOrderId: order.id,
       });
-      // analytics.onCancelOrderRequest(order.id);
-      callbacks?.onCancelRequest?.(orderIds);
-      let hash: `0x${string}` | undefined;
-      if (overrides?.cancelOrder) {
-        // hash = await transactions.cancelOrder({ contractAddress: order.twapAddress, abi: TwapAbi as Abi, functionName: "cancel", args: [order.id], orderId: order.id });
-      } else {
-        hash = await walletClient.writeContract({
-          account: account as `0x${string}`,
-          address: spotConfig.repermit,
-          abi: REPERMIT_ABI,
-          functionName: "cancel",
-          args: orderIds, // pass nonce, that is part of the order
-          chain: walletClient.chain,
-        });
-      }
-      updateState({ cancelOrderTxHash: hash });
-      const receipt = await getTransactionReceipt(hash!);
 
-      if (!receipt) {
-        throw new Error("failed to get transaction receipt");
-      }
+      const ordersV1 = orders.filter((o) => o.version === 1);
+      const ordersV2 = orders.filter((o) => o.version === 2);
 
-      if (receipt.status === "reverted") {
-        throw new Error("failed to cancel order");
-      }
-
-      // optimisticCancelOrder(order.id);
-      updateState({ cancelOrderStatus: SwapStatus.SUCCESS });
-      analytics.onCancelOrderSuccess(hash);
-      callbacks?.onCancelSuccess?.(orderIds, receipt);
-
-      return receipt;
+      const [v1Results, v2Result] = await Promise.all([
+        ordersV1.length ? cancelOrdersV1(ordersV1) : Promise.resolve([]),
+        ordersV2.length ? cancelOrdersV2(ordersV2, callbacks) : Promise.resolve(undefined),
+      ]);
+      updateState({ cancelOrderStatus: SwapStatus.SUCCESS, orderIdsToCancel: [] });
+      optimisticCancelOrder(orders.map((o) => o.id));
+      return [...v1Results, v2Result];
     } catch (error) {
-      console.log(`cancel error order`, error);
+      console.error("cancel order error", error);
       callbacks?.onCancelFailed?.((error as Error).message);
+
       if (isTxRejected(error)) {
         updateState({ cancelOrderStatus: undefined });
       } else {
         updateState({ cancelOrderStatus: SwapStatus.FAILED });
         analytics.onCancelOrderError(error);
-        callbacks?.onCancelFailed?.((error as Error).message);
       }
     }
   });
-
-  return mutation;
 };

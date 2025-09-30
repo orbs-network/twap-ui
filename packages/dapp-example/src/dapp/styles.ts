@@ -139,6 +139,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         textDecoration: "none",
       },
       "&-label": {
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
         "*": {
           fontSize: 14,
           fontWeight: 500,
@@ -172,6 +175,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       alignItems: "center",
       gap: 15,
     },
+
     ".twap-orders__list-item-progress-bar": {
       flex: 1,
       background: "rgba(255, 255, 255, 0.07)",
@@ -210,6 +214,16 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     ".twap-orders__list": {
       maxHeight: "60vh",
       height: 700,
+      "&-select-mode": {
+        ".twap-orders__list-item": {
+          opacity: 0.5,
+          pointerEvents: "none",
+          "&-OPEN": {
+            opacity: 1,
+            pointerEvents: "auto",
+          },
+        },
+      },
     },
     ".twap-orders__list-empty": {
       textAlign: "center",
@@ -236,6 +250,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       alignItems: "center",
       gap: 10,
       width: "fit-content",
+      "*": {
+        color: "black",
+      },
     },
     ".twap-orders__list-header-select-toggle": {
       width: "fit-content",
@@ -253,6 +270,12 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
 
       "&:hover": {
         background: "rgba(255,255,255, 0.06)",
+      },
+      "&-selected": {
+        background: "rgba(255, 255, 255, 0.08)",
+        "&:hover": {
+          background: "rgba(255,255,255, 0.08)",
+        },
       },
       "&-header": {
         display: "flex",

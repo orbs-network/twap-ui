@@ -1,7 +1,7 @@
 import { amountBN, amountUi } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import BN from "bignumber.js";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { formatDecimals } from "../utils";
 import { useUsdAmount } from "./helper-hooks";
 import { useInvertTrade } from "./use-invert-trade";

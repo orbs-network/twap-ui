@@ -1,5 +1,5 @@
 import { Module } from "@orbs-network/twap-sdk";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { useLimitPrice } from "./use-limit-price";
 import { useTriggerPrice } from "./use-trigger-price";

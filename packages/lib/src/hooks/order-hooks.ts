@@ -1,12 +1,11 @@
-import { getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getUserOrders, Module, Order, OrderStatus, OrderType } from "@orbs-network/twap-sdk";
+import { getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getAccountOrders, Order, OrderStatus, OrderType } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
-
-
+import { useTwapStore } from "../useTwapStore";
 
 export const useOrderName = (order?: Order) => {
   const { translations: t } = useTwapContext();
@@ -28,7 +27,6 @@ export const useOrderName = (order?: Order) => {
   }, [t, order?.type]);
 };
 
-
 const useOrdersQueryKey = () => {
   const { account, config } = useTwapContext();
   return useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
@@ -39,14 +37,14 @@ export const usePersistedOrdersStore = () => {
 
   const cancelledOrderIdsKey = `cancelled-orders-${account}-${config.exchangeAddress}`;
 
-  const getCancelledOrderIds = useCallback((): number[] => {
+  const getCancelledOrderIds = useCallback((): string[] => {
     const res = localStorage.getItem(cancelledOrderIdsKey);
     if (!res) return [];
     return JSON.parse(res);
   }, [cancelledOrderIdsKey]);
 
   const addCancelledOrderId = useCallback(
-    (orderId: number) => {
+    (orderId: string) => {
       const cancelledOrderIds = getCancelledOrderIds();
       if (!cancelledOrderIds.includes(orderId)) {
         // `.includes()` is more readable for arrays
@@ -58,7 +56,7 @@ export const usePersistedOrdersStore = () => {
   );
 
   const deleteCancelledOrderId = useCallback(
-    (orderId: number) => {
+    (orderId: string) => {
       const cancelledOrderIds = getCancelledOrderIds().filter((id) => id !== orderId);
       localStorage.setItem(cancelledOrderIdsKey, JSON.stringify(cancelledOrderIds));
     },
@@ -93,15 +91,17 @@ export const useOptimisticCancelOrder = () => {
   const queryKey = useOrdersQueryKey();
   const persistedOrdersStore = usePersistedOrdersStore();
   return useCallback(
-    (orderId: number) => {
-      persistedOrdersStore.addCancelledOrderId(orderId);
+    (orderIds: string[]) => {
+      orderIds.forEach((orderId) => {
+        persistedOrdersStore.addCancelledOrderId(orderId);
+      });
 
       queryClient.setQueryData(queryKey, (orders?: Order[]) => {
         if (!orders) return [];
         return orders.map((order) => {
-          // if (order.id === orderId) {
-          //   return { ...order, status: OrderStatus.Canceled };
-          // }
+          if (orderIds.includes(order.id)) {
+            return { ...order, status: OrderStatus.Canceled };
+          }
           return order;
         });
       });
@@ -110,21 +110,20 @@ export const useOptimisticCancelOrder = () => {
   );
 };
 
-const useHandlePersistedOrders = () => {
+const useHandlePersistedCancelledOrders = () => {
   const { getCancelledOrderIds, deleteCancelledOrderId } = usePersistedOrdersStore();
   const { config } = useTwapContext();
   return useCallback(
     (orders: Order[]) => {
       const cancelledOrderIds = new Set(getCancelledOrderIds());
-
       orders.forEach((order, index) => {
-        if (cancelledOrderIds.has(Number(order.id))) {
+        if (cancelledOrderIds.has(order.id)) {
           if (order.status !== OrderStatus.Canceled) {
             console.log(`Marking order as cancelled: ${order.id}`);
             orders[index] = { ...order, status: OrderStatus.Canceled };
           } else {
             console.log(`Removing cancelled ID for already-cancelled order: ${order.id}`);
-            // deleteCancelledOrderId(order.id);
+            deleteCancelledOrderId(order.id);
           }
         }
       });
@@ -136,14 +135,12 @@ const useHandlePersistedOrders = () => {
 const useOrdersQuery = () => {
   const { account, config } = useTwapContext();
   const queryKey = useOrdersQueryKey();
-  const handlePersistedOrders = useHandlePersistedOrders();
+  const handlePersistedCancelledOrders = useHandlePersistedCancelledOrders();
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
-      const orders = await getUserOrders({ signal, config, account: account! });
-
-      handlePersistedOrders(orders);
-
+      const orders = await getAccountOrders({ signal, config, account: account! });
+      handlePersistedCancelledOrders(orders);
       return orders.map((order) => {
         return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config) };
       });
@@ -171,10 +168,10 @@ export const useOrders = () => {
     return {
       orders: {
         all: orders ?? [],
-        [OrderStatus.Open]: filterAndSortOrders(orders ?? [], OrderStatus.Open),
-        [OrderStatus.Completed]: filterAndSortOrders(orders ?? [], OrderStatus.Completed),
-        [OrderStatus.Expired]: filterAndSortOrders(orders ?? [], OrderStatus.Expired),
-        [OrderStatus.Canceled]: filterAndSortOrders(orders ?? [], OrderStatus.Canceled),
+        open: filterAndSortOrders(orders ?? [], OrderStatus.Open),
+        completed: filterAndSortOrders(orders ?? [], OrderStatus.Completed),
+        expired: filterAndSortOrders(orders ?? [], OrderStatus.Expired),
+        canceled: filterAndSortOrders(orders ?? [], OrderStatus.Canceled),
       },
       isLoading,
       error,
@@ -185,13 +182,24 @@ export const useOrders = () => {
   }, [orders, isLoading, error, refetch, cancelOrder, isRefetching]);
 };
 
+export const useOrderToDisplay = () => {
+  const selectedStatus = useTwapStore((s) => s.state.orderHistoryStatusFilter);
+  const { orders } = useOrders();
+  return useMemo(() => {
+    if (!selectedStatus) {
+      return orders.all;
+    }
+    return orders.all.filter((order) => order.status === selectedStatus) || [];
+  }, [selectedStatus, orders]);
+};
+
 const filterAndSortOrders = (orders: Order[], status: OrderStatus) => {
   return orders.filter((order) => order.status === status).sort((a, b) => b.createdAt - a.createdAt);
 };
 
 export const useOrderLimitPrice = (srcToken?: Token, dstToken?: Token, order?: Order) => {
   return useMemo(() => {
-    if (!srcToken || !dstToken || !order || order?.isMarketOrder) return;
+    if (!srcToken || !dstToken || !order || order?.isMarketPrice) return;
     return getOrderLimitPriceRate(order, srcToken?.decimals, dstToken?.decimals);
   }, [order, srcToken, dstToken]);
 };
@@ -201,4 +209,19 @@ export const useOrderAvgExcecutionPrice = (srcToken?: Token, dstToken?: Token, o
     if (!srcToken || !dstToken || !order) return;
     return getOrderExcecutionRate(order, srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
+};
+
+export const useSelectedOrderIdsToCancel = () => {
+  const updateState = useTwapStore((s) => s.updateState);
+  const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
+  return useCallback(
+    (id: string) => {
+      if (orderIdsToCancel?.includes(id)) {
+        updateState({ orderIdsToCancel: orderIdsToCancel?.filter((orderId) => orderId !== id) });
+      } else {
+        updateState({ orderIdsToCancel: [...(orderIdsToCancel || []), id] });
+      }
+    },
+    [updateState, orderIdsToCancel],
+  );
 };

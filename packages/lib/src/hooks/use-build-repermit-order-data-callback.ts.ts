@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useDeadline } from "./use-deadline";
 import { useFillDelay } from "./use-fill-delay";
 import { buildRePermitOrderData, getNetwork, isNativeAddress } from "@orbs-network/twap-sdk";
@@ -10,17 +10,14 @@ import { useTriggerPrice } from "./use-trigger-price";
 import { useTrades } from "./use-trades";
 
 export const useBuildRePermitOrderDataCallback = () => {
-  const { srcToken, dstToken, chainId, account, slippage: _slippage, config } = useTwapContext();
+  const { srcToken, dstToken, chainId, account, slippage: _slippage } = useTwapContext();
   const srcChunkAmount = useTrades().amountPerTradeWei;
   const srcAmountWei = useSrcAmount().amountWei;
   const deadlineMillis = useDeadline();
-  const triggerAmountPerChunk = useTriggerPrice().amountWei;
+  const triggerAmountPerChunk = useTriggerPrice().pricePerChunkWei;
   const dstMinAmountPerChunk = useDstMinAmountPerTrade().amountWei;
   const fillDelay = useFillDelay().fillDelay;
   const slippage = _slippage * 100;
-
-  console.log(triggerAmountPerChunk, dstMinAmountPerChunk);
-  
 
   return useCallback(() => {
     const srcTokenAddress = isNativeAddress(srcToken?.address || "") ? getNetwork(chainId)?.wToken.address : srcToken?.address;
@@ -37,22 +34,9 @@ export const useBuildRePermitOrderDataCallback = () => {
       fillDelayMillis: fillDelay.unit * fillDelay.value,
       slippage,
       account,
-      srcAmountPerChunk: srcChunkAmount,
-      dstMinAmountPerChunk,
-      triggerAmountPerChunk,
+      srcAmountPerTrade: srcChunkAmount,
+      dstMinAmountPerTrade: dstMinAmountPerChunk,
+      triggerAmountPerTrade: triggerAmountPerChunk,
     });
-  }, [
-    srcToken,
-    dstToken,
-    chainId,
-    account,
-    srcAmountWei,
-    deadlineMillis,
-    srcChunkAmount,
-    triggerAmountPerChunk,
-    slippage,
-    dstMinAmountPerChunk,
-    fillDelay,
-    config,
-  ]);
+  }, [srcToken, dstToken, chainId, account, srcAmountWei, deadlineMillis, srcChunkAmount, triggerAmountPerChunk, slippage, dstMinAmountPerChunk, fillDelay]);
 };

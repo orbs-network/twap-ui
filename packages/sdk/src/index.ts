@@ -9,18 +9,11 @@ export * from "./lib/build-repermit-order-data";
 export * from "./lib/submit-order";
 export { analytics } from "./lib/analytics";
 
-export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase, getConfigByExchange } from "./lib/utils";
+export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase, getConfigByExchange, getOrderFillDelayMillis } from "./lib/utils";
 export { networks } from "./lib/networks";
 
-export {
-  getOrderExcecutionRate,
-  getOrderLimitPriceRate,
-  type Order,
-  parseRawStatus,
-  buildOrder,
-  getOrderFillDelayMillis,
-  getOrderProgress,
-  getUserOrders,
-  type GetOrdersFilters,
-} from "./lib/orders";
+export { getAccountOrders } from "./lib/orders";
+
+export { getOrderExcecutionRate, getOrderLimitPriceRate, type GetOrdersFilters } from "./lib/orders/v1-orders";
+
 export { Configs };

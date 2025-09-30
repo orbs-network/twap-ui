@@ -5,7 +5,6 @@ import * as Spot from "@orbs-network/spot";
 import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, maxUint256, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
 import { Config, Module, SpotConfig, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
-import { getUserOrders as _getUserOrders } from "./orders";
 
 // values calculations
 
@@ -184,10 +183,6 @@ export const getMaxChunksError = (chunks: number, maxChunks: number, module: Mod
     isError: module === Module.TWAP && BN(chunks).isGreaterThan(maxChunks),
     value: maxChunks,
   };
-};
-
-export const getUserOrders = async (config: Config, account: string, signal?: AbortSignal) => {
-  return _getUserOrders({ signal, config: config, account });
 };
 
 export const getSpotConfig = (chainId: number): SpotConfig | undefined => {

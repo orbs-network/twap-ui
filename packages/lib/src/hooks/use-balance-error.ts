@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
 import BN from "bignumber.js";
 import { InputErrors } from "../types";

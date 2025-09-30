@@ -1,5 +1,5 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Module, OrderStatus, OrderType, SpotConfig, TimeDuration } from "@orbs-network/twap-sdk";
+import { Config, Module, Order, OrderStatus, OrderType, SpotConfig, TimeDuration } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -13,7 +13,9 @@ export interface Translations {
   minDstAmountTooltip: string;
   marketPriceTooltip: string;
   limitPriceTooltip: string;
+  version: string;
   outAmountLoading: string;
+  minReceivedPerChunk: string;
   maxDurationTooltip: string;
   tradeIntervalTootlip: string;
   triggerPriceTooltip: string;
@@ -121,17 +123,13 @@ export interface Translations {
   stopLossDurationTooltip: string;
   emptyTriggerPrice: string;
   id: string;
+  fees: string;
 }
 
 export type SelectMenuProps = {
   items: SelectMeuItem[];
   onSelect: (item: SelectMeuItem) => void;
   selected?: SelectMeuItem;
-};
-
-export type LabelProps = {
-  text: string;
-  tooltip?: string;
 };
 
 export type TokenLogoProps = {
@@ -251,11 +249,6 @@ export enum InputErrors {
 
 type Callbacks = {
   onInputAmountChange?: (weiValue: string, uiValue: string) => void;
-  onTradePriceChange?: (weiValue: string, uiValue: string) => void;
-  onDurationChange?: (value?: number) => void;
-  onChunksChange?: (value?: number) => void;
-  onFillDelayChange?: (value: number) => void;
-  onTriggerPriceChange?: (weiValue: string, uiValue: string) => void;
 };
 
 export type onCreateOrderRequest = {
@@ -341,36 +334,81 @@ export type SubmitOrderPanelProps = {
   Link?: FC<LinkProps>;
   USD?: FC<USDProps>;
   reviewDetails?: ReactNode;
-  Label: FC<LabelProps>;
+  Tooltip: FC<TooltipProps>;
+  TokenLogo?: FC<TokenLogoProps>;
 };
 
 export type OrderHistoryCallbacks = {
-  onCancelRequest?: (orderId: string[]) => void;
-  onCancelSuccess?: (orderId: string[], receipt: TransactionReceipt) => void;
+  onCancelRequest?: (orders: Order[]) => void;
+  onCancelSuccess?: (orders: Order[], receipt: TransactionReceipt) => void;
   onCancelFailed?: (error: string) => void;
 };
 
 export type OrderHistoryProps = {
   listLoader?: ReactNode;
   TokenLogo?: FC<TokenLogoProps>;
-  Label: FC<LabelProps>;
+  Tooltip: FC<TooltipProps>;
   Button: FC<ButtonProps>;
   useToken: UseToken;
-  dateFormat?: (date: number) => string;
   callbacks?: OrderHistoryCallbacks;
+};
+
+export type OrderDetails = {
+  limitPrice: {
+    label: string;
+    value: string;
+  };
+
+  deadline: {
+    tooltip: string;
+    label: string;
+    value: number;
+  };
+  amountIn: {
+    label: string;
+    value: string;
+  };
+  chunkSize: {
+    tooltip: string;
+    label: string;
+    value: string;
+  };
+  chunksAmount: {
+    tooltip: string;
+    label: string;
+    value: number;
+  };
+  minDestAmountPerChunk: {
+    tooltip: string;
+    label: string;
+    value: string;
+  };
+  tradeInterval: {
+    tooltip: string;
+    label: string;
+    value: number;
+  };
+  triggerPricePerChunk: {
+    tooltip: string;
+    label: string;
+    value: string;
+  };
+  recipient: {
+    label: string;
+    value: string;
+  };
 };
 
 export type Overrides = {
   wrap?: (amount: bigint) => Promise<`0x${string}`>;
-  unwrap?: (amount: bigint) => Promise<`0x${string}`>;
   approveOrder?: (props: ApproveProps) => Promise<`0x${string}`>;
   createOrder?: (props: CreateOrderProps) => Promise<`0x${string}`>;
-  cancelOrder?: (props: CancelOrderProps) => Promise<`0x${string}`>;
   getAllowance?: (props: GetAllowanceProps) => Promise<string>;
   state?: Partial<InitialState>;
   minChunkSizeUsd?: number;
   translations?: Partial<Translations>;
   numberFormat?: (value: number | string) => string;
+  dateFormat?: (date: number) => string;
 };
 
 export interface TwapProps {
@@ -421,7 +459,7 @@ export type Token = {
 };
 
 export interface TooltipProps {
-  children: ReactNode;
+  children?: ReactNode;
   tooltipText?: string;
 }
 

@@ -1,12 +1,16 @@
 import { LEGACY_EXCHANGES_MAP, getPartnerIdentifier, maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
-import { Config, TimeDuration, TimeUnit } from "./types";
+import { Config, Order, OrderType, TimeDuration, TimeUnit } from "./types";
 import { networks } from "./networks";
-import { Configs } from "..";
+import { Configs, getEstimatedDelayBetweenChunksMillis } from "..";
 
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
   return THE_GRAPH_ORDERS_API[chainId as keyof typeof THE_GRAPH_ORDERS_API];
+};
+
+export const isMarketPrice = (type: OrderType) => {
+  return type === OrderType.TWAP_MARKET || type === OrderType.TRIGGER_PRICE_MARKET;
 };
 
 export const groupBy = (array: any = [], key: string) => {
@@ -136,8 +140,6 @@ export const getExchanges = (config?: Config[]) => {
   return Array.from(allAddresses);
 };
 
-export const normalizeSubgraphList = <T>(list?: T[], transform?: (val: T) => string) => (list && list.length ? list.map(transform || ((v) => `${v}`)) : undefined);
-
 export const getConfigByExchange = (exchange: string, chainId: number): Config | undefined => {
   const normalized = exchange.toLowerCase();
 
@@ -189,4 +191,11 @@ export const numberToHex = (value: number | bigint, padding = 0): string => {
   }
 
   return "0x" + hex;
+};
+
+export const getOrderFillDelayMillis = (order: Order, config: Config) => {
+  if (order.version === 1) {
+    return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
+  }
+  return (order.fillDelay || 0) * 1000;
 };

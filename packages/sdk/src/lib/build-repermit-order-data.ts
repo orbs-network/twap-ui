@@ -1,5 +1,5 @@
 import { getSpotConfig } from "./lib";
-import { Address, BuildRePermitOrderDataProps, OrderData } from "./types";
+import { Address, OrderData } from "./types";
 import { safeBNString } from "./utils";
 
 export const buildRePermitOrderData = ({
@@ -11,10 +11,23 @@ export const buildRePermitOrderData = ({
   fillDelayMillis,
   slippage,
   account,
-  srcAmountPerChunk,
-  dstMinAmountPerChunk,
-  triggerAmountPerChunk,
-}: BuildRePermitOrderDataProps) => {
+  srcAmountPerTrade,
+  dstMinAmountPerTrade,
+  triggerAmountPerTrade,
+}: {
+  chainId: number;
+  srcToken: string;
+  dstToken: string;
+  srcAmount: string;
+  deadlineMilliseconds: number;
+  fillDelayMillis: number;
+  slippage: number;
+  account: string;
+  srcAmountPerTrade: string;
+  dstMinAmountPerTrade?: string;
+  triggerAmountPerTrade?: string;
+  limitAmountPerTrade?: string;
+}) => {
   const nonce = safeBNString(Date.now() * 1000);
   const epoch = parseInt((fillDelayMillis / 1000).toFixed(0));
   const deadline = safeBNString(deadlineMilliseconds / 1000);
@@ -49,14 +62,14 @@ export const buildRePermitOrderData = ({
       freshness: 30,
       input: {
         token: srcToken as Address,
-        amount: srcAmountPerChunk,
+        amount: srcAmountPerTrade,
         maxAmount: srcAmount,
       },
       output: {
         token: dstToken as Address,
-        amount: dstMinAmountPerChunk || "0",
+        limit: dstMinAmountPerTrade || "0",
+        stop: triggerAmountPerTrade || "",
         recipient: account as Address,
-        maxAmount: triggerAmountPerChunk || "",
       },
     },
   };

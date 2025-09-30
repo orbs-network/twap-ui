@@ -1,7 +1,7 @@
 import { networks } from "@orbs-network/twap-sdk";
 import { useQuery } from "@tanstack/react-query";
 import { TX_GAS_COST } from "../consts";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import BN from "bignumber.js";
 
 const abi = [{ inputs: [], name: "latestAnswer", outputs: [{ internalType: "int256", name: "", type: "int256" }], stateMutability: "view", type: "function" }];

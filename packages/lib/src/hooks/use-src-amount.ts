@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { useAmountBN } from "./helper-hooks";
 import BN from "bignumber.js";

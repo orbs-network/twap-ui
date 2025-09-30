@@ -1,24 +1,25 @@
-import React, { createContext, useContext, useMemo } from "react";
-import { useTwapContext } from "./context";
-import { useTwapStore } from "./useTwapStore";
-
+import { createContext, useContext } from "react";
+import { useCurrentOrderDetails } from "../hooks/use-current-order";
+import { useInvertTrade } from "../hooks/use-invert-trade";
 import {
-  useDstTokenPanel,
-  useDurationPanel,
+  useTradesPanel,
   useFillDelayPanel,
+  useDurationPanel,
   useLimitPricePanel,
   useMarketPricePanel,
-  useOpenSubmitModalButton,
-  useOrderHistoryPanel,
   useSrcTokenPanel,
-  useTradesPanel,
+  useDstTokenPanel,
   useTriggerPricePanel,
+  useOrderHistoryPanel,
   useSubmitSwapPanel,
-} from "./hooks/use-panels";
+  useOpenSubmitModalButton,
+  useDisclaimerPanel,
+} from "../hooks/use-panels";
+import { InputError } from "../types";
+import { useTwapStore } from "../useTwapStore";
 import BN from "bignumber.js";
-import { InputError, Translations } from "./types";
-import { useInvertTrade } from "./hooks/use-invert-trade";
-type UserContextType = {
+
+type ContextType = {
   inputsError: InputError | undefined;
   tradesPanel: ReturnType<typeof useTradesPanel>;
   fillDelayPanel: ReturnType<typeof useFillDelayPanel>;
@@ -32,14 +33,13 @@ type UserContextType = {
   orderHistoryPanel: ReturnType<typeof useOrderHistoryPanel>;
   invertTradePanel: ReturnType<typeof useInvertTrade>;
   submitSwapPanel: ReturnType<typeof useSubmitSwapPanel>;
-  translations: Translations;
   openSubmitModalButtonPanel: ReturnType<typeof useOpenSubmitModalButton>;
+  order: ReturnType<typeof useCurrentOrderDetails>;
 };
 
-const Context = createContext({} as UserContextType);
+export const UserContext = createContext({} as ContextType);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const { marketPrice, translations } = useTwapContext();
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const tradesPanel = useTradesPanel();
   const fillDelayPanel = useFillDelayPanel();
@@ -53,15 +53,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const orderHistoryPanel = useOrderHistoryPanel();
   const invertTradePanel = useInvertTrade();
   const submitSwapPanel = useSubmitSwapPanel();
+  const order = useCurrentOrderDetails();
 
   const inputsError =
-    BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()
+    BN(marketPricePanel.priceWei || 0).isZero() || BN(srcAmount || 0).isZero()
       ? undefined
       : srcTokenPanel.isInsufficientBalance || triggerPricePanel.error || limitPricePanel.error || tradesPanel.error || fillDelayPanel.error || durationPanel.error;
   const openSubmitModalButtonPanel = useOpenSubmitModalButton(inputsError);
 
   return (
-    <Context.Provider
+    <UserContext.Provider
       value={{
         inputsError,
         tradesPanel,
@@ -75,28 +76,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         disclaimerPanel,
         orderHistoryPanel,
         invertTradePanel,
-        translations,
         openSubmitModalButtonPanel,
         submitSwapPanel,
+        order,
       }}
     >
       {children}
-    </Context.Provider>
+    </UserContext.Provider>
   );
 }
 
-export const useTwap = () => {
-  return useContext(Context);
-};
-
-const useDisclaimerPanel = () => {
-  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const { translations: t } = useTwapContext();
-  return useMemo(() => {
-    return {
-      type: isMarketOrder ? "market" : "limit",
-      text: isMarketOrder ? t.marketOrderWarning : t.limitPriceMessage,
-      url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
-    };
-  }, [isMarketOrder, t]);
+export const useUserContext = () => {
+  return useContext(UserContext);
 };

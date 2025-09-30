@@ -5,7 +5,7 @@ import { SwapCallbacks, Steps, Token } from "../types";
 import { ensureWrappedToken, isTxRejected } from "../utils";
 import { useSrcAmount } from "./use-src-amount";
 import { useMutation } from "@tanstack/react-query";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/twap-sdk";
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";

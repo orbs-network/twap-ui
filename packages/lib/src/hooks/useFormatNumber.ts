@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNumericFormat } from "react-number-format";
 import { formatDecimals } from "../utils";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 
 export const useFormatDecimals = (value?: string | number, decimalPlaces?: number) => {
   return useMemo(() => formatDecimals(value?.toString(), decimalPlaces), [value, decimalPlaces]);

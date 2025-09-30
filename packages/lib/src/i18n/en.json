@@ -43,7 +43,7 @@
   "expiration": "Expiry",
   "perTrade": "per trade",
   "minReceivedPerTrade": "Min. received per trade",
-  "triggerPricePerChunk": "Trigger Price per chunk",
+  "triggerPricePerChunk": "Trigger Price per trade",
   "poweredBy": "Powered by Orbs",
   "trades": "trades",
   "maxChunksError": "Max. trades amount is {maxChunks}",
@@ -74,12 +74,13 @@
   "twapMarketOrder": "TWAP-market",
   "twapLimit": "TWAP-limit",
   "stopLoss": "Stop-loss",
-  "triggerPriceMarket":"Trigger Market Price ",
-  "triggerPriceLimit":"Trigger Limit Price ",
+  "triggerPriceMarket": "Trigger Market Price ",
+  "triggerPriceLimit": "Trigger Limit Price ",
 
   "takeProfit": "Take-profit",
   "All": "All",
   "minReceived": "Min. received",
+  "minReceivedPerChunk": "Min. received per trade",
   "wrap": "Wrap",
   "unwrap": "Unwrap",
   "balance": "Balance",
@@ -113,5 +114,7 @@
   "stopLossLimitPriceTooltip": "The stop loss order will execute at the specified limit price or better, once the stop price is triggered.",
   "stopLossDurationTooltip": "This is the time period during which the order will be active. Please note that orders may be completed earlier than this time, or remain unfilled based on the specified parameters.",
   "emptyTriggerPrice": "Trigger price is required",
-  "id": "ID"
+  "id": "ID",
+  "fees": "Fees ({{value}}%)",
+  "version": "Version"
 }

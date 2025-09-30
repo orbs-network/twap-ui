@@ -20,7 +20,7 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@orbs-network/spot": "^0.0.2",
+    "@orbs-network/spot": "^0.0.3",
     "@orbs-network/twap": "^2.7.25",
     "bignumber.js": "9.x"
   },

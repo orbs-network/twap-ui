@@ -24,7 +24,7 @@ export const useTwapStore = create<TwapStore>((set, get) => ({
       state: {
         ...initialState,
         currentTime: Date.now(),
-        swapExecution: {} as SwapExecution,
+        swapExecution: get().state.swapExecution,
         isMarketOrder: get().state.isMarketOrder,
         acceptedMarketPrice: get().state.acceptedMarketPrice,
         acceptedSrcAmount: get().state.acceptedSrcAmount,

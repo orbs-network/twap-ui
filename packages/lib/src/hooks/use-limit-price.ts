@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { useInputWithPercentage } from "./use-input-with-percentage";
 import { InputErrors, InputError, Module } from "../types";

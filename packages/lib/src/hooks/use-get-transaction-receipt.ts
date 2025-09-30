@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 
 export const useGetTransactionReceipt = () => {
   const { publicClient } = useTwapContext();

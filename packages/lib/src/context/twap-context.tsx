@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics, getSpotConfig } from "@orbs-network/twap-sdk";
-import { TwapProps, TwapContextType, Translations } from "./types";
-import defaultTranslations from "./i18n/en.json";
-import { initiateWallet } from "./lib";
-import { useListener } from "./hooks/use-default-values";
+import { TwapProps, TwapContextType, Translations } from "../types";
+import defaultTranslations from "../i18n/en.json";
+import { initiateWallet } from "../lib";
 import { ErrorBoundary } from "react-error-boundary";
-import { UserProvider } from "./use-twap";
-import { useTwapStore } from "./useTwapStore";
+import { useTwapStore } from "../useTwapStore";
+import { useAmountBN } from "../hooks/helper-hooks";
 
 const TwapFallbackUI = () => {
   return (
@@ -51,9 +50,21 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
   }, [translations]);
 };
 
-const Listeners = () => {
-  useListener();
+const Listeners = (props: TwapProps) => {
+  const updateStore = useTwapStore((s) => s.updateState);
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const srcAmountWei = useAmountBN(props.srcToken?.decimals, typedSrcAmount);
 
+  // update current time every minute, so the deadline will be updated when confirmation window is open
+  useEffect(() => {
+    setInterval(() => {
+      updateStore({ currentTime: Date.now() });
+    }, 60_000);
+  }, [updateStore]);
+
+  useEffect(() => {
+    props.callbacks?.onInputAmountChange?.(srcAmountWei || "0", typedSrcAmount || "0");
+  }, [srcAmountWei, typedSrcAmount, props.callbacks?.onInputAmountChange]);
   return null;
 };
 
@@ -82,10 +93,8 @@ const Content = (props: TwapProps) => {
         spotConfig,
       }}
     >
-      <Listeners />
-      <ErrorWrapper>
-        <UserProvider>{props.children}</UserProvider>
-      </ErrorWrapper>
+      <Listeners {...props} />
+      <ErrorWrapper>{props.children}</ErrorWrapper>
     </TwapContext.Provider>
   );
 };

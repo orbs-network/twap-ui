@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import BN from "bignumber.js";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { Token } from "../types";
 import { useAmountUi } from "./helper-hooks";
 import { useFormatNumber } from "./useFormatNumber";
@@ -19,7 +19,7 @@ type Props = {
   maker?: string;
 };
 
-export const useOrderDetails = (props: Props) => {
+export const useBaseOrder = (props: Props) => {
   const { translations: t } = useTwapContext();
 
   const srcAmount = useFormatNumber({ value: useAmountUi(props.srcToken?.decimals, props.srcAmount) });
@@ -30,48 +30,54 @@ export const useOrderDetails = (props: Props) => {
   const triggerPricePerChunk = useFormatNumber({ value: useAmountUi(props.dstToken?.decimals, props.triggerPricePerChunk) });
   return useMemo(() => {
     return {
+      srcToken: props.srcToken,
+      dstToken: props.dstToken,
       limitPrice: {
         label: t.limitPrice,
-        value: props.limitPrice,
+        value: props.limitPrice || "",
       },
 
       deadline: {
         tooltip: t.deadlineTooltip,
         label: t.deadline,
-        value: props.deadline,
+        value: props.deadline || 0,
       },
       amountIn: {
         label: t.amountOut,
-        value: srcAmount,
+        value: srcAmount || "",
+        token: props.srcToken,
       },
-      chunkSize: {
+      tradeSize: {
         tooltip: t.tradeSizeTooltip,
         label: t.individualTradeSize,
-        value: srcAmountPerChunk,
+        value: srcAmountPerChunk || "",
+        token: props.srcToken,
       },
-      chunksAmount: {
+      tradesAmount: {
         tooltip: t.totalTradesTooltip,
         label: t.numberOfTrades,
-        value: props.chunksAmount,
+        value: props.chunksAmount || 0,
       },
-      minDestAmountPerChunk: {
+      minDestAmountPerTrade: {
         tooltip: t.minDstAmountTooltip,
-        label: t.minReceivedPerTrade,
-        value: minDestAmountPerChunk,
+        label: props.chunksAmount && props.chunksAmount > 1 ? t.minReceivedPerTrade : t.minReceived,
+        value: minDestAmountPerChunk || "",
+        token: props.dstToken,
       },
       tradeInterval: {
         tooltip: t.tradeIntervalTootlip,
         label: t.tradeInterval,
-        value: props.tradeInterval,
+        value: props.tradeInterval || 0,
       },
-      triggerPricePerChunk: {
-        tooltip: t.triggerPriceTooltip,
-        label: t.triggerPricePerChunk,
-        value: triggerPricePerChunk,
+      triggerPricePerTrade: {
+        tooltip: "Trigger price",
+        label: props.chunksAmount && props.chunksAmount > 1 ? t.triggerPricePerChunk : t.triggerPrice,
+        value: triggerPricePerChunk || "",
+        token: props.dstToken,
       },
       recipient: {
         label: t.recipient,
-        value: props.maker,
+        value: props.maker || "",
       },
     };
   }, [props, t, srcAmount, srcAmountPerChunk, minDestAmountPerChunk, triggerPricePerChunk]);

@@ -1,10 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-constant-condition */
-import { Config, OrderStatus, OrderType, ParsedFills, RawOrder, TwapFill, SinkOrder } from "./types";
+import { Config, OrderStatus, OrderType, ParsedFills, OrderV1, TwapFill, Order } from "../types";
 import BN from "bignumber.js";
-import { amountUi, eqIgnoreCase, getExchanges, getTheGraphUrl, normalizeSubgraphList } from "./utils";
-import { getEstimatedDelayBetweenChunksMillis } from "./lib";
-import { API_ENDPOINT } from "./consts";
+import { amountUi, eqIgnoreCase, getExchanges } from "../utils";
+import { THE_GRAPH_ORDERS_API } from "../consts";
+import { getEstimatedDelayBetweenChunksMillis } from "../lib";
+type RawStatus = "CANCELED" | "COMPLETED" | null;
+
+const normalizeSubgraphList = <T>(list?: T[], transform?: (val: T) => string) => (list && list.length ? list.map(transform || ((v) => `${v}`)) : undefined);
+
+const getTheGraphUrl = (chainId?: number) => {
+  if (!chainId) return;
+  return THE_GRAPH_ORDERS_API[chainId as keyof typeof THE_GRAPH_ORDERS_API];
+};
 
 type GraphQLPageFetcher<T> = (page: number, limit: number) => string;
 
@@ -125,19 +133,8 @@ const parseFills = (fills: TwapFill[]): ParsedFills => {
   };
 };
 
-export type Order = ReturnType<typeof buildOrder>;
-
-const getOrderType = ({ dstMinAmount, chunks, triggerPrice }: { dstMinAmount: string; chunks: number, triggerPrice?: string }) => {
-  const isLimit = BN(dstMinAmount || 0).gt(1);
-  const isTriggerPrice = BN(triggerPrice || 0).gt(0);
-
-  if(isTriggerPrice && isLimit) {
-    return OrderType.TRIGGER_PRICE_LIMIT;
-  }
-
-  if(isTriggerPrice) {
-    return OrderType.TRIGGER_PRICE_MARKET;
-  }
+const getOrderType = (ask_dstMinAmount: string, chunks: number) => {
+  const isLimit = BN(ask_dstMinAmount || 0).gt(1);
 
   if (!isLimit && chunks === 1) {
     return OrderType.TWAP_MARKET;
@@ -154,9 +151,9 @@ const getOrderType = ({ dstMinAmount, chunks, triggerPrice }: { dstMinAmount: st
 };
 
 export const getOrderExcecutionRate = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.filledSrcAmount || 0).gt(0) || !BN(order.filledDstAmount || 0).gt(0)) return "";
-  const srcFilledAmountUi = amountUi(srcTokenDecimals, order.filledSrcAmount);
-  const dstFilledAmountUi = amountUi(dstTokenDecimals, order.filledDstAmount);
+  if (!BN(order.srcAmountFilled || 0).gt(0) || !BN(order.dstAmountFilled || 0).gt(0)) return "";
+  const srcFilledAmountUi = amountUi(srcTokenDecimals, order.srcAmountFilled);
+  const dstFilledAmountUi = amountUi(dstTokenDecimals, order.dstAmountFilled);
 
   return BN(dstFilledAmountUi).div(srcFilledAmountUi).toFixed();
 };
@@ -165,106 +162,56 @@ export const getOrderLimitPriceRate = (order: Order, srcTokenDecimals: number, d
   if (order.type === OrderType.TWAP_MARKET) {
     return getOrderExcecutionRate(order, srcTokenDecimals, dstTokenDecimals);
   }
-  const srcBidAmountUi = amountUi(srcTokenDecimals, order.srcAmountPerChunk);
-  const dstMinAmountUi = amountUi(dstTokenDecimals, order.dstMinAmountPerChunk);
+  const srcBidAmountUi = amountUi(srcTokenDecimals, order.srcAmountPerTrade);
+  const dstMinAmountUi = amountUi(dstTokenDecimals, order.dstMinAmountPerTrade);
   return BN(dstMinAmountUi).div(srcBidAmountUi).toFixed();
 };
 
-type RawStatus = "CANCELED" | "COMPLETED" | null;
+const isMarketPrice = (type: OrderType) => {
+  return type === OrderType.TWAP_MARKET || type === OrderType.TRIGGER_PRICE_MARKET;
+};
 
-export const buildOrder = ({
-  fills,
-  srcAmount,
-  srcTokenAddress,
-  dstTokenAddress,
-  srcAmountPerChunk = "1",
-  deadline,
-  dstMinAmountPerChunk,
-  tradeDollarValueIn,
-  blockNumber,
-  id,
-  fillDelay,
-  createdAt,
-  txHash,
-  maker,
-  exchange,
-  twapAddress,
-  chainId,
-  status,
-  filledSrcAmount: _filledSrcAmount,
-  srcTokenSymbol,
-  dstTokenSymbol,
-  triggerPricePerChunk,
-}: {
-  fills?: TwapFill[];
-  srcAmount: string;
-  srcTokenAddress: string;
-  dstTokenAddress: string;
-  srcAmountPerChunk: string;
-  deadline: number;
-  dstMinAmountPerChunk: string;
-  tradeDollarValueIn: string;
-  blockNumber?: number;
-  id: string;
-  fillDelay: number;
-  createdAt: number;
-  txHash: string;
-  maker: string;
-  exchange: string;
-  twapAddress: string;
-  chainId: number;
-  status: OrderStatus;
-  filledSrcAmount?: string;
-  srcTokenSymbol?: string;
-  dstTokenSymbol?: string;
-  triggerPricePerChunk?: string;
-}) => {
-  const { filledDstAmount, filledSrcAmount: filledSrcAmountFromFills, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
-  const chunks = new BN(srcAmount || 0)
-    .div(srcAmountPerChunk) // Avoid division by zero
+const buildV1Order = (order: OrderV1, chainId: number, fills: TwapFill[], status: OrderStatus): Order => {
+  const { filledDstAmount, filledSrcAmount, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as TwapFill[]));
+  const chunks = new BN(order.ask_srcAmount || 0)
+    .div(order.ask_srcBidAmount) // Avoid division by zero
     .integerValue(BN.ROUND_FLOOR)
     .toNumber();
-  const type = getOrderType({ dstMinAmount: dstMinAmountPerChunk, chunks, triggerPrice: triggerPricePerChunk });
   const isFilled = fills?.length === chunks;
-  const filledDate = isFilled ? fills?.[fills?.length - 1]?.timestamp : undefined;
-  const filledSrcAmount = _filledSrcAmount || filledSrcAmountFromFills;
-  const progress = getOrderProgress(srcAmount, filledSrcAmount);
-
-  
-
+  const filledOrderTimestamp = isFilled ? fills?.[fills?.length - 1]?.timestamp : undefined;
+  const progress = getV1OrderProgress(order.ask_srcAmount, filledSrcAmount);
+  const type = getOrderType(order.ask_dstMinAmount, chunks);
   return {
-    id,
-    type,
-    exchange,
-    twapAddress,
-    maker,
+    version: 1,
+    id: order.Contract_id.toString(),
+    hash: "",
+    type: getOrderType(order.ask_dstMinAmount, chunks),
+    srcTokenAddress: order.ask_srcToken,
+    dstTokenAddress: order.ask_dstToken,
+    exchangeAddress: order.exchange,
+    twapAddress: order.twapAddress,
+    maker: order.maker,
     progress,
-    filledDstAmount: !fills ? "" : filledDstAmount,
-    filledSrcAmount,
-    filledDollarValueIn: !fills ? "" : filledDollarValueIn,
-    filledDollarValueOut: !fills ? "" : filledDollarValueOut,
-    filledFee: !fills ? "" : dexFee,
-    fills,
-    srcTokenAddress,
-    dstTokenAddress,
-    tradeDollarValueIn,
-    blockNumber,
-    fillDelay,
-    deadline,
-    createdAt,
-    srcAmount,
-    dstMinAmountPerChunk: Number(dstMinAmountPerChunk) === 1 ? "" : dstMinAmountPerChunk,
-    triggerPricePerChunk: BN(triggerPricePerChunk || 0).isZero() ? undefined : triggerPricePerChunk,
-    srcAmountPerChunk,
-    txHash,
-    chunks,
-    dstMinAmount: Number(dstMinAmountPerChunk) === 1 ? "" : new BN(dstMinAmountPerChunk).times(chunks).toString(),
-    isMarketOrder: type === OrderType.TWAP_MARKET,
+    dstAmountFilled: !fills ? "" : filledDstAmount,
+    srcAmountFilled: !fills ? "" : filledSrcAmount,
+    orderDollarValueIn: order.dollarValueIn,
+    srcAmount: order.ask_srcAmount,
+    dollarValueInFilled: !fills ? "" : filledDollarValueIn,
+    dollarValueOutFilled: !fills ? "" : filledDollarValueOut,
+    feesFilled: !fills ? "" : dexFee,
+    fills: fills || ([] as TwapFill[]),
+    fillDelay: order.ask_fillDelay,
+    deadline: order.ask_deadline * 1000,
+    createdAt: new Date(order.timestamp).getTime(),
+    dstMinAmountPerTrade: BN(order.ask_dstMinAmount).eq(1) ? "" : order.ask_dstMinAmount,
+    triggerPricePerTrade: "",
+    srcAmountPerTrade: order.ask_srcBidAmount,
+    txHash: order.transactionHash,
+    totalTradesAmount: chunks,
+    isMarketPrice: isMarketPrice(type),
     chainId,
-    filledDate,
+    filledOrderTimestamp: filledOrderTimestamp || 0,
     status,
-    srcTokenSymbol,
-    dstTokenSymbol,
   };
 };
 
@@ -312,12 +259,12 @@ export async function getCreatedOrders({
   page?: number;
   limit?: number;
   filters?: GetOrdersFilters;
-}): Promise<RawOrder[]> {
+}): Promise<OrderV1[]> {
   const limit = _limit || 1000;
 
   const whereClause = getCreatedOrdersFilters(filters);
 
-  const orders = await fetchWithRetryPaginated<RawOrder>({
+  const orders = await fetchWithRetryPaginated<OrderV1>({
     chainId,
     signal,
     limit,
@@ -369,7 +316,7 @@ type GraphStatus = {
   status: RawStatus;
 };
 
-export const getStatuses = async ({ chainId, orders, signal }: { chainId: number; orders: RawOrder[]; signal?: AbortSignal }): Promise<GraphStatus[]> => {
+export const getStatuses = async ({ chainId, orders, signal }: { chainId: number; orders: OrderV1[]; signal?: AbortSignal }): Promise<GraphStatus[]> => {
   if (orders.length === 0) return [];
 
   const ids = uniq(orders.map((o) => o.Contract_id.toString()));
@@ -407,7 +354,7 @@ export function uniq<T>(array: T[]): T[] {
   return Array.from(new Set(array));
 }
 
-const getFills = async ({ chainId, orders, signal }: { chainId: number; orders: RawOrder[]; signal?: AbortSignal }) => {
+const getFills = async ({ chainId, orders, signal }: { chainId: number; orders: OrderV1[]; signal?: AbortSignal }) => {
   const ids = uniq(orders.map((o) => o.Contract_id)); // no `.toString()`
   const twapAddresses = uniq(orders.map((o) => o.twapAddress)).filter(Boolean);
 
@@ -473,7 +420,7 @@ export type GetOrdersFilters = {
   orderType?: "limit" | "market";
 };
 
-export const getOrdersFromGraph = async ({
+export const getOrders = async ({
   chainId,
   signal,
   page,
@@ -492,42 +439,20 @@ export const getOrdersFromGraph = async ({
   const parsedOrders = orders
     .map((o) => {
       const orderFills = fills?.filter((it) => it.TWAP_id === Number(o.Contract_id) && eqIgnoreCase(it.exchange, o.exchange) && eqIgnoreCase(it.twapAddress, o.twapAddress));
-
-      return buildOrder({
-        fills: orderFills,
-        srcAmount: o.ask_srcAmount,
-        srcTokenAddress: o.ask_srcToken,
-        dstTokenAddress: o.ask_dstToken,
-        srcAmountPerChunk: o.ask_srcBidAmount,
-        deadline: o.ask_deadline * 1000,
-        dstMinAmountPerChunk: o.ask_dstMinAmount,
-        tradeDollarValueIn: o.dollarValueIn,
-        blockNumber: o.blockNumber,
-        id: o.Contract_id.toString(),
-        fillDelay: o.ask_fillDelay,
-        createdAt: new Date(o.timestamp).getTime(),
-        txHash: o.transactionHash,
-        maker: o.maker,
-        exchange: o.exchange,
-        twapAddress: o.twapAddress,
-        chainId,
-        status: getStatus(o, orderFills || [], statuses),
-        srcTokenSymbol: o.srcTokenSymbol,
-        dstTokenSymbol: o.dstTokenSymbol,
-      });
+      return buildV1Order(o, chainId, orderFills, getStatus(o, orderFills || [], statuses));
     })
     .sort((a, b) => b.createdAt - a.createdAt);
   return parsedOrders;
 };
 
-const getStatus = (order: RawOrder, fills: TwapFill[], statuses?: GraphStatus[]): OrderStatus => {
+const getStatus = (order: OrderV1, fills: TwapFill[], statuses?: GraphStatus[]): OrderStatus => {
   const status = statuses?.find((it) => it.twapId === order.Contract_id.toString() && eqIgnoreCase(it.twapAddress, order.twapAddress))?.status;
   const { filledSrcAmount } = parseFills(fills);
-  const progress = getOrderProgress(order.ask_srcAmount, filledSrcAmount);
+  const progress = getV1OrderProgress(order.ask_srcAmount, filledSrcAmount);
   return parseOrderStatus(progress, order.ask_deadline * 1000, status);
 };
 
-export const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
+export const getV1OrderProgress = (srcAmount: string, filledSrcAmount: string) => {
   if (!filledSrcAmount || !srcAmount) return 0;
   const progress = BN(filledSrcAmount).dividedBy(srcAmount).toNumber();
 
@@ -545,81 +470,4 @@ const parseOrderStatus = (progress: number, deadline: number, status?: RawStatus
   if (deadline > Date.now()) return OrderStatus.Open;
 
   return OrderStatus.Expired;
-};
-
-export const parseRawStatus = (progress: number, status?: number): OrderStatus => {
-  if (progress === 100) return OrderStatus.Completed;
-  if (status && status > Date.now() / 1000) return OrderStatus.Open;
-
-  switch (status) {
-    case 1:
-      return OrderStatus.Canceled;
-    case 2:
-      return OrderStatus.Completed;
-    default:
-      return OrderStatus.Expired;
-  }
-};
-
-export const getOrderFillDelayMillis = (order: Order, config: Config) => {
-  return (order.fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
-};
-
-export const buildSinkOrder = (order: SinkOrder) => {
-  return buildOrder({
-    id: order.hash,
-    srcAmount: order.order.witness.input.maxAmount,
-    srcTokenAddress: order.order.witness.input.token,
-    dstTokenAddress: order.order.witness.output.token,
-    srcAmountPerChunk: order.order.witness.input.amount,
-    deadline: Number(order.order.deadline) * 1000,
-    dstMinAmountPerChunk: order.order.witness.output.amount,
-    tradeDollarValueIn: "",
-    fillDelay: Number(order.order.witness.epoch),
-    createdAt: new Date(order.timestamp).getTime(),
-    txHash: order.hash,
-    maker: order.order.witness.swapper,
-    exchange: "",
-    twapAddress: "",
-    chainId: order.order.witness.chainid,
-    status: OrderStatus.Open,
-    srcTokenSymbol: "",
-    dstTokenSymbol: "",
-    triggerPricePerChunk: order.order.witness.output.maxAmount,
-  });
-};
-
-export const getSinkOrders = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account?: string }): Promise<Order[]> => {
-  if (!account) return [];
-  const response = await fetch(`${API_ENDPOINT}/orders?swapper=${account}&chainId=${chainId}`, {
-    signal,
-  });
-
-  const payload = (await response.json()) as { orders: SinkOrder[] };
-
-  return payload.orders.map(buildSinkOrder);
-};
-
-export const getUserOrders = async ({
-  signal,
-  page,
-  limit,
-  config,
-  account,
-}: {
-  signal?: AbortSignal;
-  page?: number;
-  limit?: number;
-  config: Config;
-  account: string;
-}): Promise<Order[]> => {
-  const allOrders = await Promise.all([
-    getOrdersFromGraph({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }),
-    getSinkOrders({ chainId: config.chainId, signal, account }),
-  ]).then(([graphOrders, apiOrders]) => {
-    return [...graphOrders, ...apiOrders];
-  });
-  const sortedOrders = allOrders.sort((a, b) => b.createdAt - a.createdAt);
-  console.log("sortedOrders", sortedOrders);
-  return sortedOrders;
 };

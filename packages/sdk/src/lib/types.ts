@@ -74,20 +74,39 @@ export type TwapFill = {
   transactionHash: string;
 };
 
-export type BuildRePermitOrderDataProps = {
-  chainId: number;
-  srcToken: string;
-  dstToken: string;
+export type Order = {
+  version: number;
+  id: string;
+  hash: string;
+  type: OrderType;
+  exchangeAddress?: string;
+  twapAddress?: string;
+  maker: string;
+  progress: number;
+  dstAmountFilled: string;
+  srcAmountFilled: string;
+  dollarValueInFilled: string;
+  dollarValueOutFilled: string;
+  feesFilled: string;
+  fills: TwapFill[];
+  srcTokenAddress: string;
+  dstTokenAddress: string;
+  orderDollarValueIn: string;
+  fillDelay: number;
+  deadline: number;
+  createdAt: number;
   srcAmount: string;
-  deadlineMilliseconds: number;
-  fillDelayMillis: number;
-  slippage: number;
-  account: string;
-  srcAmountPerChunk: string;
-  dstMinAmountPerChunk?: string;
-  triggerAmountPerChunk?: string;
-  limitAmountPerChunk?: string;
+  dstMinAmountPerTrade: string;
+  triggerPricePerTrade: string;
+  srcAmountPerTrade: string;
+  txHash: string;
+  totalTradesAmount: number;
+  isMarketPrice: boolean;
+  chainId: number;
+  filledOrderTimestamp: number;
+  status: OrderStatus;
 };
+
 export type Address = `0x${string}`;
 export type Hex = `0x${string}`;
 
@@ -129,9 +148,9 @@ export interface OrderData {
     };
     output: {
       token: Address;
-      amount: string;
+      limit: string;
+      stop: string;
       recipient: Address;
-      maxAmount: string;
     };
   };
 }
@@ -155,7 +174,7 @@ export type Signature = {
   s: `0x${string}`;
 };
 
-export type RawOrder = {
+export type OrderV1 = {
   Contract_id: string | number;
   srcTokenSymbol: string;
   dollarValueIn: string;
@@ -184,22 +203,55 @@ export type ParsedFills = {
   dexFee: string;
 };
 
-export type SinkOrder = {
+type OrderV2Chunk = {
+  blockId: number;
+  description: string;
+  epoch: string;
+  exchange: string;
+  executor: string;
+  inAmount: string;
+  inToken: string;
+  index: number;
+  minOut: string;
+  oraclePricingData: {
+    message: {
+      chainid: number;
+      cosigner: string;
+      input: {
+        decimals: string;
+        token: string;
+        value: "1000000000000000000";
+      };
+      output: {
+        decimals: string;
+        token: string;
+        value: string;
+      };
+      reactor: string;
+      timestamp: number;
+    };
+    oracle: string;
+    signature: Signature;
+    timestamp: string;
+  };
+  outAmount: string;
+  outToken: string;
+  settled: boolean;
+  status: string;
+  swapper: string;
+  timestamp: string;
+  txHash: string;
+};
+
+export type OrderV2 = {
   hash: string;
   metadata: {
-    chunks: [
-      {
-        blockId: number;
-        description: string;
-        index: number;
-        status: string;
-        timestamp: string;
-      },
-    ];
+    chunks?: OrderV2Chunk[];
     expectedChunks: number;
     lastPriceCheck: string;
     nextEligibleTime: string;
     status: string;
+    description: string;
   };
   order: OrderData;
   signature: string;

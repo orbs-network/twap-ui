@@ -1,5 +1,6 @@
+import { OrderHistoryProps } from "../types";
+
 import { createContext, ReactNode, useContext } from "react";
-import { OrderHistoryProps } from "../../types";
 
 const Context = createContext({} as OrderHistoryProps);
 

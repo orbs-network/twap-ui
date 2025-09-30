@@ -1,6 +1,6 @@
 import { getDuration, getMaxOrderDurationError, getMinOrderDurationError, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { InputError, InputErrors } from "../types";
 import { millisToDays, millisToMinutes } from "../utils";

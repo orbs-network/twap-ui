@@ -1,27 +1,26 @@
-import { amountUi, getOrderFillDelayMillis, Module, OrderStatus, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountUi, Module, Order, OrderStatus, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useFillDelay } from "./use-fill-delay";
 import { useDuration } from "./use-duration";
 import BN from "bignumber.js";
 import { useTwapStore } from "../useTwapStore";
 import { ORBS_WEBSITE_URL } from "../consts";
 import { useLimitPrice, useLimitPriceToggle } from "./use-limit-price";
-import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapStatus, useFormatNumber } from "..";
+import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapExecution, SwapStatus } from "..";
 import { useDefaultLimitPricePercent } from "./use-default-values";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useAmountBN, useAmountUi, useShouldWrapOrUnwrapOnly, useUsdAmount } from "./helper-hooks";
 import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
-import { useDstMinAmountPerTrade, useDstTokenAmount } from "./use-dst-amount";
+import { useDstTokenAmount } from "./use-dst-amount";
 import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { useTrades } from "./use-trades";
-import { useOrderAvgExcecutionPrice, useOrderLimitPrice, useOrderName, useOrders } from "./order-hooks";
+import { useOrders, useOrderToDisplay, useSelectedOrderIdsToCancel } from "./order-hooks";
 import { useMutation } from "@tanstack/react-query";
 import { useSubmitOrderMutation } from "./use-submit-order";
-import { useOrderHistoryContext } from "../twap/orders/context";
-import { useOrderDetails } from "./use-order-details";
-import { useDeadline } from "./use-deadline";
+import { useCurrentOrderDetails } from "./use-current-order";
+import { useHistoryOrder } from "./use-history-order";
 
 export const useFillDelayPanel = () => {
   const { onChange, fillDelay, error } = useFillDelay();
@@ -224,98 +223,19 @@ export const useTriggerPricePanel = () => {
   };
 };
 
-export const usePreviewOrder = () => {
-  const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
-  const { orders } = useOrders();
-  const { useToken } = useOrderHistoryContext();
-  const { translations: t, config } = useTwapContext();
-  const selectedOrder = useMemo(() => orders?.all.find((order) => order.id === selectedOrderID), [orders, selectedOrderID]);
-  const title = useOrderName(selectedOrder);
-  const srcToken = useToken?.(selectedOrder?.srcTokenAddress);
-  const dstToken = useToken?.(selectedOrder?.dstTokenAddress);
-  const selectedOrderLimitPrice = useOrderLimitPrice(srcToken, dstToken, selectedOrder);
-  const excecutionPrice = useOrderAvgExcecutionPrice(srcToken, dstToken, selectedOrder);
-  const srcFilledAmount = useAmountUi(srcToken?.decimals, selectedOrder?.filledSrcAmount);
-  const dstFilledAmount = useAmountUi(dstToken?.decimals, selectedOrder?.filledDstAmount);
-  const progress = useFormatNumber({ value: selectedOrder?.progress, decimalScale: 2 });
-  const details = useOrderDetails({
-    srcToken,
-    dstToken,
-    limitPrice: selectedOrderLimitPrice,
-    deadline: selectedOrder?.deadline,
-    srcAmount: selectedOrder?.srcAmount,
-    srcAmountPerChunk: selectedOrder?.srcAmountPerChunk,
-    chunksAmount: selectedOrder?.chunks,
-    minDestAmountPerChunk: selectedOrder?.dstMinAmountPerChunk,
-    tradeInterval: selectedOrder?.chunks === 1 || !selectedOrder ? undefined : getOrderFillDelayMillis(selectedOrder, config),
-    triggerPricePerChunk: selectedOrder?.triggerPricePerChunk,
-    maker: selectedOrder?.maker,
-  });
-
-  return useMemo(() => {
-    if (!selectedOrder) return;
-    return {
-      ...selectedOrder,
-      title,
-      srcToken,
-      dstToken,
-      details: {
-        ...details,
-        createdAt: {
-          label: t.createdAt,
-          value: selectedOrder?.createdAt,
-        },
-        id: {
-          label: t.id,
-          value: selectedOrder?.id,
-        },
-        amountInFilled: {
-          label: t.amountSent,
-          value: srcFilledAmount,
-        },
-        amountOutFilled: {
-          label: t.amountReceived,
-          value: dstFilledAmount,
-        },
-        progress: {
-          label: t.amountReceived,
-          value: selectedOrder.chunks === 1 ? undefined : progress,
-        },
-        excecutionPrice: {
-          label: selectedOrder.chunks === 1 ? t.finalExcecutionPrice : t.AverageExecutionPrice,
-          value: excecutionPrice,
-        },
-      },
-    };
-  }, [orders, selectedOrderID, t, config, srcToken, dstToken, excecutionPrice, selectedOrderLimitPrice, srcFilledAmount, dstFilledAmount, progress, selectedOrder, title]);
-};
-
 export const useOrderHistoryPanel = () => {
   const { translations: t } = useTwapContext();
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
+  const ordersToDisplay = useOrderToDisplay();
   const updateState = useTwapStore((s) => s.updateState);
-
   const selectedStatus = useTwapStore((s) => s.state.orderHistoryStatusFilter);
   const cancelOrdersMode = useTwapStore((s) => s.state.cancelOrdersMode);
   const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
-
-  const onClosePreview = useCallback(() => {
-    updateState({ selectedOrderID: undefined });
-  }, [updateState]);
-
-  const onCancelOrders = useCallback(
-    (orderIds: string[], callbacks?: OrderHistoryCallbacks) => {
-      return cancelOrder({ orderIds, callbacks });
-    },
-    [cancelOrder],
-  );
-
-  const onSelectStatus = useMemo(() => {
-    return (status?: OrderStatus) => {
-      updateState({ orderHistoryStatusFilter: status });
-    };
-  }, [selectedStatus]);
+  const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [updateState]);
+  const onClosePreview = useCallback(() => updateState({ selectedOrderID: undefined }), [updateState]);
+  const onCancelOrders = useCallback((orders: Order[], callbacks?: OrderHistoryCallbacks) => cancelOrder({ orders, callbacks }), [cancelOrder]);
+  const onSelectStatus = useCallback((status?: OrderStatus) => updateState({ orderHistoryStatusFilter: status }), []);
 
   const statuses = useMemo(() => {
     const result = Object.keys(OrderStatus).map((it) => {
@@ -327,20 +247,10 @@ export const useOrderHistoryPanel = () => {
     return [{ text: t.allOrders, value: "" }, ...result];
   }, [t]);
 
-  const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [updateState]);
-
-  const onSelectOrder = useCallback(
-    (id: string) => {
-      if (orderIdsToCancel?.includes(id)) {
-        updateState({ orderIdsToCancel: orderIdsToCancel?.filter((orderId) => orderId !== id) });
-      } else {
-        updateState({ orderIdsToCancel: [...(orderIdsToCancel || []), id] });
-      }
-    },
-    [updateState, orderIdsToCancel],
-  );
-
-  const previewOrder = usePreviewOrder();
+  const onSelectOrder = useSelectedOrderIdsToCancel();
+  const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
+  const selectedOrder = useHistoryOrder(selectedOrderID);
+  const ordersToCancel = useMemo(() => orders.all.filter((order) => orderIdsToCancel?.includes(order.id)), [orders, orderIdsToCancel]);
 
   return {
     refetch,
@@ -351,15 +261,15 @@ export const useOrderHistoryPanel = () => {
     onSelectOrder,
     isRefetching,
     orders,
-    selectedOrders: !selectedStatus ? orders.all : orders[selectedStatus?.toUpperCase() as keyof typeof orders] || [],
+    ordersToDisplay,
     isLoading: orderLoading,
-    previewOrder,
-    openOrdersCount: orders?.OPEN?.length || 0,
+    selectedOrder: selectedOrderID ? selectedOrder : undefined,
+    openOrdersCount: orders?.open?.length || 0,
     isCancelOrdersLoading,
     selectedStatus: selectedStatus || statuses[0].value,
     statuses,
     cancelOrdersMode,
-    orderIdsToCancel,
+    ordersToCancel,
   };
 };
 
@@ -426,7 +336,6 @@ export const useOpenSubmitModalButton = (inputsError?: InputError) => {
   const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
   const isLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
   const disabled = Boolean(inputsError || noLiquidity || isLoading || BN(typedSrcAmount || "0").isZero() || !srcToken || !dstToken);
-  
 
   const text = useMemo(() => {
     if (noLiquidity) {
@@ -449,19 +358,13 @@ export const useOpenSubmitModalButton = (inputsError?: InputError) => {
 };
 
 export const useSubmitSwapPanel = () => {
-  const { marketPrice, srcToken, dstToken, account } = useTwapContext();
+  const { marketPrice, srcToken, dstToken } = useTwapContext();
   const submitOrderMutation = useSubmitOrderMutation();
   const updateState = useTwapStore((s) => s.updateState);
   const { amountUI: srcAmountUI, amountWei: srcAmountWei } = useSrcAmount();
-  const dstMinAmountPerTrade = useDstMinAmountPerTrade().amountWei;
-  const { trades, amountPerTradeWei } = useTrades();
-  const triggerPricePerChunk = useTriggerPrice().priceWei;
-  const { fillDelay } = useFillDelay();
   const resetSwap = useTwapStore((s) => s.resetState);
   const swapExecution = useTwapStore((s) => s.state.swapExecution);
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
-  const deadline = useDeadline();
-  const limitAmountPerChunk = useLimitPrice().amountWei;
 
   const onCloseModal = useCallback(() => {
     if (swapExecution?.status === SwapStatus.SUCCESS) {
@@ -471,7 +374,7 @@ export const useSubmitSwapPanel = () => {
 
   const onOpenModal = useCallback(() => {
     if (swapExecution?.status !== SwapStatus.LOADING) {
-      updateState({ acceptedSrcAmount: undefined, acceptedMarketPrice: undefined });
+      updateState({ acceptedSrcAmount: undefined, acceptedMarketPrice: undefined, swapExecution: {} as SwapExecution });
     }
   }, [updateState]);
 
@@ -494,19 +397,7 @@ export const useSubmitSwapPanel = () => {
     [submitSwapMutation],
   );
 
-  const details = useOrderDetails({
-    srcToken,
-    dstToken,
-    srcAmount: srcAmountWei,
-    minDestAmountPerChunk: dstMinAmountPerTrade,
-    chunksAmount: trades,
-    triggerPricePerChunk,
-    deadline: deadline,
-    srcAmountPerChunk: amountPerTradeWei,
-    maker: account,
-    tradeInterval: fillDelay.unit * fillDelay.value,
-    limitPrice: limitAmountPerChunk,
-  });
+  const order = useCurrentOrderDetails();
 
   return useMemo(() => {
     return {
@@ -515,13 +406,23 @@ export const useSubmitSwapPanel = () => {
       onOpenModal,
       onSubmitOrder,
       ...swapExecution,
-      srcToken,
-      dstToken,
       swapLoading: swapExecution?.status === SwapStatus.LOADING || fetchingAllowance,
       swapSubmitted: Boolean(swapExecution?.status),
-      details,
+      order,
       srcAmountWei,
       srcAmount: srcAmountWei,
     };
-  }, [swapExecution, fetchingAllowance, srcToken, dstToken, details, resetSwap, onCloseModal, onOpenModal, onSubmitOrder]);
+  }, [swapExecution, fetchingAllowance, srcToken, dstToken, order, resetSwap, onCloseModal, onOpenModal, onSubmitOrder]);
+};
+
+export const useDisclaimerPanel = () => {
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const { translations: t } = useTwapContext();
+  return useMemo(() => {
+    return {
+      type: isMarketOrder ? "market" : "limit",
+      text: isMarketOrder ? t.marketOrderWarning : t.limitPriceMessage,
+      url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
+    };
+  }, [isMarketOrder, t]);
 };

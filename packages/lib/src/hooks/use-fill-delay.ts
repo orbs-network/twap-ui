@@ -1,6 +1,6 @@
 import { getFillDelay, getMinFillDelayError, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { InputError, InputErrors, millisToMinutes } from "..";
 
