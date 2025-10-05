@@ -12,12 +12,10 @@ import {
   useTriggerPricePanel,
   useOrderHistoryPanel,
   useSubmitSwapPanel,
-  useOpenSubmitModalButton,
   useDisclaimerPanel,
 } from "../hooks/use-panels";
 import { InputError } from "../types";
-import { useTwapStore } from "../useTwapStore";
-import BN from "bignumber.js";
+import { useInputErrors } from "../hooks/use-input-errors";
 
 type ContextType = {
   inputsError: InputError | undefined;
@@ -33,14 +31,12 @@ type ContextType = {
   orderHistoryPanel: ReturnType<typeof useOrderHistoryPanel>;
   invertTradePanel: ReturnType<typeof useInvertTrade>;
   submitSwapPanel: ReturnType<typeof useSubmitSwapPanel>;
-  openSubmitModalButtonPanel: ReturnType<typeof useOpenSubmitModalButton>;
   order: ReturnType<typeof useCurrentOrderDetails>;
 };
 
 export const UserContext = createContext({} as ContextType);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const tradesPanel = useTradesPanel();
   const fillDelayPanel = useFillDelayPanel();
   const durationPanel = useDurationPanel();
@@ -54,12 +50,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const invertTradePanel = useInvertTrade();
   const submitSwapPanel = useSubmitSwapPanel();
   const order = useCurrentOrderDetails();
-
-  const inputsError =
-    BN(marketPricePanel.priceWei || 0).isZero() || BN(srcAmount || 0).isZero()
-      ? undefined
-      : srcTokenPanel.isInsufficientBalance || triggerPricePanel.error || limitPricePanel.error || tradesPanel.error || fillDelayPanel.error || durationPanel.error;
-  const openSubmitModalButtonPanel = useOpenSubmitModalButton(inputsError);
+  const inputsError = useInputErrors();
 
   return (
     <UserContext.Provider
@@ -76,7 +67,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         disclaimerPanel,
         orderHistoryPanel,
         invertTradePanel,
-        openSubmitModalButtonPanel,
         submitSwapPanel,
         order,
       }}

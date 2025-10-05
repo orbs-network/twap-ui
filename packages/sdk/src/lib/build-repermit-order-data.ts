@@ -1,13 +1,15 @@
+import { maxUint256 } from "./consts";
 import { getSpotConfig } from "./lib";
-import { Address, OrderData } from "./types";
+import { Address, RePermitOrder } from "./types";
 import { safeBNString } from "./utils";
+import BN from "bignumber.js";
 
 export const buildRePermitOrderData = ({
   chainId,
   srcToken,
   dstToken,
   srcAmount,
-  deadlineMilliseconds,
+  deadlineMillis,
   fillDelayMillis,
   slippage,
   account,
@@ -19,7 +21,7 @@ export const buildRePermitOrderData = ({
   srcToken: string;
   dstToken: string;
   srcAmount: string;
-  deadlineMilliseconds: number;
+  deadlineMillis: number;
   fillDelayMillis: number;
   slippage: number;
   account: string;
@@ -30,12 +32,12 @@ export const buildRePermitOrderData = ({
 }) => {
   const nonce = safeBNString(Date.now() * 1000);
   const epoch = parseInt((fillDelayMillis / 1000).toFixed(0));
-  const deadline = safeBNString(deadlineMilliseconds / 1000);
+  const deadline = safeBNString(deadlineMillis / 1000);
   const spotConfig = getSpotConfig(chainId);
 
   if (!spotConfig) return;
 
-  const orderData: OrderData = {
+  const orderData: RePermitOrder = {
     permitted: {
       token: srcToken as Address,
       amount: srcAmount,
@@ -59,7 +61,7 @@ export const buildRePermitOrderData = ({
       exclusivity: 0,
       epoch,
       slippage,
-      freshness: 30,
+      freshness: 60,
       input: {
         token: srcToken as Address,
         amount: srcAmountPerTrade,
@@ -68,7 +70,7 @@ export const buildRePermitOrderData = ({
       output: {
         token: dstToken as Address,
         limit: dstMinAmountPerTrade || "0",
-        stop: triggerAmountPerTrade || "",
+        stop: !triggerAmountPerTrade || BN(triggerAmountPerTrade || 0).isZero() ? maxUint256 : triggerAmountPerTrade,
         recipient: account as Address,
       },
     },
@@ -83,6 +85,6 @@ export const buildRePermitOrderData = ({
 
   return {
     domain,
-    orderData,
+    order: orderData,
   };
 };

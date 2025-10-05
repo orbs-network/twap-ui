@@ -47,18 +47,6 @@ export enum OrderType {
   TRIGGER_PRICE_LIMIT = "trigger-price-limit",
 }
 
-export interface getAskParamsProps {
-  destTokenMinAmount: string;
-  srcChunkAmount: string;
-  deadline: number;
-  fillDelay: TimeDuration;
-  srcAmount: string;
-  srcTokenAddress: string;
-  destTokenAddress: string;
-}
-
-export type PrepareOrderArgsResult = [string, string, string, string, string, string, string, string, string, string[]];
-
 export type TwapFill = {
   TWAP_id: number;
   dollarValueIn: string;
@@ -110,13 +98,7 @@ export type Order = {
 export type Address = `0x${string}`;
 export type Hex = `0x${string}`;
 
-// Structs (match your EIP-712 types)
-export interface TokenPermissions {
-  token: Address;
-  amount: string;
-}
-
-export interface OrderData {
+export interface RePermitOrder {
   permitted: {
     token: Address;
     amount: string;
@@ -165,7 +147,7 @@ export interface RePermitTypedData {
   };
   primaryType: typeof REPERMIT_PRIMARY_TYPE;
   types: typeof EIP712_TYPES;
-  message: OrderData;
+  message: RePermitOrder;
 }
 
 export type Signature = {
@@ -253,7 +235,7 @@ export type OrderV2 = {
     status: string;
     description: string;
   };
-  order: OrderData;
+  order: RePermitOrder;
   signature: string;
   timestamp: string;
 };

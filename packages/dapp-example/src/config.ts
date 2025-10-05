@@ -27,12 +27,6 @@ const chains = [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base
 
 const transports = chains
   .map((chain) => {
-    if (chain.id === katana.id) {
-      return {
-        chainId: chain.id,
-        transport: http(`https://rpc.katana.network`),
-      };
-    }
     return {
       chainId: chain.id,
       transport: http(`https://rpcman.orbs.network/rpc?chainId=${chain.id}&appId=twap-ui`),

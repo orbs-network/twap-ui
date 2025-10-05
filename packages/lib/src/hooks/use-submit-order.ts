@@ -58,39 +58,37 @@ const useWrapToken = () => {
 
 const useSignAndSend = () => {
   const { account, walletClient, chainId } = useTwapContext();
-  const buildRePermitOrderData = useBuildRePermitOrderDataCallback();
+  const rePermitOrderData = useBuildRePermitOrderDataCallback();
 
   return useMutation(async () => {
     if (!account || !walletClient || !chainId) {
       throw new Error("missing required parameters");
     }
 
-    const repermitOrderData = buildRePermitOrderData();
-
-    if (!repermitOrderData) {
-      throw new Error("repermitOrderData is not defined");
+    if (!rePermitOrderData) {
+      throw new Error("rePermitOrderData is not defined");
     }
 
-    const { orderData, domain } = repermitOrderData;
+    const { order, domain } = rePermitOrderData;
 
     console.log({
       domain,
       types: EIP712_TYPES,
       primaryType: REPERMIT_PRIMARY_TYPE,
-      message: orderData as Record<string, any>,
+      message: order as Record<string, any>,
       account: account as `0x${string}`,
     });
 
     console.log(`Using domain:`, domain);
     console.log(`Using types:`, EIP712_TYPES);
-    console.log(`Order data to sign:`, JSON.stringify(orderData, null, 2));
+    console.log(`Order data to sign:`, JSON.stringify(order, null, 2));
     console.log(`Account address: ${account}`);
 
     const signatureStr = await walletClient?.signTypedData({
       domain: domain as Record<string, any>,
       types: EIP712_TYPES,
       primaryType: REPERMIT_PRIMARY_TYPE,
-      message: orderData as Record<string, any>,
+      message: order as Record<string, any>,
       account: account as `0x${string}`,
     });
 
@@ -101,7 +99,7 @@ const useSignAndSend = () => {
       s: parsedSignature.s,
     };
 
-    return submitOrder(orderData, signature);
+    return submitOrder(order, signature);
   });
 };
 

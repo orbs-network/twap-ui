@@ -47,12 +47,12 @@ export const OrderPreview = () => {
     <Context.Provider value={{ order }}>
       <div className="twap-orders__selected-order">
         <TokensDisplay
-          SrcTokenLogo={TokenLogo && <TokenLogo token={order.srcToken} />}
-          DstTokenLogo={TokenLogo && <TokenLogo token={order.dstToken} />}
+          SrcTokenLogo={TokenLogo && <TokenLogo token={order.data.srcToken} />}
+          DstTokenLogo={TokenLogo && <TokenLogo token={order.data.dstToken} />}
           fromTitle={t.from}
-          inToken={order.srcToken}
+          inToken={order.data.srcToken}
           toTitle={t.to}
-          outToken={order.dstToken}
+          outToken={order.data.dstToken}
         />
 
         <OrderDetails.Container Tooltip={Tooltip}>
@@ -108,18 +108,18 @@ const ChunkSize = () => {
   const { order } = useOrderContext();
   return (
     <OrderDetails.TradeSize
-      tradeSize={order.tradeSize.value}
-      srcToken={order.srcToken}
-      label={order.tradeSize.label}
-      tooltip={order.tradeSize.tooltip}
-      trades={order.tradesAmount.value}
+      tradeSize={order.display.tradeSize.value}
+      srcToken={order.data.srcToken}
+      label={order.display.tradeSize.label}
+      tooltip={order.display.tradeSize.tooltip}
+      trades={order.display.totalTrades.value}
     />
   );
 };
 
 const ChunksAmount = () => {
   const { order } = useOrderContext();
-  return <OrderDetails.TradesAmount trades={order.tradesAmount.value} label={order.tradesAmount.label} tooltip={order.tradesAmount.tooltip} />;
+  return <OrderDetails.TradesAmount trades={order.display.totalTrades.value} label={order.display.totalTrades.label} tooltip={order.display.totalTrades.tooltip} />;
 };
 
 const MinDestAmount = () => {
@@ -127,27 +127,27 @@ const MinDestAmount = () => {
 
   return (
     <OrderDetails.MinDestAmount
-      dstToken={order.dstToken}
-      dstMinAmountOut={order.minDestAmountPerTrade.value}
-      label={order.minDestAmountPerTrade.label}
-      tooltip={order.minDestAmountPerTrade.tooltip}
+      dstToken={order.data.dstToken}
+      dstMinAmountOut={order.display.minDestAmountPerTrade.value}
+      label={order.display.minDestAmountPerTrade.label}
+      tooltip={order.display.minDestAmountPerTrade.tooltip}
     />
   );
 };
 
 const Expiry = () => {
   const { order } = useOrderContext();
-  return <OrderDetails.Deadline deadline={order.deadline.value} label={order.deadline.label} tooltip={order.deadline.tooltip} />;
+  return <OrderDetails.Deadline deadline={order.display.deadline.value} label={order.display.deadline.label} tooltip={order.display.deadline.tooltip} />;
 };
 
 const TradeInterval = () => {
   const { order } = useOrderContext();
   return (
     <OrderDetails.TradeInterval
-      fillDelayMillis={order.tradeInterval.value}
-      chunks={order.tradesAmount.value}
-      label={order.tradeInterval.label}
-      tooltip={order.tradeInterval.tooltip}
+      fillDelayMillis={order.display.tradeInterval.value}
+      chunks={order.display.totalTrades.value}
+      label={order.display.tradeInterval.label}
+      tooltip={order.display.tradeInterval.tooltip}
     />
   );
 };
@@ -156,10 +156,10 @@ const TriggerPricePerChunk = () => {
   const { order } = useOrderContext();
   return (
     <OrderDetails.TriggerPrice
-      dstToken={order.dstToken}
-      price={order.triggerPricePerTrade.value}
-      label={order.triggerPricePerTrade.label}
-      tooltip={order.triggerPricePerTrade.tooltip}
+      dstToken={order.data.dstToken}
+      price={order.display.triggerPricePerTrade.value}
+      label={order.display.triggerPricePerTrade.label}
+      tooltip={order.display.triggerPricePerTrade.tooltip}
     />
   );
 };
@@ -189,7 +189,7 @@ const AmountOutFilled = () => {
   return (
     <OrderDetails.DetailRow title={order.amountOutFilled.label}>
       <p>
-        {amount || "-"} {order.dstToken?.symbol}
+        {amount || "-"} {order.data.dstToken?.symbol}
       </p>
     </OrderDetails.DetailRow>
   );
@@ -229,12 +229,12 @@ const AmountIn = () => {
   const { order } = useOrderContext();
   const { translations: t } = useTwapContext();
 
-  const amount = useFormatNumber({ value: order.amountIn.value, decimalScale: 3 });
+  const amount = useFormatNumber({ value: order.display.srcAmount.value, decimalScale: 3 });
 
   return (
     <OrderDetails.DetailRow title={t.amountOut}>
       <p>
-        {amount || 0} {order.srcToken?.symbol}
+        {amount || 0} {order.data.srcToken?.symbol}
       </p>
     </OrderDetails.DetailRow>
   );
@@ -252,7 +252,7 @@ const AmountInFilled = () => {
   return (
     <OrderDetails.DetailRow title={order.amountInFilled.label}>
       <p>
-        {amount || "-"} {order.srcToken?.symbol}
+        {amount || "-"} {order.data.srcToken?.symbol}
       </p>
     </OrderDetails.DetailRow>
   );
@@ -306,15 +306,15 @@ const LimitPrice = () => {
   const { order } = useOrderContext();
   const { translations: t } = useTwapContext();
 
-  if (!order.limitPrice.value) return null;
+  if (!order.display.limitPrice.value) return null;
 
-  return <Price title={t.limitPrice} price={order.limitPrice.value} srcToken={order.srcToken} dstToken={order.dstToken} />;
+  return <Price title={t.limitPrice} price={order.display.limitPrice.value} srcToken={order.data.srcToken} dstToken={order.data.dstToken} />;
 };
 
 const AvgExcecutionPrice = () => {
   const { order } = useOrderContext();
   if (!order.excecutionPrice.value) return null;
-  return <Price title={order.excecutionPrice.label} price={order.excecutionPrice.value} srcToken={order.srcToken} dstToken={order.dstToken} />;
+  return <Price title={order.excecutionPrice.label} price={order.excecutionPrice.value} srcToken={order.data.srcToken} dstToken={order.data.dstToken} />;
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {

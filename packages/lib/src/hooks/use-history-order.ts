@@ -26,11 +26,11 @@ export const useHistoryOrder = (orderId?: string) => {
     limitPrice: selectedOrderLimitPrice,
     deadline: order?.deadline,
     srcAmount: order?.srcAmount,
-    srcAmountPerChunk: order?.srcAmountPerTrade,
-    chunksAmount: order?.totalTradesAmount,
-    minDestAmountPerChunk: order?.dstMinAmountPerTrade,
+    srcAmountPerTrade: order?.srcAmountPerTrade,
+    totalTrades: order?.totalTradesAmount,
+    minDestAmountPerTrade: order?.dstMinAmountPerTrade,
     tradeInterval: order?.totalTradesAmount === 1 || !order ? undefined : getOrderFillDelayMillis(order, config),
-    triggerPricePerChunk: order?.triggerPricePerTrade,
+    triggerPricePerTrade: order?.triggerPricePerTrade,
     maker: order?.maker,
   });
 

@@ -46,7 +46,7 @@ export const useCurrentOrderDetails = () => {
   const { srcToken, dstToken, account, translations: t } = useTwapContext();
   const { amountWei: srcAmountWei } = useSrcAmount();
   const dstMinAmountPerTrade = useDstMinAmountPerTrade().amountWei;
-  const { trades, amountPerTradeWei } = useTrades();
+  const { totalTrades, amountPerTradeWei } = useTrades();
   const triggerPricePerChunk = useTriggerPrice().pricePerChunkWei;
   const { fillDelay } = useFillDelay();
   const deadline = useDeadline();
@@ -58,11 +58,11 @@ export const useCurrentOrderDetails = () => {
     srcToken,
     dstToken,
     srcAmount: srcAmountWei,
-    minDestAmountPerChunk: dstMinAmountPerTrade,
-    chunksAmount: trades,
-    triggerPricePerChunk,
+    minDestAmountPerTrade: dstMinAmountPerTrade,
+    totalTrades: totalTrades,
+    triggerPricePerTrade: triggerPricePerChunk,
     deadline: deadline,
-    srcAmountPerChunk: amountPerTradeWei,
+    srcAmountPerTrade: amountPerTradeWei,
     maker: account,
     tradeInterval: fillDelay.unit * fillDelay.value,
     limitPrice: limitAmountPerChunk,

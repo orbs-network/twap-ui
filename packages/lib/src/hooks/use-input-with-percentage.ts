@@ -50,9 +50,9 @@ export const useInputWithPercentage = ({
   );
 
   const onPercentageChange = useCallback(
-    (percent?: number) => {
+    (percent?: string | number) => {
       setValue(undefined);
-      setPercentage(percent);
+      setPercentage(BN(percent || 0).toNumber());
     },
     [setValue, setPercentage],
   );

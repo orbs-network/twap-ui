@@ -11,21 +11,14 @@ import { useAmountBN } from "../hooks/helper-hooks";
 const TwapFallbackUI = () => {
   return (
     <div className="twap-error-fallback">
-      <p style={{ color: "white", fontSize: 16, fontWeight: 600, textAlign: "center", width: "100%", marginTop: 40 }}>Something went wrong</p>
+      <p style={{ fontSize: 20, fontWeight: 600, textAlign: "center", width: "100%", marginTop: 40 }}>Something went wrong</p>
     </div>
   );
 };
 
 function ErrorWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <ErrorBoundary
-      onError={(error) => {
-        // You can also log the error to an error reporting service like AppSignal
-        // logErrorToMyService(error, errorInfo);
-        console.error(error);
-      }}
-      FallbackComponent={TwapFallbackUI}
-    >
+    <ErrorBoundary FallbackComponent={TwapFallbackUI}>
       <>{children}</>
     </ErrorBoundary>
   );

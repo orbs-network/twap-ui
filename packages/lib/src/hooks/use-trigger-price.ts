@@ -9,7 +9,7 @@ import { getStopLossPriceError, getTakeProfitPriceError, getTriggerPricePerChunk
 import { useAmountUi } from "./helper-hooks";
 import { useTrades } from "./use-trades";
 
-export const useTriggerPriceError = (triggerPriceWei = "") => {
+const useTriggerPriceError = (triggerPriceWei = "") => {
   const { module, marketPrice, translations: t } = useTwapContext();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);

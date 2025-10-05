@@ -35,6 +35,11 @@ import { useGetToken } from "./hooks";
 import styled from "styled-components";
 import { abbreviate } from "../utils";
 import clsx from "clsx";
+export const useSwitchChain = () => {
+  const { data: walletClient } = useWalletClient();
+
+  return useCallback((config: Config) => (walletClient as any)?.switchChain({ id: config.chainId }), [walletClient]);
+};
 
 const OrderHistoryModal = () => {
   const {
@@ -57,7 +62,7 @@ const OrderHistoryModal = () => {
   return (
     <>
       <Popup
-        isOpen={Boolean(isOpen)}
+        isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title={
           selectedOrder ? (
@@ -112,7 +117,7 @@ const ErrorView = () => {
 };
 
 const SubmitOrderPanelModal = () => {
-  const { onCloseModal, onOpenModal, onSubmitOrder, swapLoading, wrapTxHash } = useTwap().submitSwapPanel;
+  const { onCloseModal, onOpenModal, onSubmitOrder, swapLoading, wrapTxHash, openSubmitModalButton } = useTwap().submitSwapPanel;
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -128,7 +133,7 @@ const SubmitOrderPanelModal = () => {
 
   return (
     <>
-      <Popup isOpen={isOpen} onClose={onClose}>
+      <Popup isOpen={isOpen} onClose={onClose} title="Submit Order">
         <Components.SubmitOrderPanel
           Tooltip={TwapTooltip}
           ErrorView={wrapTxHash ? <ErrorView /> : null}
@@ -150,7 +155,7 @@ const SubmitOrderPanelModal = () => {
           }
         />
       </Popup>
-      <ConfirmationButton onClick={onOpen} />
+      <ConfirmationButton onClick={onOpen} text={openSubmitModalButton.text} disabled={openSubmitModalButton.disabled} />
     </>
   );
 };
@@ -219,19 +224,7 @@ const SelectMenu = (props: SelectMenuProps) => {
   );
 };
 
-export const useSwitchChain = () => {
-  const { data: walletClient } = useWalletClient();
-
-  return useCallback(
-    (config: Config) => {
-      (walletClient as any)?.switchChain({ id: config.chainId });
-    },
-    [walletClient],
-  );
-};
-
-const ConfirmationButton = ({ onClick }: { onClick: () => void }) => {
-  const { text, disabled: _disabled } = useTwap().openSubmitModalButtonPanel;
+const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: () => void; text: string; disabled: boolean }) => {
   const { address, chainId } = useAccount();
   const { openConnectModal } = useConnectModal();
   const switchChain = useSwitchChain();
@@ -366,9 +359,11 @@ const PercentageButton = ({ onClick, children, selected }: { onClick: () => void
 };
 
 const TradeAmountMessage = () => {
-  const { error, amountPerTradeUsd, sellToken, amountPerTrade } = useTwap().tradesPanel;
+  const { error, amountPerTradeUsd, sellToken, amountPerTrade, totalTrades } = useTwap().tradesPanel;
   const tokenAmountF = useFormatNumber({ value: amountPerTrade });
   const amountPerTradeUsdF = useFormatNumber({ value: amountPerTradeUsd });
+
+  if (totalTrades <= 1) return null;
 
   return (
     <Typography className={`trade-amount-message ${error ? "trade-amount-message-error" : ""}`}>
@@ -444,7 +439,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
                   })
                 }
               >
-                {`${it.text}`}
+                {it.text}
               </PercentageButton>
             );
           })}
@@ -470,13 +465,12 @@ const FillDelay = ({ className }: { className?: string }) => {
   );
 };
 
-const TriggerPriceToggle = () => {
-  const { label, tooltip, isLimitPrice, toggleLimitPrice } = useTwap().limitPricePanel;
-  const { module } = useDappContext();
+const PriceToggle = () => {
+  const { label, tooltip, isLimitPrice, toggleLimitPrice, hide } = useTwap().limitPricePanel;
 
   return (
     <div className="flex flex-row gap-2 items-center flex-1">
-      {module !== Module.LIMIT && (
+      {!hide && (
         <div className="flex flex-row gap-2 items-center">
           <Switch checked={isLimitPrice} onChange={toggleLimitPrice} className="w-fit" />
           <Label text={label} tooltip={tooltip} />
@@ -555,19 +549,19 @@ const ResetButton = ({ onClick, text }: { onClick: () => void; text: string }) =
   );
 };
 
-const TriggerLimitPrice = () => {
+const LimitPrice = () => {
   const { warning, price, buyToken, onReset, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice } = useTwap().limitPricePanel;
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-row gap-4 justify-between items-center flex-1">
-        <TriggerPriceToggle />
+        <PriceToggle />
         {isLimitPrice && <ResetButton onClick={onReset} text="set to default" />}
       </div>
       {isLimitPrice ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1">
           <SymbolInput isLoading={isLoading} error={Boolean(error)} token={buyToken} onChange={onChange} value={price} />
-          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={(value) => onPercentageChange(Number(value))} value={marketDiffPercentage?.toString() || ""} />
+          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={marketDiffPercentage?.toString() || ""} />
         </div>
       ) : warning ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1 bg-[rgba(255,255,255,0.02)] rounded-[12px] px-2 py-2">
@@ -584,15 +578,13 @@ const TriggerLimitPrice = () => {
   );
 };
 
-const PricesPanel = () => {
-  const { price, sellToken, buyToken, onSetDefault, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error } = useTwap().triggerPricePanel;
+const TriggerPrice = () => {
+  const { price, sellToken, buyToken, onSetDefault, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } =
+    useTwap().triggerPricePanel;
   const { onInvert, isInverted } = useTwap().invertTradePanel;
-  const { module } = useDappContext();
-
-  const showTriggerPrice = module === Module.STOP_LOSS || module === Module.TAKE_PROFIT;
 
   return (
-    <Section>
+    <>
       <div className="flex flex-row gap-4 justify-between items-center">
         <div className="flex flex-row gap-2 items-center justify-between w-full">
           <p className="text-sm text-white font-bold">
@@ -601,7 +593,7 @@ const PricesPanel = () => {
           <ArrowUpDown onClick={onInvert} className="cursor-pointer text-white" size={18} />
         </div>
       </div>
-      {showTriggerPrice && (
+      {!hide && (
         <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
           <div className="flex flex-row gap-2 justify-between items-center w-full">
             <Label text={label} tooltip={tooltip} />
@@ -609,23 +601,22 @@ const PricesPanel = () => {
           </div>
           <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
             <SymbolInput isLoading={isLoading} error={Boolean(error)} token={buyToken} onChange={onChange} value={price} />
-            <PercentageInput isLoading={isLoading} prefix={prefix} onChange={(value) => onPercentageChange(Number(value))} value={marketDiffPercentage?.toString() || ""} />
+            <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={marketDiffPercentage?.toString() || ""} />
           </div>
         </div>
       )}
-      <TriggerLimitPrice />
-    </Section>
+    </>
   );
 };
 
 const TradeAmount = ({ className }: { className?: string }) => {
-  const { onChange, trades, tooltip, label } = useTwap().tradesPanel;
+  const { onChange, totalTrades, tooltip, label } = useTwap().tradesPanel;
 
   return (
     <Section className={clsx(`trade-amount twap-input-panel ${className}`)}>
       <Label text={label} tooltip={tooltip} />
       <div className="flex flex-row gap-2 items-center justify-between bg-[rgba(255,255,255,0.05)] rounded-[12px] px-2 py-0 h-[40px]">
-        <NumberInput onChange={(value) => onChange(Number(value))} value={trades} className="bg-transparent flex-1" />
+        <NumberInput onChange={(value) => onChange(Number(value))} value={totalTrades} className="bg-transparent flex-1" />
         <Typography>Orders</Typography>
       </div>
     </Section>
@@ -640,10 +631,10 @@ const TwapButton = (props: ButtonProps) => {
   );
 };
 
-const WarningMessage = () => {
-  const { text } = useTwap().disclaimerPanel;
-  const { module } = useDappContext();
-  if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) return null;
+const DisclaimerMessage = () => {
+  const disclaimerPanel = useTwap().disclaimerPanel;
+  if (!disclaimerPanel) return null;
+  const { text } = disclaimerPanel;
   return (
     <div className="flex flex-row gap-2 items-start justify-center w-full  bg-[rgba(255,255,255,0.1)] rounded-[12px] px-3 py-2">
       <RiErrorWarningLine style={{ color: "white", width: 16, height: 16, position: "relative", top: 2 }} />
@@ -674,12 +665,10 @@ const PanelInputs = () => {
 
   if (module === Module.TWAP) {
     return (
-      <>
-        <div className="flex flex-row gap-[10px] items-stretch justify-between w-full">
-          <FillDelay className="flex-1" />
-          <TradeAmount className="max-w-[40%]" />
-        </div>
-      </>
+      <div className="flex flex-row gap-[10px] items-stretch justify-between w-full">
+        <FillDelay className="flex-1" />
+        <TradeAmount className="max-w-[40%]" />
+      </div>
     );
   }
 
@@ -688,11 +677,7 @@ const PanelInputs = () => {
   }
 
   if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
-    return (
-      <>
-        <OrderDuration defaultDuration={DEFAULT_TRIGGER_PRICE_DURATION} />
-      </>
-    );
+    return <OrderDuration defaultDuration={DEFAULT_TRIGGER_PRICE_DURATION} />;
   }
 
   return null;
@@ -704,7 +689,6 @@ export const Dapp = () => {
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
-  const twap = module === Module.TWAP;
 
   const marketReferencePrice = useMemo(() => {
     return { value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false };
@@ -736,13 +720,16 @@ export const Dapp = () => {
             <SwitchTokensButton />
             <TokenPanel />
           </Flex>
-          <PricesPanel />
+          <Section>
+            <TriggerPrice />
+            <LimitPrice />
+          </Section>
           <PanelInputs />
-          {twap && <TradeAmountMessage />}
+          <TradeAmountMessage />
           <InputsError />
           <SubmitOrderPanelModal />
           <OrderHistoryModal />
-          <WarningMessage />
+          <DisclaimerMessage />
           <PoweredByOrbs />
         </div>
       </TWAP>

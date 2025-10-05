@@ -35,9 +35,9 @@ export const useDuration = () => {
   const { module } = useTwapContext();
   const typedDuration = useTwapStore((s) => s.state.typedDuration);
   const updateState = useTwapStore((s) => s.updateState);
-  const chunks = useTrades().trades;
+  const totalTrades = useTrades().totalTrades;
   const fillDelay = useFillDelay().fillDelay;
-  const duration = useMemo(() => getDuration(module, chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, module]);
+  const duration = useMemo(() => getDuration(module, totalTrades, fillDelay, typedDuration), [totalTrades, fillDelay, typedDuration, module]);
   const error = useDurationError(duration);
 
   return {

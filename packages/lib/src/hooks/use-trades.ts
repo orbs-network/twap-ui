@@ -56,7 +56,7 @@ export const useTrades = () => {
     [srcAmountUI, srcUsd1Token, minChunkSizeUsd, fillDelay],
   );
 
-  const trades = useMemo(() => getChunks(maxTrades, module, typedChunks), [maxTrades, typedChunks, module]);
+  const totalTrades = useMemo(() => getChunks(maxTrades, module, typedChunks), [maxTrades, typedChunks, module]);
 
   const onChange = useCallback(
     (typedChunks: number) =>
@@ -66,7 +66,7 @@ export const useTrades = () => {
     [updateState],
   );
 
-  const amountPerTrade = useMemo(() => getSrcTokenChunkAmount(srcAmountWei || "", trades), [srcAmountWei, trades]);
+  const amountPerTrade = useMemo(() => getSrcTokenChunkAmount(srcAmountWei || "", totalTrades), [srcAmountWei, totalTrades]);
   const amountPerTradeUI = useAmountUi(srcToken?.decimals, amountPerTrade);
 
   const usd = useMemo(() => {
@@ -77,12 +77,12 @@ export const useTrades = () => {
   }, [amountPerTradeUI, srcUsd1Token]);
 
   return {
-    trades,
+    totalTrades,
     maxTrades,
     amountPerTradeUI,
     amountPerTradeWei: amountPerTrade,
     amountPerTradeUsd: usd,
     onChange,
-    error: useTradesError(trades, maxTrades),
+    error: useTradesError(totalTrades, maxTrades),
   };
 };

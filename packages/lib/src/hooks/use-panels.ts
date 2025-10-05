@@ -21,6 +21,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useSubmitOrderMutation } from "./use-submit-order";
 import { useCurrentOrderDetails } from "./use-current-order";
 import { useHistoryOrder } from "./use-history-order";
+import { useInputErrors } from "./use-input-errors";
 
 export const useFillDelayPanel = () => {
   const { onChange, fillDelay, error } = useFillDelay();
@@ -42,12 +43,12 @@ export const useFillDelayPanel = () => {
 
 export const useTradesPanel = () => {
   const { translations: t, srcToken, dstToken } = useTwapContext();
-  const { onChange, trades, amountPerTradeUsd, amountPerTradeUI, error, maxTrades, amountPerTradeWei } = useTrades();
+  const { onChange, totalTrades, amountPerTradeUsd, amountPerTradeUI, error, maxTrades, amountPerTradeWei } = useTrades();
 
   return {
     error,
     maxTrades,
-    trades,
+    totalTrades,
     amountPerTrade: amountPerTradeUI,
     amountPerTradeWei,
     onChange,
@@ -141,6 +142,8 @@ export const useLimitPricePanel = () => {
   const { isLimitPrice, toggleLimitPrice } = useLimitPriceToggle();
   const { triggerPricePercent } = useTwapStore((s) => s.state);
 
+  const hide = module === Module.LIMIT;
+
   const warning = useMemo(() => {
     if (module !== Module.STOP_LOSS) return;
 
@@ -185,6 +188,7 @@ export const useLimitPricePanel = () => {
     isLoading: marketPriceLoading || !marketPrice,
     isLimitPrice,
     toggleLimitPrice,
+    hide,
   };
 };
 
@@ -202,6 +206,7 @@ export const useTriggerPricePanel = () => {
 
   const prefixStopsLoss = isInverted ? "+" : "-";
   const prefixTakeProfit = isInverted ? "-" : "+";
+  const hide = module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT;
 
   return {
     price: amountUI,
@@ -220,6 +225,7 @@ export const useTriggerPricePanel = () => {
     prefix: module === Module.STOP_LOSS ? prefixStopsLoss : prefixTakeProfit,
     isLoading: marketPriceLoading || !marketPrice,
     isInverted,
+    hide,
   };
 };
 
@@ -327,44 +333,26 @@ export const useDstTokenPanel = () => {
   return useTokenPanel(false, dstAmount);
 };
 
-export const useOpenSubmitModalButton = (inputsError?: InputError) => {
-  const { srcUsd1Token, translations: t, marketPriceLoading, srcBalance, srcToken, dstToken, noLiquidity } = useTwapContext();
-
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const minChunkSizeUsd = useMinChunkSizeUsd();
-
-  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
-  const isLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
-  const disabled = Boolean(inputsError || noLiquidity || isLoading || BN(typedSrcAmount || "0").isZero() || !srcToken || !dstToken);
-
-  const text = useMemo(() => {
-    if (noLiquidity) {
-      return t.noLiquidity;
-    }
-    if (BN(typedSrcAmount || "0").isZero()) {
-      return t.enterAmount;
-    }
-    if (inputsError?.type === InputErrors.INSUFFICIENT_BALANCE) {
-      return t.insufficientFunds;
-    }
-    return t.placeOrder;
-  }, [inputsError, t, typedSrcAmount, noLiquidity]);
-
-  return {
-    disabled,
-    isLoading,
-    text,
-  };
-};
-
 export const useSubmitSwapPanel = () => {
-  const { marketPrice, srcToken, dstToken } = useTwapContext();
+  const { marketPrice, srcToken, dstToken, marketPriceLoading, srcBalance, srcUsd1Token, noLiquidity, translations: t } = useTwapContext();
   const submitOrderMutation = useSubmitOrderMutation();
   const updateState = useTwapStore((s) => s.updateState);
   const { amountUI: srcAmountUI, amountWei: srcAmountWei } = useSrcAmount();
   const resetSwap = useTwapStore((s) => s.resetState);
   const swapExecution = useTwapStore((s) => s.state.swapExecution);
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const minChunkSizeUsd = useMinChunkSizeUsd();
+  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
+  const buttonLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
+  const inputsError = useInputErrors();
+
+  const buttonText = useMemo(() => {
+    if (noLiquidity) return t.noLiquidity;
+    if (BN(typedSrcAmount || "0").isZero()) return t.enterAmount;
+    if (inputsError?.type === InputErrors.INSUFFICIENT_BALANCE) return t.insufficientFunds;
+    return t.placeOrder;
+  }, [inputsError, t, typedSrcAmount, noLiquidity]);
 
   const onCloseModal = useCallback(() => {
     if (swapExecution?.status === SwapStatus.SUCCESS) {
@@ -390,13 +378,7 @@ export const useSubmitSwapPanel = () => {
     return result;
   });
 
-  const onSubmitOrder = useCallback(
-    (callbacks?: SwapCallbacks) => {
-      return submitSwapMutation.mutateAsync(callbacks);
-    },
-    [submitSwapMutation],
-  );
-
+  const onSubmitOrder = useCallback((callbacks?: SwapCallbacks) => submitSwapMutation.mutateAsync(callbacks), [submitSwapMutation]);
   const order = useCurrentOrderDetails();
 
   return useMemo(() => {
@@ -411,18 +393,40 @@ export const useSubmitSwapPanel = () => {
       order,
       srcAmountWei,
       srcAmount: srcAmountWei,
+      openSubmitModalButton: {
+        disabled: Boolean(inputsError || noLiquidity || buttonLoading || BN(typedSrcAmount || "0").isZero() || !srcToken || !dstToken),
+        text: buttonText,
+        loading: buttonLoading,
+      },
     };
-  }, [swapExecution, fetchingAllowance, srcToken, dstToken, order, resetSwap, onCloseModal, onOpenModal, onSubmitOrder]);
+  }, [
+    swapExecution,
+    fetchingAllowance,
+    srcToken,
+    dstToken,
+    order,
+    resetSwap,
+    onCloseModal,
+    onOpenModal,
+    onSubmitOrder,
+    buttonText,
+    buttonLoading,
+    inputsError,
+    noLiquidity,
+    typedSrcAmount,
+  ]);
 };
 
 export const useDisclaimerPanel = () => {
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const { translations: t } = useTwapContext();
+  const { translations: t, module } = useTwapContext();
+
+  const hide = module === Module.STOP_LOSS || module === Module.TAKE_PROFIT;
   return useMemo(() => {
+    if (hide) return;
     return {
-      type: isMarketOrder ? "market" : "limit",
       text: isMarketOrder ? t.marketOrderWarning : t.limitPriceMessage,
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
     };
-  }, [isMarketOrder, t]);
+  }, [isMarketOrder, t, hide]);
 };

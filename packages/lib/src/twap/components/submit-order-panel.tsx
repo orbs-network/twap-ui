@@ -48,8 +48,8 @@ const useOrderName = (isMarketOrder = false, chunks = 1) => {
 const useTitle = () => {
   const { translations: t } = useTwapContext();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const { trades } = useTrades();
-  const orderName = useOrderName(isMarketOrder, trades);
+  const { totalTrades } = useTrades();
+  const orderName = useOrderName(isMarketOrder, totalTrades);
   return t.createOrderAction.replace("{name}", orderName);
 };
 
@@ -129,32 +129,32 @@ const Main = () => {
               <OrderDetails.DetailRow title={order.tradePrice.label}>
                 1 {order.tradePrice.sellToken?.symbol} = {order.tradePrice.value} {order.tradePrice.buyToken?.symbol}
               </OrderDetails.DetailRow>
-              <OrderDetails.Deadline deadline={order.deadline.value} label={order.deadline.label} tooltip={order.deadline.tooltip || ""} />
+              <OrderDetails.Deadline deadline={order.display.deadline.value} label={order.display.deadline.label} tooltip={order.display.deadline.tooltip || ""} />
               <OrderDetails.TriggerPrice
-                price={order.triggerPricePerTrade.value}
+                price={order.display.triggerPricePerTrade.value}
                 dstToken={dstToken}
-                label={order.triggerPricePerTrade.label}
-                tooltip={order.triggerPricePerTrade.tooltip || ""}
+                label={order.display.triggerPricePerTrade.label}
+                tooltip={order.display.triggerPricePerTrade.tooltip || ""}
               />
               <OrderDetails.MinDestAmount
                 dstToken={dstToken}
-                dstMinAmountOut={order.minDestAmountPerTrade.value}
-                label={order.minDestAmountPerTrade.label}
-                tooltip={order.minDestAmountPerTrade.tooltip || ""}
+                dstMinAmountOut={order.display.minDestAmountPerTrade.value}
+                label={order.display.minDestAmountPerTrade.label}
+                tooltip={order.display.minDestAmountPerTrade.tooltip || ""}
               />
               <OrderDetails.TradeSize
-                tradeSize={order.tradeSize.value}
-                trades={order.tradesAmount.value}
+                tradeSize={order.display.tradeSize.value}
+                trades={order.display.totalTrades.value}
                 srcToken={srcToken}
-                label={order.tradeSize.label}
-                tooltip={order.tradeSize.tooltip}
+                label={order.display.tradeSize.label}
+                tooltip={order.display.tradeSize.tooltip}
               />
-              <OrderDetails.TradesAmount trades={order.tradesAmount.value} label={order.tradesAmount.label} tooltip={order.tradesAmount.tooltip} />
+              <OrderDetails.TradesAmount trades={order.display.totalTrades.value} label={order.display.totalTrades.label} tooltip={order.display.totalTrades.tooltip} />
               <OrderDetails.TradeInterval
-                chunks={order.tradesAmount.value}
-                fillDelayMillis={order.tradeInterval.value}
-                label={order.tradeInterval.label}
-                tooltip={order.tradeInterval.tooltip}
+                chunks={order.display.totalTrades.value}
+                fillDelayMillis={order.display.tradeInterval.value}
+                label={order.display.tradeInterval.label}
+                tooltip={order.display.tradeInterval.tooltip}
               />
               <OrderDetails.Recipient />
               {order.fee.value && <OrderDetails.DetailRow title={order.fee.label}>{order.fee.value ? `${order.fee.value} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}

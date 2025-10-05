@@ -11,74 +11,87 @@ type Props = {
   limitPrice?: string;
   deadline?: number;
   srcAmount?: string;
-  srcAmountPerChunk?: string;
-  chunksAmount?: number;
-  minDestAmountPerChunk?: string;
+  srcAmountPerTrade?: string;
+  totalTrades?: number;
+  minDestAmountPerTrade?: string;
+  triggerPricePerTrade?: string;
   tradeInterval?: number;
-  triggerPricePerChunk?: string;
   maker?: string;
 };
 
 export const useBaseOrder = (props: Props) => {
   const { translations: t } = useTwapContext();
-
   const srcAmount = useFormatNumber({ value: useAmountUi(props.srcToken?.decimals, props.srcAmount) });
-  const srcAmountPerChunk = useFormatNumber({ value: useAmountUi(props.srcToken?.decimals, props.srcAmountPerChunk) });
-  const minDestAmountPerChunk = useFormatNumber({
-    value: useAmountUi(props.dstToken?.decimals, props.minDestAmountPerChunk && BN(props.minDestAmountPerChunk).lte(1) ? "" : props.minDestAmountPerChunk),
+  const srcAmountPerTrade = useFormatNumber({ value: useAmountUi(props.srcToken?.decimals, props.srcAmountPerTrade) });
+  const minDestAmountPerTrade = useFormatNumber({
+    value: useAmountUi(props.dstToken?.decimals, props.minDestAmountPerTrade && BN(props.minDestAmountPerTrade).lte(1) ? "" : props.minDestAmountPerTrade),
   });
-  const triggerPricePerChunk = useFormatNumber({ value: useAmountUi(props.dstToken?.decimals, props.triggerPricePerChunk) });
+  const triggerPricePerTrade = useFormatNumber({ value: useAmountUi(props.dstToken?.decimals, props.triggerPricePerTrade) });
+  const limitPrice = useFormatNumber({ value: useAmountUi(props.dstToken?.decimals, props.limitPrice) });
   return useMemo(() => {
     return {
-      srcToken: props.srcToken,
-      dstToken: props.dstToken,
-      limitPrice: {
-        label: t.limitPrice,
-        value: props.limitPrice || "",
+      data: {
+        srcToken: props.srcToken,
+        dstToken: props.dstToken,
+        limitPrice: props.limitPrice,
+        deadline: props.deadline,
+        srcAmount: props.srcAmount,
+        srcAmountPerTrade: props.srcAmountPerTrade,
+        totalTrades: props.totalTrades,
+        minDestAmountPerTrade: props.minDestAmountPerTrade,
+        tradeInterval: props.tradeInterval,
+        triggerPricePerTrade: props.triggerPricePerTrade,
+        maker: props.maker,
       },
+      display: {
+        limitPrice: {
+          label: t.limitPrice,
+          value: limitPrice || "",
+        },
 
-      deadline: {
-        tooltip: t.deadlineTooltip,
-        label: t.deadline,
-        value: props.deadline || 0,
-      },
-      amountIn: {
-        label: t.amountOut,
-        value: srcAmount || "",
-        token: props.srcToken,
-      },
-      tradeSize: {
-        tooltip: t.tradeSizeTooltip,
-        label: t.individualTradeSize,
-        value: srcAmountPerChunk || "",
-        token: props.srcToken,
-      },
-      tradesAmount: {
-        tooltip: t.totalTradesTooltip,
-        label: t.numberOfTrades,
-        value: props.chunksAmount || 0,
-      },
-      minDestAmountPerTrade: {
-        tooltip: t.minDstAmountTooltip,
-        label: props.chunksAmount && props.chunksAmount > 1 ? t.minReceivedPerTrade : t.minReceived,
-        value: minDestAmountPerChunk || "",
-        token: props.dstToken,
-      },
-      tradeInterval: {
-        tooltip: t.tradeIntervalTootlip,
-        label: t.tradeInterval,
-        value: props.tradeInterval || 0,
-      },
-      triggerPricePerTrade: {
-        tooltip: "Trigger price",
-        label: props.chunksAmount && props.chunksAmount > 1 ? t.triggerPricePerChunk : t.triggerPrice,
-        value: triggerPricePerChunk || "",
-        token: props.dstToken,
-      },
-      recipient: {
-        label: t.recipient,
-        value: props.maker || "",
+        deadline: {
+          tooltip: t.deadlineTooltip,
+          label: t.deadline,
+          value: props.deadline || 0,
+        },
+        srcAmount: {
+          label: t.amountOut,
+          value: srcAmount || "",
+          token: props.srcToken,
+        },
+        tradeSize: {
+          tooltip: t.tradeSizeTooltip,
+          label: t.individualTradeSize,
+          value: srcAmountPerTrade || "",
+          token: props.srcToken,
+        },
+        totalTrades: {
+          tooltip: t.totalTradesTooltip,
+          label: t.numberOfTrades,
+          value: props.totalTrades || 0,
+        },
+        minDestAmountPerTrade: {
+          tooltip: t.minDstAmountTooltip,
+          label: props.totalTrades && props.totalTrades > 1 ? t.minReceivedPerTrade : t.minReceived,
+          value: minDestAmountPerTrade || "",
+          token: props.dstToken,
+        },
+        tradeInterval: {
+          tooltip: t.tradeIntervalTootlip,
+          label: t.tradeInterval,
+          value: props.tradeInterval || 0,
+        },
+        triggerPricePerTrade: {
+          tooltip: "Trigger price",
+          label: props.totalTrades && props.totalTrades > 1 ? t.triggerPricePerChunk : t.triggerPrice,
+          value: triggerPricePerTrade || "",
+          token: props.dstToken,
+        },
+        recipient: {
+          label: t.recipient,
+          value: props.maker || "",
+        },
       },
     };
-  }, [props, t, srcAmount, srcAmountPerChunk, minDestAmountPerChunk, triggerPricePerChunk]);
+  }, [props, t, srcAmount, srcAmountPerTrade, minDestAmountPerTrade, triggerPricePerTrade]);
 };
