@@ -17,6 +17,7 @@ import {
   Components,
   useTwap,
   TooltipProps,
+  Partners,
 } from "@orbs-network/twap-ui";
 import { Config, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -685,7 +686,7 @@ const PanelInputs = () => {
 
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
-  const { config, module, slippage } = useDappContext();
+  const { module, slippage } = useDappContext();
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
@@ -699,7 +700,7 @@ export const Dapp = () => {
       <GlobalStyles isDarkMode={true} />
       <TWAP
         slippage={slippage}
-        config={config}
+        partner={Partners.THENA}
         chainId={chainId}
         provider={client.data?.transport}
         srcToken={srcToken}

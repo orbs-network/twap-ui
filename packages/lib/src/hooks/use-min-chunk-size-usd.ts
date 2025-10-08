@@ -11,11 +11,11 @@ const addressMap = {
 };
 
 export const useMinChunkSizeUsd = () => {
-  const { config, publicClient, overrides } = useTwapContext();
+  const { publicClient, overrides, chainId, config } = useTwapContext();
   const customMinChunkSizeUsd = overrides?.minChunkSizeUsd;
-  const address = addressMap[config.chainId] as `0x${string}`;
+  const address = chainId ? (addressMap[chainId] as `0x${string}`) : undefined;
   const query = useQuery({
-    queryKey: ["useMinChunkSizeUsd", config.chainId],
+    queryKey: ["useMinChunkSizeUsd", chainId],
     queryFn: async () => {
       if (!address) return null;
       const latestAnswer = await publicClient!.readContract({
@@ -38,7 +38,7 @@ export const useMinChunkSizeUsd = () => {
         .toNumber();
       return minChunkSizeUsd;
     },
-    enabled: !!publicClient && !!config,
+    enabled: !!publicClient && !!config?.twapConfig,
     staleTime: 60_000,
   });
 
@@ -47,10 +47,10 @@ export const useMinChunkSizeUsd = () => {
   }
 
   if (!address) {
-    return config.minChunkSizeUsd;
+    return config?.twapConfig?.minChunkSizeUsd;
   }
 
   if (query.isLoading) return 0;
 
-  return query.data || config.minChunkSizeUsd;
+  return query.data || config?.twapConfig?.minChunkSizeUsd || 0;
 };

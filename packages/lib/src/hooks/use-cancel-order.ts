@@ -9,7 +9,7 @@ import { OrderHistoryCallbacks } from "../types";
 import { useOptimisticCancelOrder } from "./order-hooks";
 
 export const useCancelOrderMutation = () => {
-  const { account, walletClient, publicClient, spotConfig } = useTwapContext();
+  const { account, walletClient, publicClient, config } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
   const optimisticCancelOrder = useOptimisticCancelOrder();
@@ -36,7 +36,7 @@ export const useCancelOrderMutation = () => {
   const cancelOrdersV2 = async (orders: Order[], callbacks?: OrderHistoryCallbacks) => {
     const hash = await walletClient!.writeContract({
       account: account as `0x${string}`,
-      address: spotConfig!.repermit,
+      address: config!.repermit,
       abi: REPERMIT_ABI,
       functionName: "cancel",
       args: [orders.map((order) => order.hash)],
@@ -54,7 +54,7 @@ export const useCancelOrderMutation = () => {
   };
 
   return useMutation(async ({ orders, callbacks }: { orders: Order[]; callbacks?: OrderHistoryCallbacks }) => {
-    if (!account || !walletClient || !publicClient || !spotConfig) {
+    if (!account || !walletClient || !publicClient || !config) {
       throw new Error("missing required parameters");
     }
 

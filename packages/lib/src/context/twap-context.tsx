@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { analytics, getDexFromConfig, getSpotConfig } from "@orbs-network/twap-sdk";
+import { analytics, getConfig } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType, Translations } from "../types";
 import defaultTranslations from "../i18n/en.json";
 import { initiateWallet } from "../lib";
@@ -65,12 +65,13 @@ const Content = (props: TwapProps) => {
   const translations = useTranslations(props.overrides?.translations);
   const acceptedMarketPrice = useTwapStore((s) => s.state.acceptedMarketPrice);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
-  const spotConfig = useMemo(() => (!props.chainId ? undefined : getSpotConfig(props.chainId, getDexFromConfig(props.config))), [props.chainId]);
-  console.log({ spotConfig });
+  const config = useMemo(() => getConfig(props.chainId, props.partner), [props.chainId, props.partner]);
 
   useEffect(() => {
-    analytics.init(props.config);
-  }, [props.config.chainId]);
+    if (config && props.chainId) {
+      analytics.init(config, props.chainId);
+    }
+  }, [config, props.chainId]);
 
   return (
     <TwapContext.Provider
@@ -78,13 +79,12 @@ const Content = (props: TwapProps) => {
         ...props,
         account: props.account as `0x${string}` | undefined,
         translations,
-        isWrongChain: !props.account || !props.chainId ? false : props.config.chainId !== props.chainId,
         walletClient,
         publicClient,
         marketPrice: acceptedMarketPrice || props.marketReferencePrice.value,
         marketPriceLoading: !acceptedMarketPrice && props.marketReferencePrice.isLoading,
         noLiquidity: !acceptedMarketPrice && props.marketReferencePrice.noLiquidity,
-        spotConfig,
+        config,
       }}
     >
       <Listeners {...props} />

@@ -1,5 +1,5 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import { Config, Module, Order, OrderStatus, OrderType, SpotConfig, TimeDuration } from "@orbs-network/twap-sdk";
+import { Partners, Module, Order, OrderStatus, OrderType, SpotConfig, TimeDuration } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt, Abi } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -417,7 +417,7 @@ export interface TwapProps {
   chainId?: number;
   account?: string;
   enableQueryParams?: boolean;
-  config: Config;
+  partner: Partners;
   srcToken?: Token;
   dstToken?: Token;
   srcUsd1Token?: string;
@@ -433,7 +433,6 @@ export interface TwapProps {
 }
 
 export interface TwapContextType extends TwapProps {
-  isWrongChain: boolean;
   translations: Translations;
   walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: PublicClient;
@@ -441,7 +440,7 @@ export interface TwapContextType extends TwapProps {
   marketPriceLoading?: boolean;
   account?: `0x${string}`;
   noLiquidity?: boolean;
-  spotConfig?: SpotConfig;
+  config?: SpotConfig;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -524,4 +523,4 @@ export interface State {
   acceptedSrcAmount?: string;
 }
 
-export { SwapStatus };
+export { SwapStatus, Partners };

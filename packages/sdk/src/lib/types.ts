@@ -239,7 +239,22 @@ export type OrderV2 = {
   signature: string;
   timestamp: string;
 };
+
+export enum Partners {
+  THENA = "thena",
+  PANCAKESWAP = "pancakeswap",
+  QUICKSWAP = "quickswap",
+  SWAPX = "swapx",
+  DRAGONSWAP = "dragonswap",
+  SPOOKYSWAP = "spookyswap",
+  LYNEX = "lynex",
+  BLACKHOLE = "blackhole",
+  OMNI = "omni",
+  SUSHISWAP = "sushiswap",
+}
+
 export type SpotConfig = {
+  partner: Partners;
   adapter: Address;
   cosigner: Address;
   executor: Address;
@@ -250,4 +265,5 @@ export type SpotConfig = {
   router: Address;
   type: string;
   wm: Address;
+  twapConfig?: Config;
 };

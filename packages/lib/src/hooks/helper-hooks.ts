@@ -14,8 +14,8 @@ export const useAmountUi = (decimals?: number, value?: string) => {
 };
 
 export const useNetwork = () => {
-  const { config } = useTwapContext();
-  return useMemo(() => getNetwork(config.chainId), [config]);
+  const { chainId } = useTwapContext();
+  return useMemo(() => getNetwork(chainId), [chainId]);
 };
 
 export const useExplorerLink = (txHash?: string) => {

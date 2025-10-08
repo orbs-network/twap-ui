@@ -1,6 +1,6 @@
-import { Config } from "./types";
+import { SpotConfig } from "./types";
 import BN from "bignumber.js";
-const Version = 0.5;
+const Version = 0.6;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 
@@ -163,21 +163,14 @@ class Analytics {
     });
   }
 
-  init(config: Config) {
-    if (config.chainId !== this.data?.chainId) {
+  init(config: SpotConfig, chainId?: number) {
+    if (chainId !== this.data?.chainId) {
+      const { twapConfig = {}, ...rest } = config;
       this.data = {
         _id: generateId(),
         action: "module-import",
-        bidDelaySeconds: config?.bidDelaySeconds,
-        chainId: config?.chainId,
-        chainName: config?.chainName,
-        exchangeAddress: config?.exchangeAddress,
-        exchangeType: config?.exchangeType,
-        lensAddress: config?.lensAddress,
-        name: config?.name,
-        partner: config?.partner,
-        twapAddress: config?.twapAddress,
-        twapVersion: config?.twapVersion,
+        ...twapConfig,
+        ...rest,
       };
       this.updateAndSend(this.data);
     }

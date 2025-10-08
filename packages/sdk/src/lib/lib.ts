@@ -2,8 +2,9 @@ import BN from "bignumber.js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as Spot from "@orbs-network/spot";
+import Configs from "@orbs-network/twap/configs.json";
 import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, maxUint256, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
-import { Config, Module, SpotConfig, TimeDuration, TimeUnit } from "./types";
+import { Config, Module, Partners, SpotConfig, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
 
 // values calculations
@@ -178,20 +179,24 @@ export const getMaxChunksError = (chunks: number, maxChunks: number, module: Mod
   };
 };
 
-export const getDexFromConfig = (config: Config) => {
-  const res = config.name.toLowerCase();
-  return res;
-};
+export const getConfig = (chainId?: number, _dex?: Partners): SpotConfig | undefined => {
+  try {
+    if (!chainId || !_dex) throw new Error("Invalid chainId or _dex");
 
-export const getSpotConfig = (chainId: number, _dex: string): SpotConfig | undefined => {
-  const chainConfig = Spot.configs()[chainId];
-  if (!chainConfig) return undefined;
-  const dexConfig = chainConfig.dex[_dex];
-  if (!dexConfig) return undefined;
-  const { dex, ...rest } = chainConfig;
-  const result = {
-    ...rest,
-    ...dexConfig,
-  };
-  return result;
+    const twapConfig = Object.entries(Configs).find(([key, value]) => value.chainId === chainId && key.toLowerCase().indexOf(_dex.toLowerCase()) >= 0)?.[1];
+    const chainConfig = Spot.configs()[chainId];
+    const dexConfig = chainConfig.dex[_dex];
+
+    const { dex, ...rest } = chainConfig;
+    const result = {
+      ...rest,
+      ...dexConfig,
+      partner: _dex,
+      twapConfig: twapConfig as Config | undefined,
+    };
+
+    return result;
+  } catch (error) {
+    return undefined;
+  }
 };

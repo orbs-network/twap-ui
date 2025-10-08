@@ -9,7 +9,7 @@ import { useTriggerPrice } from "./use-trigger-price";
 import { useTrades } from "./use-trades";
 
 export const useBuildRePermitOrderDataCallback = () => {
-  const { srcToken, dstToken, chainId, account, slippage: _slippage, spotConfig } = useTwapContext();
+  const { srcToken, dstToken, chainId, account, slippage: _slippage, config } = useTwapContext();
   const srcAmountPerTrade = useTrades().amountPerTradeWei;
   const srcAmount = useSrcAmount().amountWei;
   const deadlineMillis = useDeadline();
@@ -23,7 +23,7 @@ export const useBuildRePermitOrderDataCallback = () => {
   return useMemo(() => {
     const srcTokenAddress = isNativeAddress(srcToken?.address || "") ? getNetwork(chainId)?.wToken.address : srcToken?.address;
 
-    if (!srcTokenAddress || !dstToken || !chainId || !account || !deadlineMillis || !srcAmount || !spotConfig) return;
+    if (!srcTokenAddress || !dstToken || !chainId || !account || !deadlineMillis || !srcAmount || !config) return;
     return buildRePermitOrderData({
       chainId,
       srcToken: srcTokenAddress,
@@ -36,21 +36,7 @@ export const useBuildRePermitOrderDataCallback = () => {
       srcAmountPerTrade,
       dstMinAmountPerTrade,
       triggerAmountPerTrade,
-      config: spotConfig,
+      config,
     });
-  }, [
-    srcToken,
-    dstToken,
-    chainId,
-    account,
-    srcAmount,
-    deadlineMillis,
-    srcAmountPerTrade,
-    triggerAmountPerTrade,
-    slippage,
-    dstMinAmountPerTrade,
-    fillDelay,
-    totalTrades,
-    spotConfig,
-  ]);
+  }, [srcToken, dstToken, chainId, account, srcAmount, deadlineMillis, srcAmountPerTrade, triggerAmountPerTrade, slippage, dstMinAmountPerTrade, fillDelay, totalTrades, config]);
 };

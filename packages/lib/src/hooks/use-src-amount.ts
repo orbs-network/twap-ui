@@ -7,14 +7,14 @@ import { amountBN, isNativeAddress } from "@orbs-network/twap-sdk";
 import { getMinNativeBalance } from "../utils";
 
 export const useMaxSrcAmount = () => {
-  const { srcToken, config, srcBalance } = useTwapContext();
+  const { srcToken, srcBalance, chainId } = useTwapContext();
 
   return useMemo(() => {
-    if (srcBalance && isNativeAddress(srcToken?.address || "")) {
-      const srcTokenMinimum = amountBN(srcToken?.decimals, getMinNativeBalance(config.chainId).toString());
+    if (srcBalance && isNativeAddress(srcToken?.address || "") && chainId) {
+      const srcTokenMinimum = amountBN(srcToken?.decimals, getMinNativeBalance(chainId).toString());
       return BN.max(0, BN.min(BN(srcBalance).minus(srcTokenMinimum))).toString();
     }
-  }, [srcToken, srcBalance, config.chainId]);
+  }, [srcToken, srcBalance, chainId]);
 };
 
 export const useSrcAmount = () => {

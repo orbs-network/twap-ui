@@ -29,7 +29,7 @@ export const useHistoryOrder = (orderId?: string) => {
     srcAmountPerTrade: order?.srcAmountPerTrade,
     totalTrades: order?.totalTradesAmount,
     minDestAmountPerTrade: order?.dstMinAmountPerTrade,
-    tradeInterval: order?.totalTradesAmount === 1 || !order ? undefined : getOrderFillDelayMillis(order, config),
+    tradeInterval: order?.totalTradesAmount === 1 || !order || !config?.twapConfig ? undefined : getOrderFillDelayMillis(order, config.twapConfig!),
     triggerPricePerTrade: order?.triggerPricePerTrade,
     maker: order?.maker,
   });

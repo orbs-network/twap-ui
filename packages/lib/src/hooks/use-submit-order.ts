@@ -127,17 +127,17 @@ const useEnsureUserApprovedToken = () => {
 };
 
 const useHasAllowanceCallback = () => {
-  const { account, publicClient, chainId, spotConfig } = useTwapContext();
+  const { account, publicClient, chainId, config } = useTwapContext();
 
   return useMutation({
     mutationFn: async (tokenAddress: string) => {
-      if (!publicClient || !chainId || !account || !spotConfig) throw new Error("missing required parameters");
+      if (!publicClient || !chainId || !account || !config) throw new Error("missing required parameters");
       const allowance = await publicClient
         .readContract({
           address: tokenAddress as `0x${string}`,
           abi: erc20Abi,
           functionName: "allowance",
-          args: [account as `0x${string}`, spotConfig.repermit],
+          args: [account as `0x${string}`, config.repermit],
         })
         .then((res) => res.toString());
 
@@ -147,24 +147,24 @@ const useHasAllowanceCallback = () => {
 };
 
 const useApproveToken = () => {
-  const { account, walletClient, publicClient, overrides, chainId, spotConfig } = useTwapContext();
+  const { account, walletClient, publicClient, overrides, chainId, config } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
 
   return useMutation(async ({ token, onHash }: { token: Token; onHash: (hash: string) => void }) => {
-    if (!account || !walletClient || !publicClient || !chainId || !spotConfig) {
+    if (!account || !walletClient || !publicClient || !chainId || !config) {
       throw new Error("missing required parameters");
     }
 
     let hash: `0x${string}` | undefined;
     if (overrides?.approveOrder) {
-      hash = await overrides.approveOrder({ tokenAddress: token.address, spenderAddress: spotConfig.repermit, amount: maxUint256 });
+      hash = await overrides.approveOrder({ tokenAddress: token.address, spenderAddress: config.repermit, amount: maxUint256 });
     } else {
       hash = await walletClient.writeContract({
         abi: erc20Abi,
         functionName: "approve",
         account: account as `0x${string}`,
         address: token.address as `0x${string}`,
-        args: [spotConfig.repermit, maxUint256],
+        args: [config.repermit, maxUint256],
         chain: walletClient.chain,
       });
     }

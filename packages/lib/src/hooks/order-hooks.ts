@@ -29,15 +29,16 @@ export const useOrderName = (order?: Order) => {
 };
 
 const useOrdersQueryKey = () => {
-  const { account, config } = useTwapContext();
-  return useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
+  const { account, config, chainId } = useTwapContext();
+  return useMemo(() => ["useTwapOrderHistoryManager", account, config?.partner, chainId], [account, config, chainId]);
 };
 
 export const usePersistedOrdersStore = () => {
-  const { account, config } = useTwapContext();
+  const { account, config, chainId } = useTwapContext();
 
-  const cancelledOrderIdsKey = `cancelled-orders-${account}-${config.exchangeAddress}`;
-
+  const cancelledOrderIdsKey = `cancelled-orders-${account}-${config?.partner}-${chainId}`;
+  console.log(cancelledOrderIdsKey);
+  
   const getCancelledOrderIds = useCallback((): string[] => {
     const res = localStorage.getItem(cancelledOrderIdsKey);
     if (!res) return [];
@@ -73,7 +74,7 @@ export const usePersistedOrdersStore = () => {
 
 export const useOptimisticAddOrder = () => {
   const queryClient = useQueryClient();
-  const { account, config } = useTwapContext();
+  const { account } = useTwapContext();
   const queryKey = useOrdersQueryKey();
   return useCallback(
     (order: Order) => {
@@ -83,7 +84,7 @@ export const useOptimisticAddOrder = () => {
         return [order, ...orders];
       });
     },
-    [queryClient, queryKey, config, account],
+    [queryClient, queryKey, account],
   );
 };
 
@@ -113,7 +114,6 @@ export const useOptimisticCancelOrder = () => {
 
 const useHandlePersistedCancelledOrders = () => {
   const { getCancelledOrderIds, deleteCancelledOrderId } = usePersistedOrdersStore();
-  const { config } = useTwapContext();
   return useCallback(
     (orders: Order[]) => {
       const cancelledOrderIds = new Set(getCancelledOrderIds());
@@ -129,25 +129,28 @@ const useHandlePersistedCancelledOrders = () => {
         }
       });
     },
-    [getCancelledOrderIds, deleteCancelledOrderId, config],
+    [getCancelledOrderIds, deleteCancelledOrderId],
   );
 };
 
 const useOrdersQuery = () => {
-  const { account, config } = useTwapContext();
+  const { account, config, chainId } = useTwapContext();
   const queryKey = useOrdersQueryKey();
   const handlePersistedCancelledOrders = useHandlePersistedCancelledOrders();
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
-      const orders = await getAccountOrders({ signal, config, account: account! });
+      const orders = await getAccountOrders({ signal, chainId: chainId!, config: config?.twapConfig, account: account! });
       handlePersistedCancelledOrders(orders);
       return orders.map((order) => {
-        return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config) };
+        if (config?.twapConfig) {
+          return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config.twapConfig) };
+        }
+        return order;
       });
     },
     {
-      enabled: Boolean(config && account),
+      enabled: Boolean(account && chainId && config),
       refetchInterval: REFETCH_ORDER_HISTORY,
       refetchOnWindowFocus: true,
       retry: false,

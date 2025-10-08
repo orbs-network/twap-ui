@@ -6,6 +6,7 @@ import { getOrders as getV2Orders } from "./v2-orders";
 export const getAccountOrders = async ({
   signal,
   page,
+  chainId,
   limit,
   config,
   account,
@@ -13,12 +14,13 @@ export const getAccountOrders = async ({
   signal?: AbortSignal;
   page?: number;
   limit?: number;
-  config: Config;
+  chainId: number;
+  config?: Config;
   account: string;
 }): Promise<Order[]> => {
   const allOrders = await Promise.all([
-    getV1Orders({ chainId: config.chainId, signal, page, limit, filters: { accounts: [account] } }),
-    getV2Orders({ chainId: config.chainId, signal, account }),
+    !config ? Promise.resolve([]) : getV1Orders({ chainId, signal, page, limit, filters: { accounts: [account], configs: [config] } }),
+    getV2Orders({ chainId, signal, account }),
   ]).then(([graphOrders, apiOrders]) => {
     return [...graphOrders, ...apiOrders];
   });
