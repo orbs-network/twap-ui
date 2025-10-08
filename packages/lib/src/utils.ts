@@ -1,8 +1,7 @@
 import { AddressPadding, OrderType, Token } from "./types";
-import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration, TimeUnit, TWAP_ABI } from "@orbs-network/twap-sdk";
-import { decodeEventLog, TransactionReceipt } from "viem";
-export { getOrderLimitPriceRate } from "@orbs-network/twap-sdk";
-
+import { eqIgnoreCase, getNetwork, isNativeAddress, networks, Order } from "@orbs-network/twap-sdk";
+import BN from "bignumber.js";
+import { amountUi } from "@orbs-network/twap-sdk";
 export const removeCommas = (numStr: string): string => {
   return numStr.replace(/,/g, "");
 };
@@ -111,17 +110,6 @@ export const isTxRejected = (error: any) => {
   }
 };
 
-export const isNativeBalanceError = (error: any) => {
-  try {
-    if (error) {
-      const message = error?.message?.toLowerCase() || error?.toLowerCase();
-      return message?.includes("insufficient") || message?.includes("gas required exceeds allowance");
-    }
-  } catch (error) {
-    return false;
-  }
-};
-
 export const getMinNativeBalance = (chainId: number) => {
   switch (chainId) {
     case networks.base.id:
@@ -132,20 +120,20 @@ export const getMinNativeBalance = (chainId: number) => {
   }
 };
 
-export function getOrderIdFromCreateOrderEvent(receipt: TransactionReceipt) {
-  try {
-    const decodedLog = (decodeEventLog as any)({
-      abi: TWAP_ABI,
-      data: receipt.logs[0].data,
-      topics: receipt.logs[0].topics,
-      eventName: "OrderCreated",
-    });
+export const getOrderExcecutionRate = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (!BN(order.srcAmountFilled || 0).gt(0) || !BN(order.dstAmountFilled || 0).gt(0)) return "";
+  const srcFilledAmountUi = amountUi(srcTokenDecimals, order.srcAmountFilled);
+  const dstFilledAmountUi = amountUi(dstTokenDecimals, order.dstAmountFilled);
 
-    return Number(decodedLog.args.id);
-  } catch (error) {
-    return undefined;
-  }
-}
+  return BN(dstFilledAmountUi).div(srcFilledAmountUi).toFixed();
+};
+
+export const getOrderLimitPriceRate = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (order.type === OrderType.TWAP_MARKET) return "";
+  const srcBidAmountUi = amountUi(srcTokenDecimals, order.srcAmountPerTrade);
+  const dstMinAmountUi = amountUi(dstTokenDecimals, order.dstMinAmountPerTrade);
+  return BN(dstMinAmountUi).div(srcBidAmountUi).toFixed();
+};
 
 export const ensureWrappedToken = (token: Token, chainId: number) => {
   const network = getNetwork(chainId);
@@ -154,15 +142,6 @@ export const ensureWrappedToken = (token: Token, chainId: number) => {
     return network.wToken;
   }
   return token;
-};
-
-export const ensureWrappedTokenAddress = (address: string, chainId: number) => {
-  const network = getNetwork(chainId);
-  if (!network) return address;
-  if (isNativeAddress(address)) {
-    return network.wToken.address;
-  }
-  return address;
 };
 
 export function millisToDays(milliseconds?: number): number {
@@ -198,17 +177,3 @@ export const shouldUnwrapOnly = (srcToken?: Token, dstToken?: Token, chainId?: n
 };
 
 export { eqIgnoreCase, isNativeAddress };
-
-export const formatDuration = (ms?: number): TimeDuration | undefined => {
-  const units = Object.values(TimeUnit) as number[];
-  if (!ms) return;
-
-  for (const unit of units) {
-    if (ms >= unit) {
-      const value = Math.round(ms / unit);
-      return { value, unit };
-    }
-  }
-
-  return { value: ms, unit: TimeUnit.Minutes };
-};

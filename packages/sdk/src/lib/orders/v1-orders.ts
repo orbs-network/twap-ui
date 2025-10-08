@@ -150,23 +150,6 @@ const getOrderType = (ask_dstMinAmount: string, chunks: number) => {
   return OrderType.TWAP_MARKET;
 };
 
-export const getOrderExcecutionRate = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.srcAmountFilled || 0).gt(0) || !BN(order.dstAmountFilled || 0).gt(0)) return "";
-  const srcFilledAmountUi = amountUi(srcTokenDecimals, order.srcAmountFilled);
-  const dstFilledAmountUi = amountUi(dstTokenDecimals, order.dstAmountFilled);
-
-  return BN(dstFilledAmountUi).div(srcFilledAmountUi).toFixed();
-};
-
-export const getOrderLimitPriceRate = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (order.type === OrderType.TWAP_MARKET) {
-    return getOrderExcecutionRate(order, srcTokenDecimals, dstTokenDecimals);
-  }
-  const srcBidAmountUi = amountUi(srcTokenDecimals, order.srcAmountPerTrade);
-  const dstMinAmountUi = amountUi(dstTokenDecimals, order.dstMinAmountPerTrade);
-  return BN(dstMinAmountUi).div(srcBidAmountUi).toFixed();
-};
-
 const isMarketPrice = (type: OrderType) => {
   return type === OrderType.TWAP_MARKET || type === OrderType.TRIGGER_PRICE_MARKET;
 };

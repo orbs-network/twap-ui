@@ -55,8 +55,8 @@ export const useTradesPanel = () => {
     label: t.tradesAmountTitle,
     tooltip: t.totalTradesTooltip,
     amountPerTradeUsd,
-    sellToken: srcToken,
-    buyToken: dstToken,
+    fromToken: srcToken,
+    toToken: dstToken,
   };
 };
 
@@ -112,8 +112,8 @@ export const useMarketPricePanel = () => {
   }, [invert, marketPrice, srcToken?.decimals, dstToken?.decimals]);
 
   return {
-    sellToken: invert ? dstToken : srcToken,
-    buyToken: invert ? srcToken : dstToken,
+    fromToken: invert ? dstToken : srcToken,
+    toToken: invert ? srcToken : dstToken,
     price,
     priceWei: useAmountBN(dstToken?.decimals, marketPrice),
     onInvert: useCallback(() => setInvert(!invert), [invert]),
@@ -180,8 +180,8 @@ export const useLimitPricePanel = () => {
     isActive: !isMarketOrder,
     onReset: reset,
     usd,
-    sellToken: isInverted ? dstToken : srcToken,
-    buyToken: isInverted ? srcToken : dstToken,
+    fromToken: isInverted ? dstToken : srcToken,
+    toToken: isInverted ? srcToken : dstToken,
     selectedPercentage: percentage,
     isInverted,
     prefix: module === Module.STOP_LOSS ? stopLossPrefix : takeProfitPrefix,
@@ -219,8 +219,8 @@ export const useTriggerPricePanel = () => {
     isActive: !isMarketOrder,
     onSetDefault,
     usd,
-    sellToken: isInverted ? dstToken : srcToken,
-    buyToken: isInverted ? srcToken : dstToken,
+    fromToken: isInverted ? dstToken : srcToken,
+    toToken: isInverted ? srcToken : dstToken,
     selectedPercentage: percentage,
     prefix: module === Module.STOP_LOSS ? prefixStopsLoss : prefixTakeProfit,
     isLoading: marketPriceLoading || !marketPrice,

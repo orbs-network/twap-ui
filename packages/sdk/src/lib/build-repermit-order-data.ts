@@ -1,6 +1,5 @@
 import { maxUint256 } from "./consts";
-import { getSpotConfig } from "./lib";
-import { Address, RePermitOrder } from "./types";
+import { Address, RePermitOrder, SpotConfig } from "./types";
 import { safeBNString } from "./utils";
 import BN from "bignumber.js";
 
@@ -16,6 +15,7 @@ export const buildRePermitOrderData = ({
   srcAmountPerTrade,
   dstMinAmountPerTrade,
   triggerAmountPerTrade,
+  config,
 }: {
   chainId: number;
   srcToken: string;
@@ -29,28 +29,26 @@ export const buildRePermitOrderData = ({
   dstMinAmountPerTrade?: string;
   triggerAmountPerTrade?: string;
   limitAmountPerTrade?: string;
+  config: SpotConfig;
 }) => {
   const nonce = safeBNString(Date.now() * 1000);
   const epoch = parseInt((fillDelayMillis / 1000).toFixed(0));
   const deadline = safeBNString(deadlineMillis / 1000);
-  const spotConfig = getSpotConfig(chainId);
-
-  if (!spotConfig) return;
 
   const orderData: RePermitOrder = {
     permitted: {
       token: srcToken as Address,
       amount: srcAmount,
     },
-    spender: spotConfig.reactor,
+    spender: config.reactor,
     nonce,
     deadline,
     witness: {
-      reactor: spotConfig.reactor,
-      executor: spotConfig.executor,
+      reactor: config.reactor,
+      executor: config.executor,
       exchange: {
-        adapter: spotConfig.dex.thena.adapter,
-        ref: spotConfig.dex.thena.fee,
+        adapter: config.adapter,
+        ref: config.fee,
         share: 0,
         data: "0x",
       },
@@ -80,7 +78,7 @@ export const buildRePermitOrderData = ({
     name: "RePermit",
     version: "1",
     chainId,
-    verifyingContract: spotConfig.repermit,
+    verifyingContract: config.repermit,
   };
 
   return {

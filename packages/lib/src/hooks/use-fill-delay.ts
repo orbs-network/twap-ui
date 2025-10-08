@@ -1,4 +1,4 @@
-import { getFillDelay, getMinFillDelayError, TimeDuration } from "@orbs-network/twap-sdk";
+import { DEFAULT_FILL_DELAY, getMinFillDelayError, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
@@ -22,7 +22,7 @@ const useFillDelayError = (fillDelay: TimeDuration) => {
 export const useFillDelay = () => {
   const typedFillDelay = useTwapStore((s) => s.state.typedFillDelay);
   const updateState = useTwapStore((s) => s.updateState);
-  const fillDelay = useMemo(() => getFillDelay(typedFillDelay), [typedFillDelay]);
+  const fillDelay = useMemo(() => typedFillDelay || DEFAULT_FILL_DELAY, [typedFillDelay]);
   const error = useFillDelayError(fillDelay);
 
   return {

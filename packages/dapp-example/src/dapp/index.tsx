@@ -359,7 +359,7 @@ const PercentageButton = ({ onClick, children, selected }: { onClick: () => void
 };
 
 const TradeAmountMessage = () => {
-  const { error, amountPerTradeUsd, sellToken, amountPerTrade, totalTrades } = useTwap().tradesPanel;
+  const { error, amountPerTradeUsd, fromToken, amountPerTrade, totalTrades } = useTwap().tradesPanel;
   const tokenAmountF = useFormatNumber({ value: amountPerTrade });
   const amountPerTradeUsdF = useFormatNumber({ value: amountPerTradeUsd });
 
@@ -367,7 +367,7 @@ const TradeAmountMessage = () => {
 
   return (
     <Typography className={`trade-amount-message ${error ? "trade-amount-message-error" : ""}`}>
-      {`${tokenAmountF} ${sellToken?.symbol} `}
+      {`${tokenAmountF} ${fromToken?.symbol} `}
       <span>{`($${amountPerTradeUsdF}) `}</span>
       per trade
     </Typography>
@@ -482,17 +482,17 @@ const PriceToggle = () => {
 };
 
 const MarketPriceDisplay = () => {
-  const { onInvert, sellToken, buyToken, price } = useTwap().marketPricePanel;
+  const { onInvert, fromToken, toToken, price } = useTwap().marketPricePanel;
   const priceF = useFormatNumber({ value: price });
 
-  if (!sellToken || !buyToken) return null;
+  if (!fromToken || !toToken) return null;
 
   return (
     <div className="flex gap-2 items-center justify-end flex-end flex-1 text-[13px] text-white">
-      <p>1 {sellToken?.symbol}</p>
+      <p>1 {fromToken?.symbol}</p>
       <Repeat size={16} onClick={onInvert} className="cursor-pointer text-white" />
       <p>
-        {priceF} {buyToken?.symbol}
+        {priceF} {toToken?.symbol}
       </p>
     </div>
   );
@@ -550,7 +550,7 @@ const ResetButton = ({ onClick, text }: { onClick: () => void; text: string }) =
 };
 
 const LimitPrice = () => {
-  const { warning, price, buyToken, onReset, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice } = useTwap().limitPricePanel;
+  const { warning, price, toToken, onReset, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice } = useTwap().limitPricePanel;
 
   return (
     <div className="flex flex-col gap-2">
@@ -560,7 +560,7 @@ const LimitPrice = () => {
       </div>
       {isLimitPrice ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1">
-          <SymbolInput isLoading={isLoading} error={Boolean(error)} token={buyToken} onChange={onChange} value={price} />
+          <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} />
           <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={marketDiffPercentage?.toString() || ""} />
         </div>
       ) : warning ? (
@@ -579,7 +579,7 @@ const LimitPrice = () => {
 };
 
 const TriggerPrice = () => {
-  const { price, sellToken, buyToken, onSetDefault, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } =
+  const { price, fromToken, toToken, onSetDefault, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } =
     useTwap().triggerPricePanel;
   const { onInvert, isInverted } = useTwap().invertTradePanel;
 
@@ -588,7 +588,7 @@ const TriggerPrice = () => {
       <div className="flex flex-row gap-4 justify-between items-center">
         <div className="flex flex-row gap-2 items-center justify-between w-full">
           <p className="text-sm text-white font-bold">
-            {isInverted ? "Buy" : "Sell"} {sellToken?.symbol} at rate
+            {isInverted ? "Buy" : "Sell"} {fromToken?.symbol} at rate
           </p>
           <ArrowUpDown onClick={onInvert} className="cursor-pointer text-white" size={18} />
         </div>
@@ -600,7 +600,7 @@ const TriggerPrice = () => {
             <ResetButton onClick={onSetDefault} text="set to default" />
           </div>
           <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
-            <SymbolInput isLoading={isLoading} error={Boolean(error)} token={buyToken} onChange={onChange} value={price} />
+            <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} />
             <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={marketDiffPercentage?.toString() || ""} />
           </div>
         </div>

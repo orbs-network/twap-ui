@@ -1,4 +1,4 @@
-import { getOrderExcecutionRate, getOrderFillDelayMillis, getOrderLimitPriceRate, getAccountOrders, Order, OrderStatus, OrderType } from "@orbs-network/twap-sdk";
+import { getOrderFillDelayMillis, getAccountOrders, Order, OrderStatus, OrderType } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -6,6 +6,7 @@ import { useTwapContext } from "../context/twap-context";
 import { Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTwapStore } from "../useTwapStore";
+import { getOrderExcecutionRate, getOrderLimitPriceRate } from "../utils";
 
 export const useOrderName = (order?: Order) => {
   const { translations: t } = useTwapContext();

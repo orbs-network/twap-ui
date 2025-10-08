@@ -71,13 +71,6 @@ export const getMaxPossibleChunks = (fillDelay: TimeDuration, typedSrcAmount?: s
 
   return Math.max(1, Math.min(maxChunksBySize, maxChunksByTime));
 };
-export const getFillDelay = (customFillDelay?: TimeDuration) => {
-  if (customFillDelay) {
-    return customFillDelay;
-  }
-
-  return DEFAULT_FILL_DELAY;
-};
 
 export const getMinimumDelayMinutes = (config: Config) => {
   return getEstimatedDelayBetweenChunksMillis(config) / 1000 / 60;
@@ -185,6 +178,20 @@ export const getMaxChunksError = (chunks: number, maxChunks: number, module: Mod
   };
 };
 
-export const getSpotConfig = (chainId: number): SpotConfig | undefined => {
-  return Spot.config(chainId);
+export const getDexFromConfig = (config: Config) => {
+  const res = config.name.toLowerCase();
+  return res;
+};
+
+export const getSpotConfig = (chainId: number, _dex: string): SpotConfig | undefined => {
+  const chainConfig = Spot.configs()[chainId];
+  if (!chainConfig) return undefined;
+  const dexConfig = chainConfig.dex[_dex];
+  if (!dexConfig) return undefined;
+  const { dex, ...rest } = chainConfig;
+  const result = {
+    ...rest,
+    ...dexConfig,
+  };
+  return result;
 };

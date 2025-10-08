@@ -240,18 +240,14 @@ export type OrderV2 = {
   timestamp: string;
 };
 export type SpotConfig = {
-  wm: Address;
-  repermit: Address;
+  adapter: Address;
   cosigner: Address;
-  reactor: Address;
   executor: Address;
+  fee: Address;
+  reactor: Address;
   refinery: Address;
-  dex: {
-    thena: {
-      type: string;
-      router: Address;
-      adapter: Address;
-      fee: Address;
-    };
-  };
+  repermit: Address;
+  router: Address;
+  type: string;
+  wm: Address;
 };

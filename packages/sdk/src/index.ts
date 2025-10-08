@@ -14,6 +14,6 @@ export { networks } from "./lib/networks";
 
 export { getAccountOrders } from "./lib/orders";
 
-export { getOrderExcecutionRate, getOrderLimitPriceRate, type GetOrdersFilters } from "./lib/orders/v1-orders";
+export { type GetOrdersFilters } from "./lib/orders/v1-orders";
 
 export { Configs };
