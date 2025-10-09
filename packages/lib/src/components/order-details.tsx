@@ -6,6 +6,7 @@ import { useFormatNumber } from "../hooks/useFormatNumber";
 import { useTwapContext } from "../context/twap-context";
 import { useDateFormat, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
+import { useCopyToClipboard } from "../hooks/use-copy";
 const Deadline = ({ deadline, label, tooltip }: { deadline?: number; label: string; tooltip: string }) => {
   const res = useDateFormat(deadline);
   return (
@@ -133,11 +134,12 @@ const DetailRow = ({
 
 const OrderID = ({ id }: { id: string }) => {
   const { Tooltip } = useContext(OrderDetailsContext);
+  const copy = useCopyToClipboard();
   if (typeof id === "number") {
     return <DetailRow title="ID">{id}</DetailRow>;
   } else {
     return (
-      <DetailRow title="ID">
+      <DetailRow title="ID" onClick={() => copy(id)} style={{ cursor: "pointer" }}>
         <Tooltip tooltipText={id}>{makeElipsisAddress(id)}</Tooltip>
       </DetailRow>
     );
@@ -151,18 +153,6 @@ const OrderVersion = ({ version }: { version: number }) => {
 export function OrderDetails({ children, className = "" }: { children?: ReactNode; className?: string }) {
   return <div className={`${className} twap-order-details`}>{children}</div>;
 }
-
-const FillDelaySummary = ({ chunks, fillDelayMillis }: { chunks: number; fillDelayMillis?: number }) => {
-  const t = useTwapContext().translations;
-
-  if (chunks === 1) return null;
-
-  return (
-    <p className="twap-order-details__fill-delay-text">
-      {t.every} {fillDelayText(fillDelayMillis).toLowerCase()} <span>{t.over}</span> {chunks} <span>{t.trades}</span>
-    </p>
-  );
-};
 
 const OrderDetailsContext = createContext(
   {} as {
@@ -181,7 +171,6 @@ OrderDetails.TradesAmount = TradesAmount;
 OrderDetails.Recipient = Recipient;
 OrderDetails.TradeInterval = TradeInterval;
 OrderDetails.DetailRow = DetailRow;
-OrderDetails.FillDelaySummary = FillDelaySummary;
 OrderDetails.TriggerPrice = TriggerPrice;
 OrderDetails.LimitPrice = LimitPrice;
 OrderDetails.OrderID = OrderID;

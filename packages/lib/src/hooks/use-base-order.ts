@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import BN from "bignumber.js";
 import { useTwapContext } from "../context/twap-context";
 import { Token } from "../types";
-import { useAmountUi } from "./helper-hooks";
+import { useAmountBN, useAmountUi } from "./helper-hooks";
 import { useFormatNumber } from "./useFormatNumber";
 
 type Props = {
@@ -27,13 +27,14 @@ export const useBaseOrder = (props: Props) => {
     value: useAmountUi(props.dstToken?.decimals, props.minDestAmountPerTrade && BN(props.minDestAmountPerTrade).lte(1) ? "" : props.minDestAmountPerTrade),
   });
   const triggerPricePerTrade = useFormatNumber({ value: useAmountUi(props.dstToken?.decimals, props.triggerPricePerTrade) });
-  const limitPrice = useFormatNumber({ value: useAmountUi(props.dstToken?.decimals, props.limitPrice) });
+  const limitPriceWei = useAmountBN(props.dstToken?.decimals, props.limitPrice);
+  const limitPrice = useFormatNumber({ value: props.limitPrice });
   return useMemo(() => {
     return {
       data: {
         srcToken: props.srcToken,
         dstToken: props.dstToken,
-        limitPrice: props.limitPrice,
+        limitPrice: limitPriceWei,
         deadline: props.deadline,
         srcAmount: props.srcAmount,
         srcAmountPerTrade: props.srcAmountPerTrade,
@@ -93,5 +94,5 @@ export const useBaseOrder = (props: Props) => {
         },
       },
     };
-  }, [props, t, srcAmount, srcAmountPerTrade, minDestAmountPerTrade, triggerPricePerTrade]);
+  }, [props, t, srcAmount, srcAmountPerTrade, minDestAmountPerTrade, triggerPricePerTrade, limitPrice]);
 };

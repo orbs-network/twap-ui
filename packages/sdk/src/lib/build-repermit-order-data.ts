@@ -1,4 +1,3 @@
-import { maxUint256 } from "./consts";
 import { Address, RePermitOrder, SpotConfig } from "./types";
 import { safeBNString } from "./utils";
 import BN from "bignumber.js";
@@ -68,7 +67,7 @@ export const buildRePermitOrderData = ({
       output: {
         token: dstToken as Address,
         limit: dstMinAmountPerTrade || "0",
-        stop: !triggerAmountPerTrade || BN(triggerAmountPerTrade || 0).isZero() ? maxUint256 : triggerAmountPerTrade,
+        stop: !triggerAmountPerTrade || BN(triggerAmountPerTrade || 0).isZero() ? "0" : triggerAmountPerTrade,
         recipient: account as Address,
       },
     },

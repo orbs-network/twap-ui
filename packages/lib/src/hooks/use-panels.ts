@@ -102,6 +102,7 @@ export const useMarketPricePanel = () => {
   const [invert, setInvert] = useState(false);
 
   const price = useMemo(() => {
+    if (!marketPrice) return "0";
     const amountUI = amountUi(dstToken?.decimals, marketPrice);
     if (invert) {
       return BN(1)

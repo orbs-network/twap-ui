@@ -17,10 +17,10 @@ const getOrderType = (order: OrderV2) => {
     return OrderType.TRIGGER_PRICE_MARKET;
   }
 
-  if (!isLimit && chunks === 1) {
+  if (!isLimit && chunks <= 1) {
     return OrderType.TWAP_MARKET;
   }
-  if (chunks > 1 && isLimit) {
+  if (chunks >= 1 && isLimit) {
     return OrderType.TWAP_LIMIT;
   }
 
@@ -77,7 +77,7 @@ export const buildV2Order = (order: OrderV2): Order => {
     triggerPricePerTrade: BN(order.order.witness.output.stop || 0).isZero() ? "" : order.order.witness.output.stop,
     srcAmountPerTrade: order.order.witness.input.amount,
     txHash: "",
-    totalTradesAmount: order.metadata.chunks?.length || 0,
+    totalTradesAmount: order.metadata.expectedChunks || 1,
     isMarketPrice: false,
     chainId: order.order.witness.chainid,
     filledOrderTimestamp: 0,

@@ -3,9 +3,10 @@ import BN from "bignumber.js";
 // @ts-ignore
 import * as Spot from "@orbs-network/spot";
 import Configs from "@orbs-network/twap/configs.json";
-import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, maxUint256, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
+import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
 import { Config, Module, Partners, SpotConfig, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
+console.log(Spot);
 
 // values calculations
 
@@ -34,7 +35,7 @@ export const getTriggerPricePerChunk = (module: Module, srcChunkAmount?: string,
   const result = BN(srcChunkAmount).times(BN(triggerPrice));
   const decimalAdjustment = BN(10).pow(srcTokenDecimals);
   const adjustedResult = result.div(decimalAdjustment);
-  return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0) || maxUint256;
+  return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toFixed(0) || "0";
 };
 
 export const getDuration = (module: Module, chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
@@ -184,12 +185,9 @@ export const getConfig = (chainId?: number, _dex?: Partners): SpotConfig | undef
     if (!chainId || !_dex) throw new Error("Invalid chainId or _dex");
 
     const twapConfig = Object.entries(Configs).find(([key, value]) => value.chainId === chainId && key.toLowerCase().indexOf(_dex.toLowerCase()) >= 0)?.[1];
-    const chainConfig = Spot.configs()[chainId];
-    const dexConfig = chainConfig.dex[_dex];
+    const dexConfig = Spot.config(chainId, _dex);
 
-    const { dex, ...rest } = chainConfig;
     const result = {
-      ...rest,
       ...dexConfig,
       partner: _dex,
       twapConfig: twapConfig as Config | undefined,

@@ -99,6 +99,8 @@ const useSignAndSend = () => {
       s: parsedSignature.s,
     };
 
+    // TODO: send sig as string
+
     return submitOrder(order, signature);
   });
 };

@@ -16,6 +16,7 @@ export const useHistoryOrder = (orderId?: string) => {
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
   const selectedOrderLimitPrice = useOrderLimitPrice(srcToken, dstToken, order);
+
   const excecutionPrice = useFormatNumber({ value: useOrderAvgExcecutionPrice(srcToken, dstToken, order) });
   const srcFilledAmount = useFormatNumber({ value: useAmountUi(srcToken?.decimals, order?.srcAmountFilled) });
   const dstFilledAmount = useFormatNumber({ value: useAmountUi(dstToken?.decimals, order?.dstAmountFilled) });

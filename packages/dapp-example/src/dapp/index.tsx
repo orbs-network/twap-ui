@@ -686,14 +686,23 @@ const PanelInputs = () => {
 
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
+  const [srcAmount, setSrcAmount] = useState("");
   const { module, slippage } = useDappContext();
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
 
   const marketReferencePrice = useMemo(() => {
-    return { value: marketPrice, isLoading: marketPriceLoading, noLiquidity: false };
-  }, [marketPrice, marketPriceLoading]);
+    return {
+      value: BN(marketPrice || "")
+        .multipliedBy(BN(srcAmount || "0"))
+        .toFixed(),
+      isLoading: marketPriceLoading,
+      noLiquidity: false,
+    };
+  }, [marketPrice, marketPriceLoading, srcAmount]);
+
+  const onInputAmountChange = useCallback((_: string, value: string) => setSrcAmount(value), [setSrcAmount]);
 
   return (
     <>
@@ -703,6 +712,9 @@ export const Dapp = () => {
         partner={Partners.THENA}
         chainId={chainId}
         provider={client.data?.transport}
+        callbacks={{
+          onInputAmountChange,
+        }}
         srcToken={srcToken}
         dstToken={dstToken}
         module={module}

@@ -7,6 +7,7 @@ import { initiateWallet } from "../lib";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTwapStore } from "../useTwapStore";
 import { useAmountBN } from "../hooks/helper-hooks";
+import BN from "bignumber.js";
 
 const TwapFallbackUI = () => {
   return (
@@ -61,11 +62,27 @@ const Listeners = (props: TwapProps) => {
   return null;
 };
 
+const useParsedMarketPrice = ({ marketReferencePrice }: TwapProps) => {
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+
+  return useMemo(() => {
+    const value = BN(marketReferencePrice.value || 0)
+      .dividedBy(typedSrcAmount || 0)
+      .toFixed();
+
+    return {
+      ...marketReferencePrice,
+      value,
+    };
+  }, [marketReferencePrice, typedSrcAmount]);
+};
+
 const Content = (props: TwapProps) => {
   const translations = useTranslations(props.overrides?.translations);
   const acceptedMarketPrice = useTwapStore((s) => s.state.acceptedMarketPrice);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const config = useMemo(() => getConfig(props.chainId, props.partner), [props.chainId, props.partner]);
+  const marketReferencePrice = useParsedMarketPrice(props);
 
   useEffect(() => {
     if (config && props.chainId) {
@@ -81,9 +98,9 @@ const Content = (props: TwapProps) => {
         translations,
         walletClient,
         publicClient,
-        marketPrice: acceptedMarketPrice || props.marketReferencePrice.value,
-        marketPriceLoading: !acceptedMarketPrice && props.marketReferencePrice.isLoading,
-        noLiquidity: !acceptedMarketPrice && props.marketReferencePrice.noLiquidity,
+        marketPrice: acceptedMarketPrice || marketReferencePrice.value,
+        marketPriceLoading: !acceptedMarketPrice && marketReferencePrice.isLoading,
+        noLiquidity: !acceptedMarketPrice && marketReferencePrice.noLiquidity,
         config,
       }}
     >

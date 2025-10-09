@@ -37,8 +37,7 @@ export const usePersistedOrdersStore = () => {
   const { account, config, chainId } = useTwapContext();
 
   const cancelledOrderIdsKey = `cancelled-orders-${account}-${config?.partner}-${chainId}`;
-  console.log(cancelledOrderIdsKey);
-  
+
   const getCancelledOrderIds = useCallback((): string[] => {
     const res = localStorage.getItem(cancelledOrderIdsKey);
     if (!res) return [];
