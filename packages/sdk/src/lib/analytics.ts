@@ -1,8 +1,10 @@
 import { SpotConfig } from "./types";
 import BN from "bignumber.js";
-const Version = 0.6;
+import pkg from "@orbs-network/spot/package.json";
 
+const Version = 0.6;
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
+const SPOT_VERSION = pkg.version;
 
 type Action = "cancel order" | "wrap" | "approve" | "create order" | "module-import";
 
@@ -15,6 +17,7 @@ function generateId() {
 
 interface Data {
   _id: string;
+  spotVersion?: string;
   actionError?: string;
   newOrderId?: number;
   cancelOrderSuccess?: boolean;
@@ -169,8 +172,9 @@ class Analytics {
       this.data = {
         _id: generateId(),
         action: "module-import",
-        ...twapConfig,
+        spotVersion: SPOT_VERSION,
         ...rest,
+        ...twapConfig,
       };
       this.updateAndSend(this.data);
     }

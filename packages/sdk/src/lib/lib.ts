@@ -6,7 +6,6 @@ import Configs from "@orbs-network/twap/configs.json";
 import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
 import { Config, Module, Partners, SpotConfig, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
-console.log(Spot);
 
 // values calculations
 

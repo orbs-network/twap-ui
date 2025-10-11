@@ -515,10 +515,21 @@ const PercentageInput = ({ value, onChange, prefix, isLoading }: { value: string
   );
 };
 
-const SymbolInput = ({ token, onChange, value, error, isLoading }: { token?: Token; onChange: (value: string) => void; value: string; error?: boolean; isLoading?: boolean }) => {
-  const usd = useUSD(token?.address);
-
-  const totalUsd = !usd ? 0 : BN(usd).multipliedBy(value).toString();
+const SymbolInput = ({
+  token,
+  onChange,
+  value,
+  error,
+  isLoading,
+  usd,
+}: {
+  token?: Token;
+  onChange: (value: string) => void;
+  value: string;
+  error?: boolean;
+  isLoading?: boolean;
+  usd?: string;
+}) => {
   return (
     <div
       className={clsx(
@@ -536,7 +547,7 @@ const SymbolInput = ({ token, onChange, value, error, isLoading }: { token?: Tok
           inputClassName="text-right"
           error={error}
         />
-        <p className="text-[12px] text-gray-500">${abbreviate(totalUsd)}</p>
+        <p className="text-[12px] text-gray-500">${abbreviate(usd || "0")}</p>
       </div>
     </div>
   );
@@ -551,7 +562,7 @@ const ResetButton = ({ onClick, text }: { onClick: () => void; text: string }) =
 };
 
 const LimitPrice = () => {
-  const { warning, price, toToken, onReset, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice } = useTwap().limitPricePanel;
+  const { warning, price, toToken, onReset, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice, usd } = useTwap().limitPricePanel;
 
   return (
     <div className="flex flex-col gap-2">
@@ -561,8 +572,8 @@ const LimitPrice = () => {
       </div>
       {isLimitPrice ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1">
-          <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} />
-          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={marketDiffPercentage?.toString() || ""} />
+          <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} usd={usd} />
+          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={selectedPercentage?.toString() || ""} />
         </div>
       ) : warning ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1 bg-[rgba(255,255,255,0.02)] rounded-[12px] px-2 py-2">
@@ -579,21 +590,33 @@ const LimitPrice = () => {
   );
 };
 
-const TriggerPrice = () => {
-  const { price, fromToken, toToken, onSetDefault, prefix, marketDiffPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } =
-    useTwap().triggerPricePanel;
-  const { onInvert, isInverted } = useTwap().invertTradePanel;
+const PriceRate = () => {
+  const { isInverted, onInvert } = useTwap().invertTradePanel;
+  const { fromToken, isLimitPrice } = useTwap().limitPricePanel;
 
   return (
-    <>
-      <div className="flex flex-row gap-4 justify-between items-center">
-        <div className="flex flex-row gap-2 items-center justify-between w-full">
+    <div className="flex flex-row gap-4 justify-between items-center">
+      <div className="flex flex-row gap-2 items-center justify-between w-full">
+        {isLimitPrice ? (
           <p className="text-sm text-white font-bold">
             {isInverted ? "Buy" : "Sell"} {fromToken?.symbol} at rate
           </p>
-          <ArrowUpDown onClick={onInvert} className="cursor-pointer text-white" size={18} />
-        </div>
+        ) : (
+          <p className="text-sm text-white font-bold">
+            {isInverted ? "Buy" : "Sell"} {fromToken?.symbol} at best rate
+          </p>
+        )}
+        <ArrowUpDown onClick={onInvert} className="cursor-pointer text-white" size={18} />
       </div>
+    </div>
+  );
+};
+
+const TriggerPrice = () => {
+  const { price, toToken, onSetDefault, usd, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } = useTwap().triggerPricePanel;
+
+  return (
+    <>
       {!hide && (
         <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
           <div className="flex flex-row gap-2 justify-between items-center w-full">
@@ -601,8 +624,8 @@ const TriggerPrice = () => {
             <ResetButton onClick={onSetDefault} text="set to default" />
           </div>
           <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
-            <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} />
-            <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={marketDiffPercentage?.toString() || ""} />
+            <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} usd={usd} />
+            <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={selectedPercentage?.toString() || ""} />
           </div>
         </div>
       )}
@@ -734,6 +757,7 @@ export const Dapp = () => {
             <TokenPanel />
           </Flex>
           <Section>
+            <PriceRate />
             <TriggerPrice />
             <LimitPrice />
           </Section>

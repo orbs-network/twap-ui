@@ -120,6 +120,11 @@ export const safeBNString = (value?: string | number) => {
   return BN(value).decimalPlaces(0).toFixed();
 };
 
+export const safeBNNumber = (value?: string | number) => {
+  if (!value || value === "NaN") return 0;
+  return BN(value).decimalPlaces(0).toNumber();
+};
+
 export const getNetwork = (chainId?: number) => {
   return Object.values(networks).find((it) => it.id === chainId);
 };

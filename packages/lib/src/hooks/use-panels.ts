@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { useTwapStore } from "../useTwapStore";
 import { ORBS_WEBSITE_URL } from "../consts";
 import { useLimitPrice, useLimitPriceToggle } from "./use-limit-price";
-import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapExecution, SwapStatus } from "..";
+import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapExecution, SwapStatus, useFormatNumber } from "..";
 import { useDefaultLimitPricePercent } from "./use-default-values";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTriggerPrice } from "./use-trigger-price";
@@ -102,7 +102,7 @@ export const useMarketPricePanel = () => {
   const [invert, setInvert] = useState(false);
 
   const price = useMemo(() => {
-    if (!marketPrice) return "0";
+    if (BN(marketPrice || "0").isZero() || !dstToken) return "0";
     const amountUI = amountUi(dstToken?.decimals, marketPrice);
     if (invert) {
       return BN(1)
@@ -115,7 +115,7 @@ export const useMarketPricePanel = () => {
   return {
     fromToken: invert ? dstToken : srcToken,
     toToken: invert ? srcToken : dstToken,
-    price,
+    price: useFormatNumber({ value: price }),
     priceWei: useAmountBN(dstToken?.decimals, marketPrice),
     onInvert: useCallback(() => setInvert(!invert), [invert]),
   };
@@ -135,7 +135,7 @@ export const useDisclaimer = () => {
 
 export const useLimitPricePanel = () => {
   const { translations: t, module, srcToken, dstToken, marketPrice, marketPriceLoading } = useTwapContext();
-  const { amountUI, onChange, onPercentageChange, usd, percentDiffFromMarketPrice, percentage, error } = useLimitPrice();
+  const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useLimitPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const updateState = useTwapStore((s) => s.updateState);
   const isInverted = useTwapStore((s) => s.state.isInvertedTrade);
@@ -177,13 +177,12 @@ export const useLimitPricePanel = () => {
     tooltip,
     onChange,
     onPercentageChange,
-    marketDiffPercentage: percentDiffFromMarketPrice,
     isActive: !isMarketOrder,
     onReset: reset,
     usd,
     fromToken: isInverted ? dstToken : srcToken,
     toToken: isInverted ? srcToken : dstToken,
-    selectedPercentage: percentage,
+    selectedPercentage: Math.abs(selectedPercentage || 0),
     isInverted,
     prefix: module === Module.STOP_LOSS ? stopLossPrefix : takeProfitPrefix,
     isLoading: marketPriceLoading || !marketPrice,
@@ -195,7 +194,7 @@ export const useLimitPricePanel = () => {
 
 export const useTriggerPricePanel = () => {
   const { translations: t, srcToken, dstToken, module, marketPrice, marketPriceLoading } = useTwapContext();
-  const { amountUI, onChange, onPercentageChange, usd, percentDiffFromMarketPrice, percentage, error } = useTriggerPrice();
+  const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useTriggerPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const updateState = useTwapStore((s) => s.updateState);
 
@@ -216,13 +215,12 @@ export const useTriggerPricePanel = () => {
     tooltip: t.stopLossTooltip,
     onChange,
     onPercentageChange,
-    marketDiffPercentage: percentDiffFromMarketPrice,
+    selectedPercentage: Math.abs(selectedPercentage || 0),
     isActive: !isMarketOrder,
     onSetDefault,
     usd,
     fromToken: isInverted ? dstToken : srcToken,
     toToken: isInverted ? srcToken : dstToken,
-    selectedPercentage: percentage,
     prefix: module === Module.STOP_LOSS ? prefixStopsLoss : prefixTakeProfit,
     isLoading: marketPriceLoading || !marketPrice,
     isInverted,

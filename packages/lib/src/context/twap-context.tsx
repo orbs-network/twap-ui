@@ -66,6 +66,8 @@ const useParsedMarketPrice = ({ marketReferencePrice }: TwapProps) => {
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
   return useMemo(() => {
+    if (BN(marketReferencePrice.value || 0).isZero()) return marketReferencePrice;
+    if (BN(typedSrcAmount || 0).isZero()) return marketReferencePrice;
     const value = BN(marketReferencePrice.value || 0)
       .dividedBy(typedSrcAmount || 0)
       .toFixed();

@@ -1,6 +1,6 @@
 import { Address, RePermitOrder, SpotConfig } from "./types";
-import { safeBNString } from "./utils";
 import BN from "bignumber.js";
+import { safeBNNumber, safeBNString } from "./utils";
 
 export const buildRePermitOrderData = ({
   chainId,
@@ -30,7 +30,7 @@ export const buildRePermitOrderData = ({
   limitAmountPerTrade?: string;
   config: SpotConfig;
 }) => {
-  const nonce = safeBNString(Date.now() * 1000);
+  const nonce = Date.now().toString();
   const epoch = parseInt((fillDelayMillis / 1000).toFixed(0));
   const deadline = safeBNString(deadlineMillis / 1000);
 
@@ -58,7 +58,7 @@ export const buildRePermitOrderData = ({
       exclusivity: 0,
       epoch,
       slippage,
-      freshness: 60,
+      freshness: 600,
       input: {
         token: srcToken as Address,
         amount: srcAmountPerTrade,

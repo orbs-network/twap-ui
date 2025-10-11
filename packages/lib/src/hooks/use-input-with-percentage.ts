@@ -9,7 +9,7 @@ import { useInvertTrade } from "./use-invert-trade";
 export const useInputWithPercentage = ({
   typedValue,
   tokenDecimals = 18,
-  initialPrice,
+  initialPrice = "0",
   percentage,
   setValue,
   setPercentage,
@@ -29,15 +29,15 @@ export const useInputWithPercentage = ({
       return amountBN(tokenDecimals, value.toFixed());
     }
 
-    if (percentage !== undefined && initialPrice) {
-      const price = BN(initialPrice);
+    if (percentage !== undefined && BN(initialPrice || "0").gt(0)) {
+      const price = BN(initialPrice || "0");
       const percentFactor = BN(percentage || 0)
         .abs()
         .div(100);
+
       const adjusted = percentage && percentage < 0 ? price.minus(price.multipliedBy(percentFactor)) : price.plus(price.multipliedBy(percentFactor));
       return adjusted.decimalPlaces(0).toFixed();
     }
-
     return initialPrice || "";
   }, [typedValue, percentage, tokenDecimals, initialPrice, isInverted]);
 
@@ -57,7 +57,7 @@ export const useInputWithPercentage = ({
     [setValue, setPercentage],
   );
 
-  const percentDiffFromMarketPrice = useMemo(() => {
+  const selectedPercentage = useMemo(() => {
     if (!initialPrice || BN(initialPrice).isZero()) return undefined;
 
     if (percentage !== undefined && percentage !== null) {
@@ -86,15 +86,14 @@ export const useInputWithPercentage = ({
     return formatDecimals(result, 6);
   }, [typedValue, tokenDecimals, priceWei, isInverted]);
 
-  const usd = useUsdAmount(isInverted ? srcUsd1Token : dstUsd1Token, amountUI);
+  const usd = useUsdAmount(isInverted ? srcUsd1Token : dstUsd1Token, amountUI || "0");
 
   return {
     amountWei: priceWei,
     amountUI,
-    percentDiffFromMarketPrice,
+    selectedPercentage,
     onChange,
     onPercentageChange,
-    percentage,
     isInverted,
     usd,
   };
