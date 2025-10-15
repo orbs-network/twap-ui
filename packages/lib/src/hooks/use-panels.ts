@@ -166,9 +166,6 @@ export const useLimitPricePanel = () => {
     return t.limitPriceTooltip;
   }, [t, module]);
 
-  const stopLossPrefix = isInverted ? "+" : "-";
-  const takeProfitPrefix = isInverted ? "-" : "+";
-
   return {
     price: amountUI,
     error,
@@ -182,9 +179,9 @@ export const useLimitPricePanel = () => {
     usd,
     fromToken: isInverted ? dstToken : srcToken,
     toToken: isInverted ? srcToken : dstToken,
-    selectedPercentage: Math.abs(selectedPercentage || 0),
+    selectedPercentage: selectedPercentage,
     isInverted,
-    prefix: module === Module.STOP_LOSS ? stopLossPrefix : takeProfitPrefix,
+    prefix: "",
     isLoading: marketPriceLoading || !marketPrice,
     isLimitPrice,
     toggleLimitPrice,
@@ -204,8 +201,6 @@ export const useTriggerPricePanel = () => {
     updateState({ triggerPricePercent: undefined, typedTriggerPrice: undefined });
   }, [updateState]);
 
-  const prefixStopsLoss = isInverted ? "+" : "-";
-  const prefixTakeProfit = isInverted ? "-" : "+";
   const hide = module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT;
 
   return {
@@ -215,13 +210,13 @@ export const useTriggerPricePanel = () => {
     tooltip: t.stopLossTooltip,
     onChange,
     onPercentageChange,
-    selectedPercentage: Math.abs(selectedPercentage || 0),
+    selectedPercentage,
     isActive: !isMarketOrder,
     onSetDefault,
     usd,
     fromToken: isInverted ? dstToken : srcToken,
     toToken: isInverted ? srcToken : dstToken,
-    prefix: module === Module.STOP_LOSS ? prefixStopsLoss : prefixTakeProfit,
+    prefix: "",
     isLoading: marketPriceLoading || !marketPrice,
     isInverted,
     hide,

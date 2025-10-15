@@ -31,8 +31,25 @@ export const NumberInput = (props: {
   suffix?: string;
   error?: boolean;
   inputClassName?: string;
+  allowNegative?: boolean;
 }) => {
-  const { onChange, value, placeholder, disabled, onFocus, onBlur, maxValue, prefix, decimalScale, minAmount, suffix, error, loading, inputClassName } = props;
+  const {
+    onChange,
+    value,
+    placeholder,
+    allowNegative = false,
+    disabled,
+    onFocus,
+    onBlur,
+    maxValue,
+    prefix,
+    decimalScale,
+    minAmount,
+    suffix,
+    error,
+    loading,
+    inputClassName,
+  } = props;
 
   const inputValue = value || minAmount || "";
 
@@ -48,7 +65,7 @@ export const NumberInput = (props: {
       {!loading && (
         <NumericFormat
           className={clsx("bg-transparent w-full h-full outline-none", inputClassName)}
-          allowNegative={false}
+          allowNegative={allowNegative}
           disabled={disabled}
           decimalScale={decimalScale}
           onBlur={onBlur}

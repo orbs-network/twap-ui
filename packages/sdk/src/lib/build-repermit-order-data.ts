@@ -1,6 +1,6 @@
 import { Address, RePermitOrder, SpotConfig } from "./types";
 import BN from "bignumber.js";
-import { safeBNNumber, safeBNString } from "./utils";
+import { safeBNString } from "./utils";
 
 export const buildRePermitOrderData = ({
   chainId,

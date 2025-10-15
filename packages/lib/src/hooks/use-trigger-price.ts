@@ -67,13 +67,9 @@ export const useTriggerPrice = () => {
 
   const setPercentage = useCallback(
     (triggerPricePercent?: number | null) => {
-      if (module === Module.STOP_LOSS) {
-        updateState({ triggerPricePercent: triggerPricePercent === null ? null : -Math.abs(triggerPricePercent || 0) });
-      } else {
-        updateState({ triggerPricePercent });
-      }
+      updateState({ triggerPricePercent });
     },
-    [updateState, module],
+    [updateState],
   );
 
   const percentage = typedPercent === undefined ? defaultTriggerPricePercent : typedPercent;

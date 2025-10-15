@@ -59,8 +59,7 @@ export const useLimitPrice = () => {
     setValue: useCallback((typedLimitPrice?: string) => updateState({ typedLimitPrice }), [updateState]),
     setPercentage: useCallback(
       (limitPricePercent?: number | null) => {
-        const result = module === Module.STOP_LOSS ? -Math.abs(limitPricePercent || 0) : Math.abs(limitPricePercent || 0);
-        updateState({ limitPricePercent: limitPricePercent === null ? null : result });
+        updateState({ limitPricePercent });
       },
       [updateState, module],
     ),

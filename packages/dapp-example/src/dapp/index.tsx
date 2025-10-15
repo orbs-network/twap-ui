@@ -511,6 +511,7 @@ const PercentageInput = ({ value, onChange, prefix, isLoading }: { value: string
       suffix="%"
       placeholder={prefix ? `${prefix}0%` : "0%"}
       loading={isLoading}
+      allowNegative
     />
   );
 };

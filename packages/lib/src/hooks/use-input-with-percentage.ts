@@ -29,16 +29,14 @@ export const useInputWithPercentage = ({
       return amountBN(tokenDecimals, value.toFixed());
     }
 
-    if (percentage !== undefined && BN(initialPrice || "0").gt(0)) {
+    if (percentage !== undefined && BN(initialPrice || "0").gt(0) && !BN(initialPrice || "0").isNaN()) {
       const price = BN(initialPrice || "0");
-      const percentFactor = BN(percentage || 0)
-        .abs()
-        .div(100);
+      const percentFactor = BN(percentage || 0).div(100);
 
-      const adjusted = percentage && percentage < 0 ? price.minus(price.multipliedBy(percentFactor)) : price.plus(price.multipliedBy(percentFactor));
+      const adjusted = price.plus(price.multipliedBy(percentFactor));
       return adjusted.decimalPlaces(0).toFixed();
     }
-    return initialPrice || "";
+    return BN(initialPrice).gt(0) ? initialPrice : "";
   }, [typedValue, percentage, tokenDecimals, initialPrice, isInverted]);
 
   const onChange = useCallback(
