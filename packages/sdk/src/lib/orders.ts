@@ -286,6 +286,7 @@ const getCreatedOrdersFilters = (filters?: GetOrdersFilters) => {
 
   const accounts = normalizeSubgraphList(filters.accounts, (a) => `"${a.toLowerCase()}"`);
   const exchanges = normalizeSubgraphList(getExchanges(filters.configs), (e) => `"${e.toLowerCase()}"`);
+  const twapAddresses = filters.configs?.map((c) => `"${c.twapAddress.toLowerCase()}"`);
   const inTokenSymbols = normalizeSubgraphList(filters.inTokenSymbols, (s) => `"${s.toUpperCase()}"`);
   const outTokenSymbols = normalizeSubgraphList(filters.outTokenSymbols, (s) => `"${s.toUpperCase()}"`);
   const inTokenAddresses = normalizeSubgraphList(filters.inTokenAddresses, (a) => `"${a.toLowerCase()}"`);
@@ -296,6 +297,7 @@ const getCreatedOrdersFilters = (filters?: GetOrdersFilters) => {
 
   return [
     exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "",
+    twapAddresses ? `twapAddress_in: [${twapAddresses.join(", ")}]` : "",
     accounts ? `maker_in: [${accounts.join(", ")}]` : "",
     transactionHashes ? `transactionHash_in: [${transactionHashes.join(", ")}]` : "",
     orderIds ? `Contract_id_in: [${orderIds.join(", ")}]` : "",

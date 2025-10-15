@@ -58,7 +58,7 @@ const AVERAGE_MONTH_MILLIS = 30.44 * MILLIS_PER_DAY;
 
 export const getDeadline = (currentTimeMillis: number, duration: TimeDuration) => {
   const minute = 60_000;
-  return currentTimeMillis + getTimeDurationMillis(duration) + AVERAGE_MONTH_MILLIS;
+  return currentTimeMillis + getTimeDurationMillis(duration) + minute;
 };
 
 export const getEstimatedDelayBetweenChunksMillis = (config: Config) => {
