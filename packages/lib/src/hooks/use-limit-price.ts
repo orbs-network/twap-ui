@@ -11,10 +11,11 @@ import { getStopLossLimitPriceError, getTakeProfitLimitPriceError } from "@orbs-
 export const useLimitPriceError = (limitPriceWei?: string) => {
   const { translations: t, module } = useTwapContext();
   const { amountWei: triggerPrice } = useTriggerPrice();
+
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
-    if (!typedSrcAmount || !triggerPrice) return;
+    if (BN(typedSrcAmount || "0").isZero() || !triggerPrice) return;
     const _stopLossError = getStopLossLimitPriceError(triggerPrice, limitPriceWei, isMarketOrder, module);
     const _takeProfitError = getTakeProfitLimitPriceError(triggerPrice, limitPriceWei, isMarketOrder, module);
 

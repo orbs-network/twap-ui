@@ -8,6 +8,7 @@ import { useFillDelay } from "./use-fill-delay";
 import { useSrcAmount } from "./use-src-amount";
 import { useAmountUi } from "./helper-hooks";
 import BN from "bignumber.js";
+import { useFormatNumber } from "./useFormatNumber";
 
 const useTradesError = (amount: number, maxAmount: number) => {
   const { module, srcUsd1Token } = useTwapContext();
@@ -16,6 +17,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
   const minChunkSizeUsd = useMinChunkSizeUsd();
 
   return useMemo((): InputError | undefined => {
+    if (BN(typedSrcAmount || "0").isZero()) return;
     if (!amount) {
       return {
         type: InputErrors.MIN_CHUNKS,
@@ -44,7 +46,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
 };
 
 export const useTrades = () => {
-  const { module, srcToken, srcUsd1Token } = useTwapContext();
+  const { srcToken, srcUsd1Token } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const fillDelay = useFillDelay().fillDelay;
   const minChunkSizeUsd = useMinChunkSizeUsd();
@@ -56,7 +58,7 @@ export const useTrades = () => {
     [srcAmountUI, srcUsd1Token, minChunkSizeUsd, fillDelay],
   );
 
-  const totalTrades = useMemo(() => getChunks(maxTrades, module, typedChunks), [maxTrades, typedChunks, module]);
+  const totalTrades = useMemo(() => getChunks(maxTrades, typedChunks), [maxTrades, typedChunks]);
 
   const onChange = useCallback(
     (typedChunks: number) =>
@@ -79,7 +81,7 @@ export const useTrades = () => {
   return {
     totalTrades,
     maxTrades,
-    amountPerTradeUI,
+    amountPerTradeUI: useFormatNumber({ value: amountPerTradeUI }),
     amountPerTradeWei: amountPerTrade,
     amountPerTradeUsd: usd,
     onChange,

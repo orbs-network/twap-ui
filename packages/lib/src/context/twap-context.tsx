@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { analytics, getConfig } from "@orbs-network/twap-sdk";
+import { analytics, getConfig, Module } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType, Translations } from "../types";
 import defaultTranslations from "../i18n/en.json";
 import { initiateWallet } from "../lib";
@@ -59,6 +59,15 @@ const Listeners = (props: TwapProps) => {
   useEffect(() => {
     props.callbacks?.onInputAmountChange?.(srcAmountWei || "0", typedSrcAmount || "0");
   }, [srcAmountWei, typedSrcAmount, props.callbacks?.onInputAmountChange]);
+
+  useEffect(() => {
+    if (props.module !== Module.TWAP) {
+      updateStore({ typedChunks: 1 });
+    } else {
+      updateStore({ typedChunks: undefined });
+    }
+  }, [props.module]);
+
   return null;
 };
 

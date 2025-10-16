@@ -14,7 +14,7 @@ const useTriggerPriceError = (triggerPriceWei = "") => {
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
-    if (!typedSrcAmount || !marketPrice) return;
+    if (BN(typedSrcAmount || "0").isZero() || !marketPrice) return;
     if (module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) return;
     const stopLossError = getStopLossPriceError(marketPrice || "", triggerPriceWei || "", module);
     if (stopLossError?.isError) {

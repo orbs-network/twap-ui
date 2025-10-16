@@ -56,8 +56,7 @@ export const getDuration = (module: Module, chunks: number, fillDelay: TimeDurat
   return { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
 };
 
-export const getChunks = (maxPossibleChunks: number, module: Module, typedChunks?: number) => {
-  if (module !== Module.TWAP) return 1;
+export const getChunks = (maxPossibleChunks: number, typedChunks?: number) => {
   if (typedChunks !== undefined) return typedChunks;
   return maxPossibleChunks;
 };

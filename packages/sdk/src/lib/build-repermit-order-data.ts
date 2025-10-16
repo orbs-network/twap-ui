@@ -33,6 +33,7 @@ export const buildRePermitOrderData = ({
   const nonce = Date.now().toString();
   const epoch = parseInt((fillDelayMillis / 1000).toFixed(0));
   const deadline = safeBNString(deadlineMillis / 1000);
+  console.log(epoch);
 
   const orderData: RePermitOrder = {
     permitted: {
@@ -58,7 +59,7 @@ export const buildRePermitOrderData = ({
       exclusivity: 0,
       epoch,
       slippage,
-      freshness: 600,
+      freshness: 60,
       input: {
         token: srcToken as Address,
         amount: srcAmountPerTrade,
