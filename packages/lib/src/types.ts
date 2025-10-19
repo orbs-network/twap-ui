@@ -15,6 +15,7 @@ export interface Translations {
   limitPriceTooltip: string;
   version: string;
   outAmountLoading: string;
+  maxOrderSizeError: string;
   minReceivedPerChunk: string;
   maxDurationTooltip: string;
   tradeIntervalTootlip: string;
@@ -245,6 +246,7 @@ export enum InputErrors {
   TAKE_PROFIT_TRIGGER_PRICE_LESS_THAN_MARKET_PRICE,
   EMPTY_TRIGGER_PRICE,
   INSUFFICIENT_BALANCE,
+  MAX_ORDER_SIZE,
 }
 
 type Callbacks = {
@@ -315,8 +317,8 @@ export type InitialState = {
   isMarketOrder?: boolean;
   inputAmount?: string;
   chunks?: number;
-  fillDelay?: number;
-  duration?: number;
+  fillDelay?: TimeDuration;
+  duration?: TimeDuration;
   limitPrice?: string;
   triggerPrice?: string;
 };

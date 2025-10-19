@@ -37,7 +37,6 @@ export const usePersistedOrdersStore = () => {
   const { account, config, chainId } = useTwapContext();
 
   const cancelledOrderIdsKey = `cancelled-orders-${account}-${config?.partner}-${chainId}`;
-
   const getCancelledOrderIds = useCallback((): string[] => {
     const res = localStorage.getItem(cancelledOrderIdsKey);
     if (!res) return [];
@@ -192,7 +191,9 @@ export const useOrderToDisplay = () => {
     if (!selectedStatus) {
       return orders.all;
     }
-    return orders.all.filter((order) => order.status === selectedStatus) || [];
+    console.log(orders, selectedStatus);
+
+    return orders.all.filter((order) => order.status.toLowerCase() === selectedStatus.toLowerCase()) || [];
   }, [selectedStatus, orders]);
 };
 

@@ -116,5 +116,6 @@
   "emptyTriggerPrice": "Trigger price is required",
   "id": "ID",
   "fees": "Fees ({{value}}%)",
-  "version": "Version"
+  "version": "Version",
+  "maxOrderSizeError": "Max. trade size is {maxOrderSize} USD"
 }

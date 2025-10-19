@@ -46,7 +46,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
 };
 
 export const useTrades = () => {
-  const { srcToken, srcUsd1Token } = useTwapContext();
+  const { srcToken, srcUsd1Token, module } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const fillDelay = useFillDelay().fillDelay;
   const minChunkSizeUsd = useMinChunkSizeUsd();
@@ -58,7 +58,7 @@ export const useTrades = () => {
     [srcAmountUI, srcUsd1Token, minChunkSizeUsd, fillDelay],
   );
 
-  const totalTrades = useMemo(() => getChunks(maxTrades, typedChunks), [maxTrades, typedChunks]);
+  const totalTrades = useMemo(() => getChunks(maxTrades, module, typedChunks), [maxTrades, typedChunks, module]);
 
   const onChange = useCallback(
     (typedChunks: number) =>

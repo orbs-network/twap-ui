@@ -9,6 +9,24 @@ import { useLimitPrice } from "./use-limit-price";
 import { useTrades } from "./use-trades";
 import { useFillDelay } from "./use-fill-delay";
 import { useDuration } from "./use-duration";
+import { useUsdAmount } from "./helper-hooks";
+import { MAX_ORDER_SIZE_USD } from "../consts";
+
+export const useMaxOrderSizeError = () => {
+  const { translations: t, srcUsd1Token } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const usdAmount = useUsdAmount(typedSrcAmount, srcUsd1Token);
+
+  return useMemo(() => {
+    if (BN(usdAmount || "0").gt(MAX_ORDER_SIZE_USD)) {
+      return {
+        type: InputErrors.MAX_ORDER_SIZE,
+        value: MAX_ORDER_SIZE_USD,
+        message: t.maxOrderSizeError.replace("{maxOrderSize}", `${MAX_ORDER_SIZE_USD}`),
+      };
+    }
+  }, [usdAmount, t]);
+};
 
 export const useBalanceError = () => {
   const maxSrcInputAmount = useMaxSrcAmount();
@@ -29,7 +47,7 @@ export const useBalanceError = () => {
 };
 
 export function useInputErrors() {
-  const { marketPrice } = useTwapContext();
+  const { marketPrice, marketPriceLoading } = useTwapContext();
   const srcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const balanceError = useBalanceError();
   const { error: triggerPriceError } = useTriggerPrice();
@@ -37,10 +55,13 @@ export function useInputErrors() {
   const { error: tradesError } = useTrades();
   const { error: fillDelayError } = useFillDelay();
   const { error: durationError } = useDuration();
+  const maxOrderSizeError = useMaxOrderSizeError();
 
-  if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero()) {
+  const ignoreErrors = useMemo(() => new URLSearchParams(window.location.search)?.get("ignore-errors"), []);
+
+  if (BN(marketPrice || 0).isZero() || BN(srcAmount || 0).isZero() || marketPriceLoading || ignoreErrors) {
     return undefined;
   }
 
-  return balanceError || triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError;
+  return balanceError || triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError || maxOrderSizeError;
 }

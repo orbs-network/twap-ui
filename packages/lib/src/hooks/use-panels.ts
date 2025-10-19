@@ -155,6 +155,8 @@ export const useLimitPricePanel = () => {
   }, [triggerPricePercent, t, module]);
 
   const reset = useCallback(() => {
+    console.log({ defaultLimitPricePercent });
+
     updateState({ typedLimitPrice: undefined });
     updateState({ limitPricePercent: defaultLimitPricePercent });
   }, [updateState, module, defaultLimitPricePercent]);
@@ -251,6 +253,7 @@ export const useOrderHistoryPanel = () => {
   const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
   const selectedOrder = useHistoryOrder(selectedOrderID);
   const ordersToCancel = useMemo(() => orders.all.filter((order) => orderIdsToCancel?.includes(order.id)), [orders, orderIdsToCancel]);
+  const onSelectAllOrdersToCancel = useCallback(() => updateState({ orderIdsToCancel: orders.open.map((order) => order.id) }), [updateState, orders]);
 
   return {
     refetch,
@@ -270,6 +273,7 @@ export const useOrderHistoryPanel = () => {
     statuses,
     cancelOrdersMode,
     ordersToCancel,
+    onSelectAllOrdersToCancel,
   };
 };
 

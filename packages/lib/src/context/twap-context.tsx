@@ -61,10 +61,19 @@ const Listeners = (props: TwapProps) => {
   }, [srcAmountWei, typedSrcAmount, props.callbacks?.onInputAmountChange]);
 
   useEffect(() => {
-    if (props.module !== Module.TWAP) {
-      updateStore({ typedChunks: 1 });
-    } else {
-      updateStore({ typedChunks: undefined });
+    updateStore({
+      isMarketOrder: props.module !== Module.LIMIT ? false : props.overrides?.state?.isMarketOrder,
+      typedChunks: props.overrides?.state?.chunks,
+      typedFillDelay: props.overrides?.state?.fillDelay,
+      typedDuration: props.overrides?.state?.duration,
+      typedLimitPrice: props.overrides?.state?.limitPrice,
+      typedTriggerPrice: props.overrides?.state?.triggerPrice,
+    });
+  }, [props.overrides?.state]);
+
+  useEffect(() => {
+    if (props.module === Module.LIMIT) {
+      updateStore({ isMarketOrder: false });
     }
   }, [props.module]);
 
