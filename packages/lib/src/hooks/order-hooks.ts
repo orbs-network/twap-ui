@@ -153,7 +153,7 @@ const useHandlePersistedOrders = () => {
 
       orders.forEach((order, index) => {
         if (cancelledOrderIds.has(Number(order.id))) {
-          if (order.status !== OrderStatus.Canceled) {
+          if (order.status !== OrderStatus.Canceled && order.status !== OrderStatus.Completed) {
             console.log(`Marking order as cancelled: ${order.id}`);
             orders[index] = { ...order, status: OrderStatus.Canceled };
           } else {
