@@ -103,7 +103,7 @@ const Content = (props: TwapProps) => {
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const config = useMemo(() => getConfig(props.chainId, props.partner), [props.chainId, props.partner]);
   const marketReferencePrice = useParsedMarketPrice(props);
-
+  console.log({ config });
   useEffect(() => {
     if (config && props.chainId) {
       analytics.init(config, props.chainId);

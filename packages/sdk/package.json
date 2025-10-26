@@ -20,12 +20,12 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@orbs-network/spot": "^0.0.9",
+    "@orbs-network/spot": "^0.0.11",
     "@orbs-network/twap": "^2.7.25",
     "bignumber.js": "9.x"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0"
+  "gitHead": "98c355f396dd2a2a8304950d3f086d8d07a73b9b"
 }
