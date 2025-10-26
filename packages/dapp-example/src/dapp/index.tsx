@@ -18,6 +18,7 @@ import {
   useTwap,
   TooltipProps,
   Partners,
+  useTypedSrcAmount,
 } from "@orbs-network/twap-ui";
 import { Config, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -94,7 +95,7 @@ const OrderHistoryModal = () => {
         <Components.Orders Tooltip={TwapTooltip} Button={TwapButton} useToken={useToken} />
       </Popup>
       <button onClick={() => setIsOpen(true)} className="twap-orders__button">
-        {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Orders</Typography>}
+        {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Open orders</Typography>}
       </button>
     </>
   );
@@ -710,7 +711,7 @@ const PanelInputs = () => {
 
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
-  const [srcAmount, setSrcAmount] = useState("");
+  const typedSrcAmount = useTypedSrcAmount();
   const { module, slippage } = useDappContext();
 
   const { srcToken, dstToken } = useTokens();
@@ -720,14 +721,12 @@ export const Dapp = () => {
   const marketReferencePrice = useMemo(() => {
     return {
       value: BN(marketPrice || "")
-        .multipliedBy(BN(srcAmount || "0"))
+        .multipliedBy(BN(typedSrcAmount || "0"))
         .toFixed(),
       isLoading: marketPriceLoading,
       noLiquidity: false,
     };
-  }, [marketPrice, marketPriceLoading, srcAmount]);
-
-  const onInputAmountChange = useCallback((_: string, value: string) => setSrcAmount(value), [setSrcAmount]);
+  }, [marketPrice, marketPriceLoading, typedSrcAmount]);
 
   return (
     <>
@@ -737,9 +736,6 @@ export const Dapp = () => {
         partner={Partners.THENA}
         chainId={chainId}
         provider={client.data?.transport}
-        callbacks={{
-          onInputAmountChange,
-        }}
         srcToken={srcToken}
         dstToken={dstToken}
         module={module}

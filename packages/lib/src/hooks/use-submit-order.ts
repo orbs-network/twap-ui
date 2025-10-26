@@ -10,7 +10,7 @@ import { useTwapStore } from "../useTwapStore";
 import { EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/twap-sdk";
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
 import { erc20Abi, maxUint256, numberToHex, parseSignature } from "viem";
-import { useOptimisticAddOrder } from "./order-hooks";
+import { useOptimisticAddOrder, useOrdersQuery } from "./order-hooks";
 import { useNetwork } from "./helper-hooks";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 
@@ -198,6 +198,7 @@ export const useSubmitOrderMutation = () => {
   const updateSwapExecution = useTwapStore((s) => s.updateSwapExecution);
   const { amountUI: srcAmountUI = "" } = useSrcAmount();
   const addOrder = useOptimisticAddOrder();
+  const { refetch: refetchOrders } = useOrdersQuery();
 
   return useMutation(async (callbacks?: SwapCallbacks) => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
@@ -240,8 +241,13 @@ export const useSubmitOrderMutation = () => {
       updateSwapExecution({ step: Steps.CREATE });
       const order = await createOrderCallback();
 
+      if (order) {
+        addOrder(order);
+      } else {
+        await refetchOrders();
+      }
       updateSwapExecution({ status: SwapStatus.SUCCESS });
-      addOrder(order);
+
       return order;
     } catch (error) {
       if (isTxRejected(error)) {

@@ -131,7 +131,7 @@ const useHandlePersistedCancelledOrders = () => {
   );
 };
 
-const useOrdersQuery = () => {
+export const useOrdersQuery = () => {
   const { account, config, chainId } = useTwapContext();
   const queryKey = useOrdersQueryKey();
   const handlePersistedCancelledOrders = useHandlePersistedCancelledOrders();
@@ -191,7 +191,6 @@ export const useOrderToDisplay = () => {
     if (!selectedStatus) {
       return orders.all;
     }
-    console.log(orders, selectedStatus);
 
     return orders.all.filter((order) => order.status.toLowerCase() === selectedStatus.toLowerCase()) || [];
   }, [selectedStatus, orders]);

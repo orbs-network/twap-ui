@@ -178,7 +178,6 @@ export const getMaxChunksError = (chunks: number, maxChunks: number, module: Mod
     value: maxChunks,
   };
 };
-console.log({ Spot });
 
 export const getConfig = (chainId?: number, _dex?: Partners): SpotConfig | undefined => {
   try {

@@ -44,8 +44,8 @@ const getProgress = (order: OrderV2) => {
 
 const OPEN_STATUS = ["pending", "eligible"];
 
-const getStatus = (order: OrderV2) => {
-  if (order.metadata.status === "completed") return OrderStatus.Completed;
+const getStatus = (order: OrderV2, progress: number) => {
+  if (order.metadata.status === "completed" || progress >= 99) return OrderStatus.Completed;
   if (OPEN_STATUS.includes(order.metadata.status)) return OrderStatus.Open;
   if (order.metadata.description.toLowerCase() === "cancelled by contract") return OrderStatus.Canceled;
 
@@ -53,13 +53,14 @@ const getStatus = (order: OrderV2) => {
 };
 
 export const buildV2Order = (order: OrderV2): Order => {
+  const progress = getProgress(order);
   return {
     id: order.hash,
     hash: order.hash,
     version: 2,
     type: getOrderType(order),
     maker: order.order.witness.swapper,
-    progress: getProgress(order),
+    progress,
     srcAmountFilled: order.metadata.chunks?.reduce((acc, chunk) => acc.plus(chunk.inAmount), new BN(0)).toString() || "",
     dstAmountFilled: order.metadata.chunks?.reduce((acc, chunk) => acc.plus(chunk.outAmount), new BN(0)).toString() || "",
     dollarValueInFilled: "",
@@ -81,7 +82,7 @@ export const buildV2Order = (order: OrderV2): Order => {
     isMarketPrice: false,
     chainId: order.order.witness.chainid,
     filledOrderTimestamp: 0,
-    status: getStatus(order),
+    status: getStatus(order, progress),
   };
 };
 

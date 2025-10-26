@@ -6,7 +6,6 @@ import defaultTranslations from "../i18n/en.json";
 import { initiateWallet } from "../lib";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTwapStore } from "../useTwapStore";
-import { useAmountBN } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
 
 const TwapFallbackUI = () => {
@@ -46,19 +45,12 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
 
 const Listeners = (props: TwapProps) => {
   const updateStore = useTwapStore((s) => s.updateState);
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const srcAmountWei = useAmountBN(props.srcToken?.decimals, typedSrcAmount);
-
   // update current time every minute, so the deadline will be updated when confirmation window is open
   useEffect(() => {
     setInterval(() => {
       updateStore({ currentTime: Date.now() });
     }, 60_000);
   }, [updateStore]);
-
-  useEffect(() => {
-    props.callbacks?.onInputAmountChange?.(srcAmountWei || "0", typedSrcAmount || "0");
-  }, [srcAmountWei, typedSrcAmount, props.callbacks?.onInputAmountChange]);
 
   useEffect(() => {
     updateStore({
@@ -103,7 +95,7 @@ const Content = (props: TwapProps) => {
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const config = useMemo(() => getConfig(props.chainId, props.partner), [props.chainId, props.partner]);
   const marketReferencePrice = useParsedMarketPrice(props);
-  console.log({ config });
+
   useEffect(() => {
     if (config && props.chainId) {
       analytics.init(config, props.chainId);

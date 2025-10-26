@@ -2,7 +2,7 @@ import { API_ENDPOINT } from "./consts";
 import { buildV2Order } from "./orders/v2-orders";
 import { Order, RePermitOrder, Signature } from "./types";
 
-export const submitOrder = async (order: RePermitOrder, signature: Signature): Promise<Order> => {
+export const submitOrder = async (order: RePermitOrder, signature: Signature): Promise<Order | undefined> => {
   const body = {
     signature,
     order,
@@ -16,5 +16,8 @@ export const submitOrder = async (order: RePermitOrder, signature: Signature): P
     body: JSON.stringify(body),
   });
   const data = await response.json();
+  if (!data.signedOrder) {
+    return undefined;
+  }
   return buildV2Order(data.signedOrder);
 };

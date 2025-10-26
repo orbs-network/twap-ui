@@ -249,10 +249,6 @@ export enum InputErrors {
   MAX_ORDER_SIZE,
 }
 
-type Callbacks = {
-  onInputAmountChange?: (weiValue: string, uiValue: string) => void;
-};
-
 export type onCreateOrderRequest = {
   srcToken: Token;
   dstToken: Token;
@@ -430,7 +426,6 @@ export interface TwapProps {
   module: Module;
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   overrides?: Overrides;
-  callbacks?: Callbacks;
   fees?: number;
 }
 

@@ -155,8 +155,6 @@ export const useLimitPricePanel = () => {
   }, [triggerPricePercent, t, module]);
 
   const reset = useCallback(() => {
-    console.log({ defaultLimitPricePercent });
-
     updateState({ typedLimitPrice: undefined });
     updateState({ limitPricePercent: defaultLimitPricePercent });
   }, [updateState, module, defaultLimitPricePercent]);
@@ -329,6 +327,10 @@ export const useSrcTokenPanel = () => useTokenPanel(true);
 export const useDstTokenPanel = () => {
   const dstAmount = useDstTokenAmount().amountUI;
   return useTokenPanel(false, dstAmount);
+};
+
+export const useTypedSrcAmount = () => {
+  return useTwapStore((s) => s.state.typedSrcAmount) || "";
 };
 
 export const useSubmitSwapPanel = () => {
