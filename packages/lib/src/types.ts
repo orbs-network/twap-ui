@@ -409,6 +409,11 @@ export type Overrides = {
   dateFormat?: (date: number) => string;
 };
 
+
+  export type Callbacks = {
+    onOrdersRefetch?: () => Promise<Order[]>;
+  };
+
 export interface TwapProps {
   children?: React.ReactNode;
   provider?: Provider;
@@ -427,6 +432,7 @@ export interface TwapProps {
   marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
   overrides?: Overrides;
   fees?: number;
+  callbacks?: Callbacks;
 }
 
 export interface TwapContextType extends TwapProps {
