@@ -7,9 +7,11 @@ import BN from "bignumber.js";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useDefaultLimitPricePercent } from "./use-default-values";
 import { getStopLossLimitPriceError, getTakeProfitLimitPriceError } from "@orbs-network/twap-sdk";
+import { useTranslations } from "./use-translations";
 
 export const useLimitPriceError = (limitPriceWei?: string) => {
-  const { translations: t, module } = useTwapContext();
+  const { module } = useTwapContext();
+  const t = useTranslations();
   const { amountWei: triggerPrice } = useTriggerPrice();
 
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
@@ -22,7 +24,7 @@ export const useLimitPriceError = (limitPriceWei?: string) => {
     if (_stopLossError?.isError) {
       return {
         type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
-        message: t.triggerLimitPriceError,
+        message: t("triggerLimitPriceError") || "",
         value: _stopLossError.value,
       };
     }
@@ -30,7 +32,7 @@ export const useLimitPriceError = (limitPriceWei?: string) => {
     if (_takeProfitError?.isError) {
       return {
         type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
-        message: t.triggerLimitPriceError,
+        message: t("triggerLimitPriceError") || "",
         value: _takeProfitError.value,
       };
     }
@@ -38,7 +40,7 @@ export const useLimitPriceError = (limitPriceWei?: string) => {
     if (limitPriceWei && BN(limitPriceWei || 0).isZero()) {
       return {
         type: InputErrors.MISSING_LIMIT_PRICE,
-        message: t.emptyLimitPrice,
+        message: t("emptyLimitPrice") || "",
         value: limitPriceWei || "",
       };
     }

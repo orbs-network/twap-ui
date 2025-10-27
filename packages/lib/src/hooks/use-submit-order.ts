@@ -210,7 +210,7 @@ export const useSubmitOrderMutation = () => {
       // analytics.onCreateOrderRequest(params, account)
 
       updateState({ fetchingAllowance: true });
-      const { approvalRequired } = await hasAllowanceCallback(srcToken.address);
+      const { approvalRequired } = await hasAllowanceCallback(srcWrappedToken.address);
 
       let stepIndex = 0;
       let totalSteps = 1;

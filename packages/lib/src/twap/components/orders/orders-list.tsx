@@ -1,7 +1,6 @@
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { Order } from "@orbs-network/twap-sdk";
 import * as React from "react";
-import { useTwapContext } from "../../../context/twap-context";
 import { Virtuoso } from "react-virtuoso";
 import TokenLogo from "../../../components/TokenLogo";
 import { FC } from "react";
@@ -10,6 +9,7 @@ import { useTwapStore } from "../../../useTwapStore";
 import { useOrderHistoryContext } from "../../../context/order-history-context";
 import { useOrderName, useOrders, useOrderToDisplay, useSelectedOrderIdsToCancel } from "../../../hooks/order-hooks";
 import { useDateFormat } from "../../../hooks/helper-hooks";
+import { useTranslations } from "../../../hooks/use-translations";
 
 const ListLoader = () => {
   const { listLoader } = useOrderHistoryContext();
@@ -88,7 +88,7 @@ const ListOrder = ({ order, selectOrder, selected, cancelOrdersMode }: { order: 
 
 const EmptyList = () => {
   const status = useTwapStore((s) => s.state.orderHistoryStatusFilter);
-  const t = useTwapContext().translations;
+  const t = useTranslations();
   const name = React.useMemo(() => {
     if (!status) {
       return "";
@@ -98,7 +98,7 @@ const EmptyList = () => {
 
   return (
     <div className="twap-orders__list-empty">
-      <p>{t.noOrders.replace("{status}", name)}</p>
+      <p>{t("noOrders", { status: name })}</p>
     </div>
   );
 };

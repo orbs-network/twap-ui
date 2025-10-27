@@ -6,9 +6,11 @@ import { InputError, InputErrors } from "../types";
 import { millisToDays, millisToMinutes } from "../utils";
 import { useTrades } from "./use-trades";
 import { useFillDelay } from "./use-fill-delay";
+import { useTranslations } from "./use-translations";
 
 const useDurationError = (duration: TimeDuration) => {
-  const { translations: t, module } = useTwapContext();
+  const { module } = useTwapContext();
+  const t = useTranslations();
 
   return useMemo((): InputError | undefined => {
     const maxError = getMaxOrderDurationError(module, duration);
@@ -18,14 +20,14 @@ const useDurationError = (duration: TimeDuration) => {
       return {
         type: InputErrors.MAX_ORDER_DURATION,
         value: maxError.value,
-        message: t.maxDurationError.replace("{duration}", `${Math.floor(millisToDays(maxError.value)).toFixed(0)} ${t.days}`),
+        message: t("maxDurationError", { duration: `${Math.floor(millisToDays(maxError.value)).toFixed(0)} ${t("days")}` }),
       };
     }
     if (minError.isError) {
       return {
         type: InputErrors.MIN_ORDER_DURATION,
         value: minError.value,
-        message: t.minDurationError.replace("{duration}", `${Math.floor(millisToMinutes(minError.value)).toFixed(0)} ${t.minutes}`),
+        message: t("minDurationError", { duration: `${Math.floor(millisToMinutes(minError.value)).toFixed(0)} ${t("minutes")}` }),
       };
     }
   }, [duration, t, module]);

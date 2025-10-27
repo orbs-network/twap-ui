@@ -7,24 +7,25 @@ import { Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderExcecutionRate, getOrderLimitPriceRate } from "../utils";
+import { useTranslations } from "./use-translations";
 
 export const useOrderName = (order?: Order) => {
-  const { translations: t } = useTwapContext();
+  const t = useTranslations();
   return useMemo(() => {
-    if (!order) return t.twapMarket;
+    if (!order) return t("twapMarket");
     if (order.type === OrderType.TRIGGER_PRICE_MARKET) {
-      return t.triggerPriceMarket;
+      return t("triggerPriceMarket");
     }
     if (order.type === OrderType.TRIGGER_PRICE_LIMIT) {
-      return t.triggerPriceLimit;
+      return t("triggerPriceLimit");
     }
     if (order.type === OrderType.TWAP_MARKET) {
-      return t.twapMarket;
+      return t("twapMarket");
     }
     if (order.type === OrderType.TWAP_LIMIT) {
-      return t.twapLimit;
+      return t("twapLimit");
     }
-    return t.twapMarket;
+    return t("twapMarket");
   }, [t, order?.type]);
 };
 

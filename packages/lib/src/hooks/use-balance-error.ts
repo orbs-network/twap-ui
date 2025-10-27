@@ -3,10 +3,12 @@ import { useTwapContext } from "../context/twap-context";
 import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
 import BN from "bignumber.js";
 import { InputErrors } from "../types";
+import { useTranslations } from "./use-translations";
 
 export const useBalanceError = () => {
   const maxSrcInputAmount = useMaxSrcAmount();
-  const { translations: t, srcBalance } = useTwapContext();
+  const { srcBalance } = useTwapContext();
+  const t = useTranslations();
   const srcAmountWei = useSrcAmount().amountWei;
 
   const error = useMemo(() => {
@@ -18,7 +20,7 @@ export const useBalanceError = () => {
   if (error) {
     return {
       type: InputErrors.INSUFFICIENT_BALANCE,
-      message: t.insufficientFunds,
+      message: t("insufficientFunds") || "",
       value: srcBalance,
     };
   }

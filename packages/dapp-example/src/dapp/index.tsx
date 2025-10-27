@@ -19,6 +19,7 @@ import {
   TooltipProps,
   Partners,
   useTypedSrcAmount,
+  Translations,
 } from "@orbs-network/twap-ui";
 import { Config, Configs, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";

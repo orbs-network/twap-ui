@@ -22,10 +22,11 @@ import { useSubmitOrderMutation } from "./use-submit-order";
 import { useCurrentOrderDetails } from "./use-current-order";
 import { useHistoryOrder } from "./use-history-order";
 import { useInputErrors } from "./use-input-errors";
+import { useTranslations } from "./use-translations";
 
 export const useFillDelayPanel = () => {
   const { onChange, fillDelay, error } = useFillDelay();
-  const { translations: t } = useTwapContext();
+  const t = useTranslations();
   const onInputChange = useCallback((value: string) => onChange({ unit: fillDelay.unit, value: Number(value) }), [onChange, fillDelay]);
   const onUnitSelect = useCallback((unit: TimeUnit) => onChange({ unit, value: fillDelay.value }), [onChange, fillDelay]);
 
@@ -36,13 +37,14 @@ export const useFillDelayPanel = () => {
     milliseconds: fillDelay.unit * fillDelay.value,
     fillDelay,
     error,
-    label: t.tradeIntervalTitle,
-    tooltip: t.tradeIntervalTootlip,
+    label: t("tradeIntervalTitle"),
+    tooltip: t("tradeIntervalTootlip"),
   };
 };
 
 export const useTradesPanel = () => {
-  const { translations: t, srcToken, dstToken } = useTwapContext();
+  const { srcToken, dstToken } = useTwapContext();
+  const t = useTranslations();
   const { onChange, totalTrades, amountPerTradeUsd, amountPerTradeUI, error, maxTrades, amountPerTradeWei } = useTrades();
 
   return {
@@ -52,8 +54,8 @@ export const useTradesPanel = () => {
     amountPerTrade: amountPerTradeUI,
     amountPerTradeWei,
     onChange,
-    label: t.tradesAmountTitle,
-    tooltip: t.totalTradesTooltip,
+    label: t("tradesAmountTitle"),
+    tooltip: t("totalTradesTooltip"),
     amountPerTradeUsd,
     fromToken: srcToken,
     toToken: dstToken,
@@ -61,7 +63,8 @@ export const useTradesPanel = () => {
 };
 
 export const useDurationPanel = () => {
-  const { translations: t, module } = useTwapContext();
+  const { module } = useTwapContext();
+  const t = useTranslations();
   const { duration, setDuration, error } = useDuration();
 
   const onInputChange = useCallback(
@@ -80,9 +83,9 @@ export const useDurationPanel = () => {
 
   const tooltip = useMemo(() => {
     if (module === Module.STOP_LOSS) {
-      return t.stopLossDurationTooltip;
+      return t("stopLossDurationTooltip");
     }
-    return t.maxDurationTooltip;
+    return t("maxDurationTooltip");
   }, [t, module]);
 
   return {
@@ -91,7 +94,7 @@ export const useDurationPanel = () => {
     milliseconds: duration.unit * duration.value,
     onInputChange,
     onUnitSelect,
-    label: t.expiry,
+    label: t("expiry"),
     tooltip,
     error,
   };
@@ -123,18 +126,19 @@ export const useMarketPricePanel = () => {
 
 export const useDisclaimer = () => {
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const { translations: t } = useTwapContext();
+  const t = useTranslations();
   return useMemo(() => {
     return {
       type: isMarketOrder ? "market" : "limit",
-      text: isMarketOrder ? t.marketOrderWarning : t.limitPriceMessage,
+      text: isMarketOrder ? t("marketOrderWarning") : t("limitPriceMessage"),
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
     };
   }, [isMarketOrder, t]);
 };
 
 export const useLimitPricePanel = () => {
-  const { translations: t, module, srcToken, dstToken, marketPrice, marketPriceLoading } = useTwapContext();
+  const { module, srcToken, dstToken, marketPrice, marketPriceLoading } = useTwapContext();
+  const t = useTranslations();
   const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useLimitPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const updateState = useTwapStore((s) => s.updateState);
@@ -149,7 +153,7 @@ export const useLimitPricePanel = () => {
     if (module !== Module.STOP_LOSS) return;
 
     return {
-      text: t.triggerMarketPriceDisclaimer,
+      text: t("triggerMarketPriceDisclaimer"),
       url: ORBS_WEBSITE_URL,
     };
   }, [triggerPricePercent, t, module]);
@@ -161,16 +165,16 @@ export const useLimitPricePanel = () => {
 
   const tooltip = useMemo(() => {
     if (module === Module.STOP_LOSS) {
-      return t.stopLossLimitPriceTooltip;
+      return t("stopLossLimitPriceTooltip");
     }
-    return t.limitPriceTooltip;
+    return t("limitPriceTooltip");
   }, [t, module]);
 
   return {
     price: amountUI,
     error,
     warning,
-    label: t.limitPrice,
+    label: t("limitPrice"),
     tooltip,
     onChange,
     onPercentageChange,
@@ -190,7 +194,8 @@ export const useLimitPricePanel = () => {
 };
 
 export const useTriggerPricePanel = () => {
-  const { translations: t, srcToken, dstToken, module, marketPrice, marketPriceLoading } = useTwapContext();
+  const { srcToken, dstToken, module, marketPrice, marketPriceLoading } = useTwapContext();
+  const t = useTranslations();
   const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useTriggerPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const updateState = useTwapStore((s) => s.updateState);
@@ -206,8 +211,8 @@ export const useTriggerPricePanel = () => {
   return {
     price: amountUI,
     error,
-    label: t.stopLossLabel,
-    tooltip: t.stopLossTooltip,
+    label: t("stopLossLabel"),
+    tooltip: t("stopLossTooltip"),
     onChange,
     onPercentageChange,
     selectedPercentage,
@@ -224,7 +229,7 @@ export const useTriggerPricePanel = () => {
 };
 
 export const useOrderHistoryPanel = () => {
-  const { translations: t } = useTwapContext();
+  const t = useTranslations();
   const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
   const ordersToDisplay = useOrderToDisplay();
@@ -244,7 +249,7 @@ export const useOrderHistoryPanel = () => {
         value: it,
       };
     });
-    return [{ text: t.allOrders, value: "" }, ...result];
+    return [{ text: t("allOrders"), value: "" }, ...result];
   }, [t]);
 
   const onSelectOrder = useSelectedOrderIdsToCancel();
@@ -276,7 +281,8 @@ export const useOrderHistoryPanel = () => {
 };
 
 const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
-  const { marketPriceLoading, srcToken, dstToken, srcBalance, dstBalance, translations: t } = useTwapContext();
+  const { marketPriceLoading, srcToken, dstToken, srcBalance, dstBalance } = useTwapContext();
+  const t = useTranslations();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const updateState = useTwapStore((s) => s.updateState);
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();
@@ -294,7 +300,7 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
     if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
       return {
         type: InputErrors.INSUFFICIENT_BALANCE,
-        message: t.insufficientFunds,
+        message: t("insufficientFunds"),
         value: srcBalance || "",
       };
     }
@@ -334,7 +340,8 @@ export const useTypedSrcAmount = () => {
 };
 
 export const useSubmitSwapPanel = () => {
-  const { marketPrice, srcToken, dstToken, marketPriceLoading, srcBalance, srcUsd1Token, noLiquidity, translations: t } = useTwapContext();
+  const { marketPrice, srcToken, dstToken, marketPriceLoading, srcBalance, srcUsd1Token, noLiquidity } = useTwapContext();
+  const t = useTranslations();
   const submitOrderMutation = useSubmitOrderMutation();
   const updateState = useTwapStore((s) => s.updateState);
   const { amountUI: srcAmountUI, amountWei: srcAmountWei } = useSrcAmount();
@@ -348,10 +355,10 @@ export const useSubmitSwapPanel = () => {
   const inputsError = useInputErrors();
 
   const buttonText = useMemo(() => {
-    if (noLiquidity) return t.noLiquidity;
-    if (BN(typedSrcAmount || "0").isZero()) return t.enterAmount;
-    if (inputsError?.type === InputErrors.INSUFFICIENT_BALANCE) return t.insufficientFunds;
-    return t.placeOrder;
+    if (noLiquidity) return t("noLiquidity");
+    if (BN(typedSrcAmount || "0").isZero()) return t("enterAmount");
+    if (inputsError?.type === InputErrors.INSUFFICIENT_BALANCE) return t("insufficientFunds");
+    return t("placeOrder");
   }, [inputsError, t, typedSrcAmount, noLiquidity]);
 
   const onCloseModal = useCallback(() => {
@@ -419,13 +426,14 @@ export const useSubmitSwapPanel = () => {
 
 export const useDisclaimerPanel = () => {
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
-  const { translations: t, module } = useTwapContext();
+  const { module } = useTwapContext();
+  const t = useTranslations();
 
   const hide = module === Module.STOP_LOSS || module === Module.TAKE_PROFIT;
   return useMemo(() => {
     if (hide) return;
     return {
-      text: isMarketOrder ? t.marketOrderWarning : t.limitPriceMessage,
+      text: isMarketOrder ? t("marketOrderWarning") : t("limitPriceMessage"),
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
     };
   }, [isMarketOrder, t, hide]);

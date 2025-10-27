@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import BN from "bignumber.js";
-import { useTwapContext } from "../context/twap-context";
 import { Token } from "../types";
 import { useAmountBN, useAmountUi } from "./helper-hooks";
 import { useFormatNumber } from "./useFormatNumber";
+import { useTranslations } from "./use-translations";
 
 type Props = {
   srcToken?: Token;
@@ -20,7 +20,7 @@ type Props = {
 };
 
 export const useBaseOrder = (props: Props) => {
-  const { translations: t } = useTwapContext();
+  const t = useTranslations();
   const srcAmount = useFormatNumber({ value: useAmountUi(props.srcToken?.decimals, props.srcAmount) });
   const srcAmountPerTrade = useFormatNumber({ value: useAmountUi(props.srcToken?.decimals, props.srcAmountPerTrade) });
   const minDestAmountPerTrade = useFormatNumber({
@@ -46,50 +46,50 @@ export const useBaseOrder = (props: Props) => {
       },
       display: {
         limitPrice: {
-          label: t.limitPrice,
+          label: t("limitPrice"),
           value: limitPrice || "",
         },
 
         deadline: {
-          tooltip: t.deadlineTooltip,
-          label: t.deadline,
+          tooltip: t("deadlineTooltip"),
+          label: t("deadline"),
           value: props.deadline || 0,
         },
         srcAmount: {
-          label: t.amountOut,
+          label: t("amountSent"),
           value: srcAmount || "",
           token: props.srcToken,
         },
         tradeSize: {
-          tooltip: t.tradeSizeTooltip,
-          label: t.individualTradeSize,
+          tooltip: t("tradeSizeTooltip"),
+          label: t("individualTradeSize"),
           value: srcAmountPerTrade || "",
           token: props.srcToken,
         },
         totalTrades: {
-          tooltip: t.totalTradesTooltip,
-          label: t.numberOfTrades,
+          tooltip: t("totalTradesTooltip"),
+          label: t("numberOfTrades"),
           value: props.totalTrades || 0,
         },
         minDestAmountPerTrade: {
-          tooltip: t.minDstAmountTooltip,
-          label: props.totalTrades && props.totalTrades > 1 ? t.minReceivedPerTrade : t.minReceived,
+          tooltip: t("minDstAmountTooltip"),
+          label: props.totalTrades && props.totalTrades > 1 ? t("minReceivedPerTrade") : t("minReceived"),
           value: minDestAmountPerTrade || "",
           token: props.dstToken,
         },
         tradeInterval: {
-          tooltip: t.tradeIntervalTootlip,
-          label: t.tradeInterval,
+          tooltip: t("tradeIntervalTootlip"),
+          label: t("tradeInterval"),
           value: props.tradeInterval || 0,
         },
         triggerPricePerTrade: {
           tooltip: "Trigger price",
-          label: props.totalTrades && props.totalTrades > 1 ? t.triggerPricePerChunk : t.triggerPrice,
+          label: props.totalTrades && props.totalTrades > 1 ? t("triggerPricePerChunk") : t("triggerPrice"),
           value: triggerPricePerTrade || "",
           token: props.dstToken,
         },
         recipient: {
-          label: t.recipient,
+          label: t("recipient"),
           value: props.maker || "",
         },
       },

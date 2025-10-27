@@ -8,6 +8,7 @@ import { AiOutlineCopy } from "@react-icons/all-files/ai/AiOutlineCopy";
 import { useDateFormat, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
 import { useCopyToClipboard } from "../hooks/use-copy";
+import { useTranslations } from "../hooks/use-translations";
 const Deadline = ({ deadline, label, tooltip }: { deadline?: number; label: string; tooltip: string }) => {
   const res = useDateFormat(deadline);
   return (
@@ -29,13 +30,12 @@ const TriggerPrice = ({ price, dstToken, label, tooltip }: { price?: string; dst
 };
 
 const LimitPrice = ({ price, dstToken, percentage, isMarketOrder }: { price?: string; dstToken?: Token; percentage?: number; isMarketOrder?: boolean }) => {
-  const t = useTwapContext()?.translations;
   const priceF = useFormatNumber({ value: price });
-
+  const t = useTranslations();
   if (isMarketOrder) return null;
 
   return (
-    <DetailRow title={t.limitPrice} tooltip={t.limitPriceTooltip}>
+    <DetailRow title={t("limitPrice") || ""} tooltip={t("limitPriceTooltip") || ""}>
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         {`${priceF ? priceF : "-"} ${dstToken?.symbol}`}
         {percentage && <small>{`(${percentage}%)`}</small>}
@@ -77,12 +77,13 @@ const TradesAmount = ({ trades, label, tooltip }: { trades?: number; label: stri
 };
 
 const Recipient = () => {
-  const { translations: t, account } = useTwapContext();
+  const t = useTranslations();
+  const { account } = useTwapContext();
   const explorerUrl = useNetwork()?.explorer;
   const makerAddress = makeElipsisAddress(account);
 
   return (
-    <DetailRow title={t.recipient}>
+    <DetailRow title={t("recipient") || ""}>
       {!explorerUrl ? (
         makerAddress
       ) : (
