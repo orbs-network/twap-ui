@@ -2853,10 +2853,10 @@
   resolved "https://registry.yarnpkg.com/@orbs-network/spot/-/spot-0.0.11.tgz#650b69ccdc8c3f06b30c492249c6045e8adc8321"
   integrity sha512-KwWZwO1p62Py15PeRAk6pNYaHZbG3ecDXYcrMXzW2mwYrN00uAsqUQ/BPaXJ9SfUXhyyhzFXWOQ1JmfqjBS4Vw==
 
-"@orbs-network/swap-ui@^0.0.44":
-  version "0.0.44"
-  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.44.tgz#3ac9127c0b6d16f6b4eebd6014b3567eabc56393"
-  integrity sha512-bQOleySJ+AsFWfxfj5PKxA/VJKGM7KeEjiDlIP2QMCXF2zHjESxMMoKz5XAFra9fopzJcggF29pSG+sn4xCFyw==
+"@orbs-network/swap-ui@^0.0.53":
+  version "0.0.53"
+  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.53.tgz#660ffc98a36fccbff29a93d1e209f305e08995c1"
+  integrity sha512-9mKZOECO71EUOua1A+1Of6aU+WeND4kDHCVvRjCR908OMbsbrjaX6p1Ncc9YvaaD/RpZeT90HqamZESK8OA27Q==
 
 "@orbs-network/twap@^2.7.25":
   version "2.7.25"

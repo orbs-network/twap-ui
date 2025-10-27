@@ -33,7 +33,7 @@ const getOrderType = (order: OrderV2) => {
 
 const getProgress = (order: OrderV2) => {
   const successChunks = order.metadata.chunks?.filter((chunk) => chunk.status === "success").length || 0;
-  const totalChunks = order.metadata.chunks?.length || 0;
+  const totalChunks = order.metadata.expectedChunks || 0;
   const progress = BN(successChunks).dividedBy(totalChunks).toNumber();
 
   if (progress >= 0.99) return 100;

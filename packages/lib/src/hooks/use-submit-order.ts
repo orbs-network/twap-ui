@@ -15,7 +15,7 @@ import { useNetwork } from "./helper-hooks";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 
 const useWrapToken = () => {
-  const { account, walletClient, overrides } = useTwapContext();
+  const { account, walletClient, overrides, callbacks } = useTwapContext();
   const wToken = useNetwork()?.wToken;
   const getTransactionReceipt = useGetTransactionReceipt();
   const srcAmount = useSrcAmount().amountWei;
@@ -50,7 +50,7 @@ const useWrapToken = () => {
     if (receipt.status === "reverted") {
       throw new Error("failed to wrap token");
     }
-
+    callbacks?.refetchBalances?.();
     analytics.onWrapSuccess(hash);
     return receipt;
   });

@@ -20,7 +20,7 @@ import {
   Partners,
   useTypedSrcAmount,
 } from "@orbs-network/twap-ui";
-import { Config, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, Configs, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
@@ -41,6 +41,19 @@ export const useSwitchChain = () => {
   const { data: walletClient } = useWalletClient();
 
   return useCallback((config: Config) => (walletClient as any)?.switchChain({ id: config.chainId }), [walletClient]);
+};
+
+const dexToPartner = (config: Config) => {
+  switch (config) {
+    case Configs.PancakeSwap:
+    case Configs.PancakeSwapArbitrum:
+    case Configs.PancakeSwapBase:
+      return Partners.PANCAKESWAP;
+
+    default:
+      return Partners.THENA;
+  }
+  return Partners.THENA;
 };
 
 const OrderHistoryModal = () => {
@@ -712,7 +725,7 @@ const PanelInputs = () => {
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
   const typedSrcAmount = useTypedSrcAmount();
-  const { module, slippage } = useDappContext();
+  const { module, slippage, config } = useDappContext();
 
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
@@ -728,12 +741,20 @@ export const Dapp = () => {
     };
   }, [marketPrice, marketPriceLoading, typedSrcAmount]);
 
+  const { data: srcBalance, refetch: refetchSrcBalance } = useTokenBalance(srcToken);
+  const { data: dstBalance, refetch: refetchDstBalance } = useTokenBalance(dstToken);
+
+  const refetchBalances = useCallback(() => {
+    refetchSrcBalance();
+    refetchDstBalance();
+  }, [refetchSrcBalance, refetchDstBalance]);
+
   return (
     <>
       <GlobalStyles isDarkMode={true} />
       <TWAP
         slippage={slippage}
-        partner={Partners.THENA}
+        partner={dexToPartner(config)}
         chainId={chainId}
         provider={client.data?.transport}
         srcToken={srcToken}
@@ -741,11 +762,17 @@ export const Dapp = () => {
         module={module}
         srcUsd1Token={useUSD(srcToken?.address)}
         dstUsd1Token={useUSD(dstToken?.address)}
-        srcBalance={useTokenBalance(srcToken).data?.wei}
-        dstBalance={useTokenBalance(dstToken).data?.wei}
+        srcBalance={srcBalance?.wei}
+        dstBalance={dstBalance?.wei}
         marketReferencePrice={marketReferencePrice}
         account={account}
         fees={0.25}
+        callbacks={{
+          refetchBalances,
+        }}
+        overrides={{
+          minChunkSizeUsd: 5,
+        }}
       >
         <div className="flex flex-col gap-4 justify-center items-center max-w-[450px] w-full">
           <PanelToggle />

@@ -3,7 +3,7 @@ import BN from "bignumber.js";
 import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { InputError, InputErrors } from "../types";
-import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
+import { useSrcAmount } from "./use-src-amount";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useLimitPrice } from "./use-limit-price";
 import { useTrades } from "./use-trades";
@@ -29,21 +29,18 @@ export const useMaxOrderSizeError = () => {
 };
 
 export const useBalanceError = () => {
-  const maxSrcInputAmount = useMaxSrcAmount();
   const { srcBalance, translations: t } = useTwapContext();
   const srcAmountWei = useSrcAmount().amountWei;
 
   return useMemo((): InputError | undefined => {
-    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
-
-    if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+    if (srcBalance && BN(srcAmountWei).gt(srcBalance)) {
       return {
         type: InputErrors.INSUFFICIENT_BALANCE,
         message: t.insufficientFunds,
         value: srcBalance || "",
       };
     }
-  }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
+  }, [srcBalance?.toString(), srcAmountWei, t]);
 };
 
 export function useInputErrors() {

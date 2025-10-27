@@ -132,14 +132,34 @@ const useHandlePersistedCancelledOrders = () => {
 };
 
 export const useOrdersQuery = () => {
-  const { account, config, chainId } = useTwapContext();
+  const { account, config, chainId, callbacks } = useTwapContext();
   const queryKey = useOrdersQueryKey();
+  const queryClient = useQueryClient();
   const handlePersistedCancelledOrders = useHandlePersistedCancelledOrders();
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
       const orders = await getAccountOrders({ signal, chainId: chainId!, config: config?.twapConfig, account: account! });
       handlePersistedCancelledOrders(orders);
+      let isProgressUpdated = false;
+      const prevOrders = queryClient.getQueryData(queryKey) as Order[];
+      const updatedOrders: Order[] = [];
+
+      if (prevOrders) {
+        prevOrders.forEach((prevOrder) => {
+          const currentOrder = orders.find((o) => o.id === prevOrder.id);
+          if (currentOrder && currentOrder.progress !== prevOrder.progress) {
+            isProgressUpdated = true;
+            updatedOrders.push(currentOrder);
+          }
+        });
+      }
+
+      if (isProgressUpdated) {
+        callbacks?.onOrdersProgressUpdate?.(updatedOrders);
+        callbacks?.refetchBalances?.();
+      }
+
       return orders.map((order) => {
         if (config?.twapConfig) {
           return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config.twapConfig) };

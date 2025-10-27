@@ -14,6 +14,9 @@ export interface Translations {
   marketPriceTooltip: string;
   limitPriceTooltip: string;
   version: string;
+  orderCreatedSuccessfully: string;
+  viewOnExplorer: string;
+  proceedInWallet: string;
   outAmountLoading: string;
   maxOrderSizeError: string;
   minReceivedPerChunk: string;
@@ -409,10 +412,10 @@ export type Overrides = {
   dateFormat?: (date: number) => string;
 };
 
-
-  export type Callbacks = {
-    onOrdersRefetch?: () => Promise<Order[]>;
-  };
+export type Callbacks = {
+  onOrdersProgressUpdate?: (orders: Order[]) => void;
+  refetchBalances?: () => void;
+};
 
 export interface TwapProps {
   children?: React.ReactNode;

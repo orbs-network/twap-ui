@@ -1,4 +1,4 @@
-import { Step, SwapFlow } from "@orbs-network/swap-ui";
+import { Step, SwapFlow, SwapStatus } from "@orbs-network/swap-ui";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useTwapContext } from "../../context/twap-context";
 import { isNativeAddress, Module, ORBS_TWAP_FAQ_URL } from "@orbs-network/twap-sdk";
@@ -60,6 +60,7 @@ const useStep = () => {
   const wrapExplorerUrl = useExplorerLink(wrapTxHash);
   const unwrapExplorerUrl = useExplorerLink(wrapTxHash);
   const approveExplorerUrl = useExplorerLink(approveTxHash);
+  const status = useTwapStore((s) => s.state.swapExecution.status);
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
   const wSymbol = network?.wToken.symbol;
@@ -69,19 +70,22 @@ const useStep = () => {
     if (step === Steps.WRAP) {
       return {
         title: t.wrapAction.replace("{symbol}", symbol),
-        explorerUrl: wrapExplorerUrl,
+        footerLink: wrapExplorerUrl,
+        footerText: wrapExplorerUrl ? t.viewOnExplorer : t.proceedInWallet,
       };
     }
     if (step === Steps.APPROVE) {
       return {
         title: t.approveAction?.replace("{symbol}", symbol),
-        explorerUrl: approveExplorerUrl,
+        footerLink: approveExplorerUrl,
+        footerText: approveExplorerUrl ? t.viewOnExplorer : t.proceedInWallet,
       };
     }
     return {
       title: swapTitle,
+      footerText: status === SwapStatus.LOADING ? t.proceedInWallet : undefined,
     };
-  }, [step, approveExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol]);
+  }, [step, approveExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol, status]);
 };
 
 const TxError = ({ error }: { error?: any }) => {
@@ -94,11 +98,12 @@ const TxError = ({ error }: { error?: any }) => {
 
 function Failed({ error }: { error?: any }) {
   const { ErrorView } = useSubmitOrderPanelContext();
+  const { translations: t } = useTwapContext();
   if (ErrorView) {
     return ErrorView;
   }
 
-  return <SwapFlow.Failed error={<TxError error={error} />} link={ORBS_TWAP_FAQ_URL} />;
+  return <SwapFlow.Failed error={<TxError error={error} />} footerLink={ORBS_TWAP_FAQ_URL} footerText={t.viewOnExplorer} />;
 }
 
 const Main = () => {
@@ -168,7 +173,7 @@ const Main = () => {
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const { status, stepIndex, totalSteps } = useTwapStore((s) => s.state.swapExecution);
-  const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link } = props;
+  const { Spinner, SuccessIcon, ErrorIcon } = props;
   const { TokenLogo } = props;
 
   const { srcToken, dstToken } = useTwapContext();
@@ -210,23 +215,21 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
           Loader: Spinner,
           SuccessIcon: SuccessIcon,
           FailedIcon: ErrorIcon,
-          Link: Link,
-          LoadingView,
         }}
       />
     </SubmitOrderContextProvider>
   );
 };
 
-const SuccessContent = ({ explorerUrl }: { explorerUrl?: string }) => {
+const SuccessContent = () => {
   const successTitle = useTitle();
-
+  const { translations: t } = useTwapContext();
   const { SuccessView } = useSubmitOrderPanelContext();
 
   if (SuccessView) {
     return SuccessView;
   }
-  return <SwapFlow.Success title={successTitle} explorerUrl={explorerUrl} />;
+  return <SwapFlow.Success title={successTitle} footerText={t.orderCreatedSuccessfully} />;
 };
 
 export { SubmitOrderPanel };

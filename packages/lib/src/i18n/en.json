@@ -117,5 +117,8 @@
   "id": "ID",
   "fees": "Fees ({{value}}%)",
   "version": "Version",
-  "maxOrderSizeError": "Max. trade size is {maxOrderSize} USD"
+  "maxOrderSizeError": "Max. trade size is {maxOrderSize} USD",
+  "viewOnExplorer": "View on explorer",
+  "proceedInWallet": "Proceed in wallet",
+  "orderCreatedSuccessfully": "Order created successfully"
 }

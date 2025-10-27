@@ -313,7 +313,7 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
   return {
     balance,
     usd: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
-    value,
+    value: value || "",
     valueWei: useAmountBN(token?.decimals, value),
     onChange,
     isLoading: isSrcToken ? false : marketPriceLoading,

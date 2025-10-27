@@ -4,6 +4,7 @@ import { fillDelayText, makeElipsisAddress } from "../utils";
 import { Token, TooltipProps } from "../types";
 import { useFormatNumber } from "../hooks/useFormatNumber";
 import { useTwapContext } from "../context/twap-context";
+import { AiOutlineCopy } from "@react-icons/all-files/ai/AiOutlineCopy";
 import { useDateFormat, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
 import { useCopyToClipboard } from "../hooks/use-copy";
@@ -140,7 +141,12 @@ const OrderID = ({ id }: { id: string }) => {
   } else {
     return (
       <DetailRow title="ID" onClick={() => copy(id)} style={{ cursor: "pointer" }}>
-        <Tooltip tooltipText={id}>{makeElipsisAddress(id)}</Tooltip>
+        <Tooltip tooltipText={id}>
+          <div className="twap-order-details__detail-row-value-id">
+            <p>{makeElipsisAddress(id)}</p>
+            <AiOutlineCopy onClick={() => copy(id)} />
+          </div>
+        </Tooltip>
       </DetailRow>
     );
   }
