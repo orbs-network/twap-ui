@@ -133,7 +133,7 @@ const useHandlePersistedCancelledOrders = () => {
 };
 
 export const useOrdersQuery = () => {
-  const { account, config, chainId, callbacks } = useTwapContext();
+  const { account, config, chainId, callbacks, refetchBalances } = useTwapContext();
   const queryKey = useOrdersQueryKey();
   const queryClient = useQueryClient();
   const handlePersistedCancelledOrders = useHandlePersistedCancelledOrders();
@@ -158,7 +158,7 @@ export const useOrdersQuery = () => {
 
       if (isProgressUpdated) {
         callbacks?.onOrdersProgressUpdate?.(updatedOrders);
-        callbacks?.refetchBalances?.();
+        refetchBalances?.();
       }
 
       return orders.map((order) => {

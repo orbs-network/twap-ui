@@ -225,25 +225,6 @@ export type onCreateOrderRequest = {
   dstAmount: string;
 };
 
-interface CreateOrderSuccessCallbackArgs extends onCreateOrderRequest {
-  receipt?: TransactionReceipt;
-}
-
-export type SwapCallbacks = {
-  createOrder?: {
-    onRequest?: (args: onCreateOrderRequest) => void;
-    onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
-  };
-  approve?: {
-    onRequest?: (token: Token, amount: string) => void;
-    onSuccess?: (receipt: TransactionReceipt, token: Token, amount: string) => void;
-  };
-  wrap?: {
-    onRequest?: (amount: string) => void;
-    onSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
-  };
-};
-
 export interface Provider {
   request(...args: any): Promise<any>;
   [key: string]: any; // Allow extra properties
@@ -291,33 +272,7 @@ export type InitialState = {
 export type UseToken = (value?: string) => Token | undefined;
 
 export type SubmitOrderPanelProps = {
-  SuccessView?: ReactNode;
-  ErrorView?: ReactNode;
-  MainView?: ReactNode;
-  LoadingView?: ReactNode;
-  Spinner?: ReactNode;
-  SuccessIcon?: ReactNode;
-  ErrorIcon?: ReactNode;
-  Link?: FC<LinkProps>;
-  USD?: FC<USDProps>;
   reviewDetails?: ReactNode;
-  Tooltip: FC<TooltipProps>;
-  TokenLogo?: FC<TokenLogoProps>;
-};
-
-export type OrderHistoryCallbacks = {
-  onCancelRequest?: (orders: Order[]) => void;
-  onCancelSuccess?: (orders: Order[], receipt: TransactionReceipt) => void;
-  onCancelFailed?: (error: string) => void;
-};
-
-export type OrderHistoryProps = {
-  listLoader?: ReactNode;
-  TokenLogo?: FC<TokenLogoProps>;
-  Tooltip: FC<TooltipProps>;
-  Button: FC<ButtonProps>;
-  useToken: UseToken;
-  callbacks?: OrderHistoryCallbacks;
 };
 
 export type OrderDetails = {
@@ -378,8 +333,27 @@ export type Overrides = {
 };
 
 export type Callbacks = {
+  onCancelOrderRequest?: (orders: Order[]) => void;
+  onCancelOrderSuccess?: (orders: Order[], receipt: TransactionReceipt) => void;
+  onCancelOrderFailed?: (error: string) => void;
   onOrdersProgressUpdate?: (orders: Order[]) => void;
-  refetchBalances?: () => void;
+  onCreateOrderRequest?: (args: onCreateOrderRequest) => void;
+  onCreateOrderSuccess?: (order: Order) => void;
+  onApproveRequest?: (token: Token, amount: string) => void;
+  onApproveSuccess?: (receipt: TransactionReceipt, token: Token, amount: string) => void;
+  onWrapRequest?: (amount: string) => void;
+  onWrapSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
+};
+
+export type SubmitOrderSuccessViewProps = {
+  children: ReactNode;
+  newOrderId?: string;
+};
+
+export type SubmitOrderErrorViewProps = {
+  wrapTxHash?: string;
+  children: ReactNode;
+  error?: string;
 };
 
 export interface TwapProps {
@@ -401,8 +375,23 @@ export interface TwapProps {
   overrides?: Overrides;
   fees?: number;
   callbacks?: Callbacks;
+  refetchBalances?: () => void;
   getTranslation?: (key: string, args?: Record<string, string>) => string | undefined;
   translations?: Partial<Translations> | undefined;
+  useToken?: UseToken;
+  components: {
+    Button: FC<ButtonProps>;
+    Tooltip: FC<TooltipProps>;
+    TokenLogo?: FC<TokenLogoProps>;
+    Spinner?: ReactNode;
+    SuccessIcon?: ReactNode;
+    ErrorIcon?: ReactNode;
+    Link?: FC<LinkProps>;
+    USD?: FC<USDProps>;
+    SubmitOrderSuccessView?: FC<SubmitOrderSuccessViewProps>;
+    SubmitOrderErrorView?: FC<SubmitOrderErrorViewProps>;
+    SubmitOrderMainView?: FC<{ children: ReactNode }>;
+  };
 }
 
 export interface TwapContextType extends TwapProps {
@@ -493,6 +482,8 @@ export interface State {
   swapExecution: SwapExecution;
   acceptedMarketPrice?: string;
   acceptedSrcAmount?: string;
+
+  newOrderId?: string;
 }
 
 export { SwapStatus, Partners };

@@ -19,5 +19,6 @@ export const submitOrder = async (order: RePermitOrder, signature: Signature): P
   if (!data.signedOrder) {
     return undefined;
   }
+
   return buildV2Order(data.signedOrder);
 };

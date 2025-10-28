@@ -1,7 +1,7 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
 import BN from "bignumber.js";
 import { analytics, isNativeAddress, IWETH_ABI, submitOrder } from "@orbs-network/twap-sdk";
-import { SwapCallbacks, Steps, Token } from "../types";
+import { Steps, Token } from "../types";
 import { ensureWrappedToken, isTxRejected } from "../utils";
 import { useSrcAmount } from "./use-src-amount";
 import { useMutation } from "@tanstack/react-query";
@@ -15,7 +15,7 @@ import { useNetwork } from "./helper-hooks";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 
 const useWrapToken = () => {
-  const { account, walletClient, overrides, callbacks } = useTwapContext();
+  const { account, walletClient, overrides } = useTwapContext();
   const wToken = useNetwork()?.wToken;
   const getTransactionReceipt = useGetTransactionReceipt();
   const srcAmount = useSrcAmount().amountWei;
@@ -50,7 +50,6 @@ const useWrapToken = () => {
     if (receipt.status === "reverted") {
       throw new Error("failed to wrap token");
     }
-    callbacks?.refetchBalances?.();
     analytics.onWrapSuccess(hash);
     return receipt;
   });
@@ -188,7 +187,7 @@ const useApproveToken = () => {
 };
 
 export const useSubmitOrderMutation = () => {
-  const { srcToken, dstToken, chainId } = useTwapContext();
+  const { srcToken, dstToken, chainId, callbacks, refetchBalances } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const approveCallback = useApproveToken().mutateAsync;
   const wrapCallback = useWrapToken().mutateAsync;
@@ -200,8 +199,10 @@ export const useSubmitOrderMutation = () => {
   const addOrder = useOptimisticAddOrder();
   const { refetch: refetchOrders } = useOrdersQuery();
 
-  return useMutation(async (callbacks?: SwapCallbacks) => {
+  return useMutation(async () => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
+    let isWrapSuccess = false;
+
     try {
       if (!srcToken || !dstToken || !chainId) {
         throw new Error("missing required parameters");
@@ -211,7 +212,6 @@ export const useSubmitOrderMutation = () => {
 
       updateState({ fetchingAllowance: true });
       const { approvalRequired } = await hasAllowanceCallback(srcWrappedToken.address);
-
       let stepIndex = 0;
       let totalSteps = 1;
       if (wrapRequired) totalSteps++;
@@ -221,20 +221,21 @@ export const useSubmitOrderMutation = () => {
 
       if (wrapRequired) {
         updateSwapExecution({ step: Steps.WRAP });
-        callbacks?.wrap?.onRequest?.(srcAmountUI);
+        callbacks?.onWrapRequest?.(srcAmountUI);
         const wrapReceipt = await wrapCallback({ onHash: (hash) => updateSwapExecution({ wrapTxHash: hash }) });
         stepIndex++;
         updateSwapExecution({ stepIndex });
-        callbacks?.wrap?.onSuccess?.(wrapReceipt, srcAmountUI);
+        callbacks?.onWrapSuccess?.(wrapReceipt, srcAmountUI);
+        isWrapSuccess = true;
       }
 
       if (approvalRequired) {
-        callbacks?.approve?.onRequest?.(srcWrappedToken, srcAmountUI);
+        callbacks?.onApproveRequest?.(srcWrappedToken, srcAmountUI);
         updateSwapExecution({ step: Steps.APPROVE });
 
         const approveReceipt = await approveCallback({ token: srcWrappedToken, onHash: (hash) => updateSwapExecution({ approveTxHash: hash }) });
         await ensureUserApprovedToken(srcWrappedToken);
-        callbacks?.approve?.onSuccess?.(approveReceipt, srcWrappedToken, srcAmountUI);
+        callbacks?.onApproveSuccess?.(approveReceipt, srcWrappedToken, srcAmountUI);
         stepIndex++;
         updateSwapExecution({ stepIndex });
       }
@@ -247,6 +248,7 @@ export const useSubmitOrderMutation = () => {
         await refetchOrders();
       }
       updateSwapExecution({ status: SwapStatus.SUCCESS });
+      updateState({ newOrderId: order?.id });
 
       return order;
     } catch (error) {
@@ -254,6 +256,10 @@ export const useSubmitOrderMutation = () => {
         updateSwapExecution({ step: undefined, status: undefined, stepIndex: undefined });
       } else {
         updateSwapExecution({ status: SwapStatus.FAILED, error: (error as any).message });
+      }
+    } finally {
+      if (isWrapSuccess) {
+        refetchBalances?.();
       }
     }
   });

@@ -1,6 +1,6 @@
 import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD, useUnwrapToken } from "../hooks";
 import { NumberInput, Popup, PanelToggle } from "../Components";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography } from "antd";
 import {
   TWAP,
@@ -19,7 +19,7 @@ import {
   TooltipProps,
   Partners,
   useTypedSrcAmount,
-  Translations,
+  SubmitOrderSuccessViewProps,
 } from "@orbs-network/twap-ui";
 import { Config, Configs, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
@@ -106,7 +106,7 @@ const OrderHistoryModal = () => {
             </div>
           </div>
         )}
-        <Components.Orders Tooltip={TwapTooltip} Button={TwapButton} useToken={useToken} />
+        <Components.Orders />
       </Popup>
       <button onClick={() => setIsOpen(true)} className="twap-orders__button">
         {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Open orders</Typography>}
@@ -132,8 +132,16 @@ const ErrorView = () => {
   );
 };
 
+const SubmitOrderErrorView = ({ wrapTxHash, children }: { wrapTxHash?: string; children: ReactNode }) => {
+  if (wrapTxHash) {
+    return <ErrorView />;
+  }
+
+  return children;
+};
+
 const SubmitOrderPanelModal = () => {
-  const { onCloseModal, onOpenModal, onSubmitOrder, swapLoading, wrapTxHash, openSubmitModalButton } = useTwap().submitSwapPanel;
+  const { onCloseModal, onOpenModal, onSubmitOrder, swapLoading, openSubmitModalButton } = useTwap().submitSwapPanel;
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -151,8 +159,6 @@ const SubmitOrderPanelModal = () => {
     <>
       <Popup isOpen={isOpen} onClose={onClose} title="Submit Order">
         <Components.SubmitOrderPanel
-          Tooltip={TwapTooltip}
-          ErrorView={wrapTxHash ? <ErrorView /> : null}
           reviewDetails={
             <>
               <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
@@ -698,6 +704,10 @@ const PoweredByOrbs = () => {
   );
 };
 
+const SubmitOrderSuccessView = ({ children }: SubmitOrderSuccessViewProps) => {
+  return <div className="flex flex-col gap-2 w-full">{children}</div>;
+};
+
 const DEFAULT_LIMIT_DURATION = { unit: TimeUnit.Days, value: 7 };
 const DEFAULT_TRIGGER_PRICE_DURATION = { unit: TimeUnit.Days, value: 30 };
 const PanelInputs = () => {
@@ -768,9 +778,14 @@ export const Dapp = () => {
         marketReferencePrice={marketReferencePrice}
         account={account}
         fees={0.25}
-        callbacks={{
-          refetchBalances,
+        useToken={useToken}
+        components={{
+          Tooltip: TwapTooltip,
+          Button: TwapButton,
+          SubmitOrderErrorView,
+          SubmitOrderSuccessView,
         }}
+        refetchBalances={refetchBalances}
         overrides={{
           minChunkSizeUsd: 5,
         }}

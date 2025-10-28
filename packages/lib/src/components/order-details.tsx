@@ -1,7 +1,7 @@
-import React, { CSSProperties, createContext, ReactNode, useMemo, FC, useContext } from "react";
+import React, { CSSProperties, ReactNode, useMemo } from "react";
 
 import { fillDelayText, makeElipsisAddress } from "../utils";
-import { Token, TooltipProps } from "../types";
+import { Token } from "../types";
 import { useFormatNumber } from "../hooks/useFormatNumber";
 import { useTwapContext } from "../context/twap-context";
 import { AiOutlineCopy } from "@react-icons/all-files/ai/AiOutlineCopy";
@@ -122,7 +122,8 @@ const DetailRow = ({
   onClick?: () => void;
   style?: CSSProperties;
 }) => {
-  const { Tooltip } = useContext(OrderDetailsContext);
+  const { components } = useTwapContext();
+  const Tooltip = components.Tooltip;
   return (
     <div className={`${className} twap-order-details__detail-row`} onClick={onClick} style={style}>
       <div className="twap-order-details__detail-row-label">
@@ -135,7 +136,8 @@ const DetailRow = ({
 };
 
 const OrderID = ({ id }: { id: string }) => {
-  const { Tooltip } = useContext(OrderDetailsContext);
+  const { components } = useTwapContext();
+  const Tooltip = components?.Tooltip;
   const copy = useCopyToClipboard();
   if (typeof id === "number") {
     return <DetailRow title="ID">{id}</DetailRow>;
@@ -161,14 +163,8 @@ export function OrderDetails({ children, className = "" }: { children?: ReactNod
   return <div className={`${className} twap-order-details`}>{children}</div>;
 }
 
-const OrderDetailsContext = createContext(
-  {} as {
-    Tooltip: FC<TooltipProps>;
-  },
-);
-
-const OrderDetailsContainer = ({ children, Tooltip }: { children: ReactNode; Tooltip: FC<TooltipProps> }) => {
-  return <OrderDetailsContext.Provider value={{ Tooltip }}>{children}</OrderDetailsContext.Provider>;
+const OrderDetailsContainer = ({ children }: { children: ReactNode }) => {
+  return children;
 };
 
 OrderDetails.Deadline = Deadline;

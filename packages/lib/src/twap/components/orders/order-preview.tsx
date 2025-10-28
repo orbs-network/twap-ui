@@ -7,11 +7,11 @@ import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../../components/order-details";
 import { useTwapStore } from "../../../useTwapStore";
-import { useOrderHistoryContext } from "../../../context/order-history-context";
 import { useCancelOrderMutation } from "../../../hooks/use-cancel-order";
 import { useDateFormat } from "../../../hooks/helper-hooks";
 import { useHistoryOrder } from "../../../hooks/use-history-order";
 import { useTranslations } from "../../../hooks/use-translations";
+import { useTwapContext } from "../../../context/twap-context";
 
 type Order = NonNullable<ReturnType<typeof useHistoryOrder>>;
 
@@ -31,7 +31,8 @@ export const OrderPreview = () => {
 
   const t = useTranslations();
   const [expanded, setExpanded] = useState<string | false>("panel1");
-  const { TokenLogo, Tooltip } = useOrderHistoryContext();
+  const components = useTwapContext();
+  const { TokenLogo } = components.components;
 
   useEffect(() => {
     setExpanded("panel1");
@@ -55,7 +56,7 @@ export const OrderPreview = () => {
           outToken={order.data.dstToken}
         />
 
-        <OrderDetails.Container Tooltip={Tooltip}>
+        <OrderDetails.Container>
           <div className="twap-orders__selected-order-bottom">
             <div className="twap-orders__selected-order-accordions">
               <AccordionContainer title={t("excecutionSummary")} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
@@ -196,13 +197,13 @@ const AmountOutFilled = () => {
 
 export const CancelOrderButton = () => {
   const { order } = useOrderContext();
-  const { Button } = useOrderHistoryContext();
   const { mutateAsync: cancelOrder, isLoading } = useCancelOrderMutation();
-  const { callbacks } = useOrderHistoryContext();
+  const { components } = useTwapContext();
+  const Button = components.Button;
 
   const onCancelOrder = useCallback(async () => {
-    return cancelOrder({ orders: [order.original], callbacks });
-  }, [cancelOrder, order, callbacks]);
+    return cancelOrder({ orders: [order.original] });
+  }, [cancelOrder, order]);
 
   if (!order || order.original.status !== OrderStatus.Open) return null;
 

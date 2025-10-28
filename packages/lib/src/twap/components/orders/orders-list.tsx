@@ -4,16 +4,15 @@ import * as React from "react";
 import { Virtuoso } from "react-virtuoso";
 import TokenLogo from "../../../components/TokenLogo";
 import { FC } from "react";
-import { TokenLogoProps, UseToken } from "../../../types";
+import { TokenLogoProps } from "../../../types";
 import { useTwapStore } from "../../../useTwapStore";
-import { useOrderHistoryContext } from "../../../context/order-history-context";
 import { useOrderName, useOrders, useOrderToDisplay, useSelectedOrderIdsToCancel } from "../../../hooks/order-hooks";
 import { useDateFormat } from "../../../hooks/helper-hooks";
 import { useTranslations } from "../../../hooks/use-translations";
+import { useTwapContext } from "../../../context/twap-context";
 
 const ListLoader = () => {
-  const { listLoader } = useOrderHistoryContext();
-  return <div className="twap-orders__loader">{listLoader || <p>Loading...</p>}</div>;
+  return <div className="twap-orders__loader">{<p>Loading...</p>}</div>;
 };
 
 export const OrdersList = () => {
@@ -51,7 +50,6 @@ export const OrdersList = () => {
 };
 
 const ListOrder = ({ order, selectOrder, selected, cancelOrdersMode }: { order: Order; selectOrder: (id: string) => void; selected: boolean; cancelOrdersMode: boolean }) => {
-  const { useToken } = useOrderHistoryContext();
   const updateState = useTwapStore((s) => s.updateState);
 
   const onShowOrder = React.useCallback(() => {
@@ -77,9 +75,9 @@ const ListOrder = ({ order, selectOrder, selected, cancelOrdersMode }: { order: 
         <ListItemHeader order={order} />
         <LinearProgressWithLabel value={order.progress || 0} />
         <div className="twap-orders__list-item-tokens">
-          <TokenDisplay address={order.srcTokenAddress} useToken={useToken} />
+          <TokenDisplay address={order.srcTokenAddress} />
           <HiArrowRight className="twap-orders__list-item-tokens-arrow" />
-          <TokenDisplay address={order.dstTokenAddress} useToken={useToken} />
+          <TokenDisplay address={order.dstTokenAddress} />
         </div>
       </div>
     </div>
@@ -118,8 +116,9 @@ const ListItemHeader = ({ order }: { order: Order }) => {
   );
 };
 
-const TokenDisplay = (props: { address?: string; amount?: string; TokenLogo?: FC<TokenLogoProps>; useToken: UseToken }) => {
-  const token = props.useToken?.(props.address);
+const TokenDisplay = (props: { address?: string; amount?: string; TokenLogo?: FC<TokenLogoProps> }) => {
+  const { useToken } = useTwapContext();
+  const token = useToken?.(props.address);
 
   return (
     <div className="twap-orders__list-item-token">

@@ -5,11 +5,10 @@ import { useTwapContext } from "../context/twap-context";
 import { isTxRejected } from "../utils";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { useTwapStore } from "../useTwapStore";
-import { OrderHistoryCallbacks } from "../types";
 import { useOptimisticCancelOrder } from "./order-hooks";
 
 export const useCancelOrderMutation = () => {
-  const { account, walletClient, publicClient, config } = useTwapContext();
+  const { account, walletClient, publicClient, config, callbacks } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
   const optimisticCancelOrder = useOptimisticCancelOrder();
@@ -33,7 +32,7 @@ export const useCancelOrderMutation = () => {
     return receipts.filter((receipt) => receipt !== undefined);
   };
 
-  const cancelOrdersV2 = async (orders: Order[], callbacks?: OrderHistoryCallbacks) => {
+  const cancelOrdersV2 = async (orders: Order[]) => {
     const hash = await walletClient!.writeContract({
       account: account as `0x${string}`,
       address: config!.repermit,
@@ -48,18 +47,18 @@ export const useCancelOrderMutation = () => {
     if (receipt.status === "reverted") throw new Error("failed to cancel order");
 
     analytics.onCancelOrderSuccess(hash);
-    callbacks?.onCancelSuccess?.(orders, receipt);
+    callbacks?.onCancelOrderSuccess?.(orders, receipt);
 
     return receipt;
   };
 
-  return useMutation(async ({ orders, callbacks }: { orders: Order[]; callbacks?: OrderHistoryCallbacks }) => {
+  return useMutation(async ({ orders }: { orders: Order[] }) => {
     if (!account || !walletClient || !publicClient || !config) {
       throw new Error("missing required parameters");
     }
 
     try {
-      callbacks?.onCancelRequest?.(orders);
+      callbacks?.onCancelOrderRequest?.(orders);
 
       updateState({
         cancelOrderStatus: SwapStatus.LOADING,
@@ -72,14 +71,14 @@ export const useCancelOrderMutation = () => {
 
       const [v1Results, v2Result] = await Promise.all([
         ordersV1.length ? cancelOrdersV1(ordersV1) : Promise.resolve([]),
-        ordersV2.length ? cancelOrdersV2(ordersV2, callbacks) : Promise.resolve(undefined),
+        ordersV2.length ? cancelOrdersV2(ordersV2) : Promise.resolve(undefined),
       ]);
       updateState({ cancelOrderStatus: SwapStatus.SUCCESS, orderIdsToCancel: [] });
       optimisticCancelOrder(orders.map((o) => o.id));
       return [...v1Results, v2Result];
     } catch (error) {
       console.error("cancel order error", error);
-      callbacks?.onCancelFailed?.((error as Error).message);
+      callbacks?.onCancelOrderFailed?.((error as Error).message);
 
       if (isTxRejected(error)) {
         updateState({ cancelOrderStatus: undefined });

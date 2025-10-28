@@ -6,7 +6,7 @@ import { useDuration } from "./use-duration";
 import BN from "bignumber.js";
 import { useTwapStore } from "../useTwapStore";
 import { useLimitPrice, useLimitPriceToggle } from "./use-limit-price";
-import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapExecution, SwapStatus, useFormatNumber } from "..";
+import { formatDecimals, InputError, InputErrors, SwapExecution, SwapStatus, useFormatNumber } from "..";
 import { useDefaultLimitPricePercent } from "./use-default-values";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTriggerPrice } from "./use-trigger-price";
@@ -238,7 +238,7 @@ export const useOrderHistoryPanel = () => {
   const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
   const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [updateState]);
   const onClosePreview = useCallback(() => updateState({ selectedOrderID: undefined }), [updateState]);
-  const onCancelOrders = useCallback((orders: Order[], callbacks?: OrderHistoryCallbacks) => cancelOrder({ orders, callbacks }), [cancelOrder]);
+  const onCancelOrders = useCallback((orders: Order[]) => cancelOrder({ orders }), [cancelOrder]);
   const onSelectStatus = useCallback((status?: OrderStatus) => updateState({ orderHistoryStatusFilter: status }), []);
 
   const statuses = useMemo(() => {
@@ -372,11 +372,11 @@ export const useSubmitSwapPanel = () => {
     }
   }, [updateState]);
 
-  const submitSwapMutation = useMutation(async (callbacks?: SwapCallbacks) => {
+  const submitSwapMutation = useMutation(async () => {
     updateState({ acceptedSrcAmount: srcAmountUI, acceptedMarketPrice: marketPrice });
 
     // callbacks?.createOrder?.onRequest?.(data);
-    const result = await submitOrderMutation.mutateAsync(callbacks);
+    const result = await submitOrderMutation.mutateAsync();
     // callbacks?.createOrder?.onSuccess?.({
     //   ...data,
     //   receipt: " " ,
@@ -384,7 +384,7 @@ export const useSubmitSwapPanel = () => {
     return result;
   });
 
-  const onSubmitOrder = useCallback((callbacks?: SwapCallbacks) => submitSwapMutation.mutateAsync(callbacks), [submitSwapMutation]);
+  const onSubmitOrder = useCallback(() => submitSwapMutation.mutateAsync(), [submitSwapMutation]);
   const order = useCurrentOrderDetails();
 
   return useMemo(() => {

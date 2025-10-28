@@ -5,13 +5,11 @@ import { useAmountUi } from "./helper-hooks";
 import { useOrders, useOrderName, useOrderLimitPrice, useOrderAvgExcecutionPrice } from "./order-hooks";
 import { useBaseOrder } from "./use-base-order";
 import { useFormatNumber } from "./useFormatNumber";
-import { useOrderHistoryContext } from "../context/order-history-context";
 import { useTranslations } from "./use-translations";
 
 export const useHistoryOrder = (orderId?: string) => {
   const { orders } = useOrders();
-  const { useToken } = useOrderHistoryContext();
-  const { config } = useTwapContext();
+  const { config, useToken } = useTwapContext();
   const t = useTranslations();
   const order = useMemo(() => orders?.all.find((order) => order.id === orderId), [orders, orderId]) || ({} as Order);
   const title = useOrderName(order);

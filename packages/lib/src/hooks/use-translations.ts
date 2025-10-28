@@ -16,8 +16,13 @@ export const useTranslations = () => {
   const t = useCallback(
     (key: keyof Translations, args?: Record<string, string>): string => {
       const dynamicTranslation = context.getTranslation?.(key, args);
+
+      if (dynamicTranslation && dynamicTranslation !== key) {
+        return dynamicTranslation;
+      }
+
       const staticTranslation = context.translations?.[key] || defaultTranslations[key];
-      return dynamicTranslation || removeBraced(staticTranslation.replace(/{(\w+)}/g, (match, p1) => args?.[p1] || match));
+      return removeBraced(staticTranslation.replace(/{(\w+)}/g, (match, p1) => args?.[p1] || match));
     },
     [context.getTranslation, context.translations],
   );
