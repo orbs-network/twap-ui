@@ -89,7 +89,6 @@ const OrderInfo = () => {
   return (
     <OrderDetails>
       <OrderID />
-      <OrderVersion />
       <LimitPrice />
       <CreatedAt />
       <Expiry />
@@ -232,17 +231,12 @@ const AmountIn = () => {
   const amount = useFormatNumber({ value: order.display.srcAmount.value, decimalScale: 3 });
 
   return (
-    <OrderDetails.DetailRow title={t("amountSent") || ""}>
+    <OrderDetails.DetailRow title={t("amountOut") || ""}>
       <p>
         {amount || 0} {order.data.srcToken?.symbol}
       </p>
     </OrderDetails.DetailRow>
   );
-};
-
-const OrderVersion = () => {
-  const { order } = useOrderContext();
-  return <OrderDetails.OrderVersion version={order.version.value} />;
 };
 
 const AmountInFilled = () => {

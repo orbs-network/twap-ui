@@ -1,11 +1,10 @@
-import { amountUi, Module, Order, OrderStatus, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountUi, Module, ORBS_TWAP_FAQ_URL, Order, OrderStatus, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context/twap-context";
 import { useFillDelay } from "./use-fill-delay";
 import { useDuration } from "./use-duration";
 import BN from "bignumber.js";
 import { useTwapStore } from "../useTwapStore";
-import { ORBS_WEBSITE_URL } from "../consts";
 import { useLimitPrice, useLimitPriceToggle } from "./use-limit-price";
 import { formatDecimals, InputError, InputErrors, OrderHistoryCallbacks, SwapCallbacks, SwapExecution, SwapStatus, useFormatNumber } from "..";
 import { useDefaultLimitPricePercent } from "./use-default-values";
@@ -154,7 +153,7 @@ export const useLimitPricePanel = () => {
 
     return {
       text: t("triggerMarketPriceDisclaimer"),
-      url: ORBS_WEBSITE_URL,
+      url: ORBS_TWAP_FAQ_URL,
     };
   }, [triggerPricePercent, t, module]);
 
@@ -350,7 +349,7 @@ export const useSubmitSwapPanel = () => {
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const minChunkSizeUsd = useMinChunkSizeUsd();
-  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
+  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd || BN(marketPrice || "0").isZero();
   const buttonLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
   const inputsError = useInputErrors();
 

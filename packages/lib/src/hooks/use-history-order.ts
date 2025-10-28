@@ -52,7 +52,7 @@ export const useHistoryOrder = (orderId?: string) => {
         value: order?.id,
       },
       amountInFilled: {
-        label: t("amountSent"),
+        label: t("amountOut"),
         value: srcFilledAmount,
         token: srcToken,
       },

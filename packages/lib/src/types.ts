@@ -77,7 +77,7 @@ export interface Translations {
   createOrderAction: string;
   amountReceived: string;
   createdAt: string;
-  amountSent: string;
+  amountOut: string;
   status: string;
   progress: string;
   tradeIntervalTitle: string;

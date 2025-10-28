@@ -56,7 +56,7 @@ export const useBaseOrder = (props: Props) => {
           value: props.deadline || 0,
         },
         srcAmount: {
-          label: t("amountSent"),
+          label: t("amountOut"),
           value: srcAmount || "",
           token: props.srcToken,
         },

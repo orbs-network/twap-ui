@@ -61,7 +61,7 @@
   "createOrderAction": "Create {name} order",
   "amountReceived": "Amount received",
   "createdAt": "Created at",
-  "amountSent": "Amount sent",
+  "amountOut": "Amount out",
   "status": "Status",
   "progress": "Progress",
   "minutes": "minutes",
