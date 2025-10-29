@@ -107,10 +107,10 @@ const useSignAndSend = () => {
 const useEnsureUserApprovedToken = () => {
   const { mutateAsync: hasAllowanceCallback } = useHasAllowanceCallback();
 
-  return useMutation(async (token: Token) => {
+  return useMutation(async ({ token, srcAmount }: { token: Token; srcAmount: string }) => {
     let userApprovedSuccessfully = false;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { approvalRequired } = await hasAllowanceCallback(token.address);
+      const { approvalRequired } = await hasAllowanceCallback({ tokenAddress: token.address, srcAmount });
 
       if (!approvalRequired) {
         userApprovedSuccessfully = true;
@@ -131,7 +131,7 @@ const useHasAllowanceCallback = () => {
   const { account, publicClient, chainId, config } = useTwapContext();
 
   return useMutation({
-    mutationFn: async (tokenAddress: string) => {
+    mutationFn: async ({ tokenAddress, srcAmount }: { tokenAddress: string; srcAmount: string }) => {
       if (!publicClient || !chainId || !account || !config) throw new Error("missing required parameters");
       const allowance = await publicClient
         .readContract({
@@ -141,8 +141,9 @@ const useHasAllowanceCallback = () => {
           args: [account as `0x${string}`, config.repermit],
         })
         .then((res) => res.toString());
+      const approvalRequired = BN(allowance || "0").lt(BN(srcAmount).toString());
 
-      return { allowance, approvalRequired: !BN(allowance || "0").gte(maxUint256.toString()) };
+      return { allowance, approvalRequired };
     },
   });
 };
@@ -195,7 +196,7 @@ export const useSubmitOrderMutation = () => {
   const { mutateAsync: ensureUserApprovedToken } = useEnsureUserApprovedToken();
   const { mutateAsync: hasAllowanceCallback } = useHasAllowanceCallback();
   const updateSwapExecution = useTwapStore((s) => s.updateSwapExecution);
-  const { amountUI: srcAmountUI = "" } = useSrcAmount();
+  const { amountUI: srcAmountUI = "", amountWei: srcAmountWei } = useSrcAmount();
   const addOrder = useOptimisticAddOrder();
   const { refetch: refetchOrders } = useOrdersQuery();
 
@@ -211,7 +212,7 @@ export const useSubmitOrderMutation = () => {
       // analytics.onCreateOrderRequest(params, account)
 
       updateState({ fetchingAllowance: true });
-      const { approvalRequired } = await hasAllowanceCallback(srcWrappedToken.address);
+      const { approvalRequired } = await hasAllowanceCallback({ tokenAddress: srcWrappedToken.address, srcAmount: srcAmountWei });
       let stepIndex = 0;
       let totalSteps = 1;
       if (wrapRequired) totalSteps++;
@@ -234,7 +235,7 @@ export const useSubmitOrderMutation = () => {
         updateSwapExecution({ step: Steps.APPROVE });
 
         const approveReceipt = await approveCallback({ token: srcWrappedToken, onHash: (hash) => updateSwapExecution({ approveTxHash: hash }) });
-        await ensureUserApprovedToken(srcWrappedToken);
+        await ensureUserApprovedToken({ token: srcWrappedToken, srcAmount: srcAmountWei });
         callbacks?.onApproveSuccess?.(approveReceipt, srcWrappedToken, srcAmountUI);
         stepIndex++;
         updateSwapExecution({ stepIndex });

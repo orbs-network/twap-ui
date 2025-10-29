@@ -50,7 +50,7 @@ export const getDuration = (module: Module, chunks: number, fillDelay: TimeDurat
   }
 
   if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
-    return { unit: TimeUnit.Days, value: 30 } as TimeDuration;
+    return { unit: TimeUnit.Days, value: 1 } as TimeDuration;
   }
 
   return { unit, value: Number(BN(minDuration / unit).toFixed(2)) };

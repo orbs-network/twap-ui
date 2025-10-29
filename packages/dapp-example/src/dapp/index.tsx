@@ -735,7 +735,7 @@ const PanelInputs = () => {
 
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
-  const typedSrcAmount = useTypedSrcAmount();
+  const { amount: typedSrcAmount } = useTypedSrcAmount();
   const { module, slippage, config } = useDappContext();
 
   const { srcToken, dstToken } = useTokens();
@@ -760,6 +760,9 @@ export const Dapp = () => {
     refetchDstBalance();
   }, [refetchSrcBalance, refetchDstBalance]);
 
+  const srcUsd1Token = useUSD(srcToken?.address);
+  const dstUsd1Token = useUSD(dstToken?.address);
+
   return (
     <>
       <GlobalStyles isDarkMode={true} />
@@ -771,8 +774,8 @@ export const Dapp = () => {
         srcToken={srcToken}
         dstToken={dstToken}
         module={module}
-        srcUsd1Token={useUSD(srcToken?.address)}
-        dstUsd1Token={useUSD(dstToken?.address)}
+        srcUsd1Token={srcUsd1Token}
+        dstUsd1Token={dstUsd1Token}
         srcBalance={srcBalance?.wei}
         dstBalance={dstBalance?.wei}
         marketReferencePrice={marketReferencePrice}

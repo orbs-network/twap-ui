@@ -1,4 +1,4 @@
-import { Token, useFormatNumber } from "@orbs-network/twap-ui";
+import { Token, useFormatNumber, useTypedSrcAmount } from "@orbs-network/twap-ui";
 import { Avatar, Button, Flex, Typography } from "antd";
 import { useState } from "react";
 import { NumberInput, Popup, TokensList } from "../Components";
@@ -16,9 +16,16 @@ const TokenSelectModal = ({ isOpen, onSelect, onClose }: { isOpen: boolean; onSe
 
 export const SwitchTokensButton = () => {
   const { switchTokens } = useDappStore();
+  const { reset: resetTypedSrcAmount } = useTypedSrcAmount();
+
+  const onSwitchTokens = () => {
+    switchTokens();
+    resetTypedSrcAmount();
+  };
+
   return (
     <Flex style={{ height: 10 }} align="center" justify="center">
-      <Button onClick={switchTokens} type="primary" icon={<ArrowDown />} />;
+      <Button onClick={onSwitchTokens} type="primary" icon={<ArrowDown />} />;
     </Flex>
   );
 };

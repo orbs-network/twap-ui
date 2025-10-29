@@ -331,11 +331,16 @@ export const useSrcTokenPanel = () => useTokenPanel(true);
 
 export const useDstTokenPanel = () => {
   const dstAmount = useDstTokenAmount().amountUI;
-  return useTokenPanel(false, dstAmount);
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  return useTokenPanel(false, typedSrcAmount ? dstAmount : "");
 };
 
 export const useTypedSrcAmount = () => {
-  return useTwapStore((s) => s.state.typedSrcAmount) || "";
+  const updateState = useTwapStore((s) => s.updateState);
+  return {
+    amount: useTwapStore((s) => s.state.typedSrcAmount) || "",
+    reset: useCallback(() => updateState({ typedSrcAmount: "" }), [updateState]),
+  };
 };
 
 export const useSubmitSwapPanel = () => {
@@ -362,9 +367,12 @@ export const useSubmitSwapPanel = () => {
 
   const onCloseModal = useCallback(() => {
     if (swapExecution?.status === SwapStatus.SUCCESS) {
-      resetSwap();
+      updateState({ typedSrcAmount: "" });
+      setTimeout(() => {
+        resetSwap();
+      }, 1_000);
     }
-  }, [swapExecution?.status, resetSwap]);
+  }, [swapExecution?.status, resetSwap, updateState]);
 
   const onOpenModal = useCallback(() => {
     if (swapExecution?.status !== SwapStatus.LOADING) {
