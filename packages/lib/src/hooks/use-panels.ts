@@ -321,7 +321,7 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
     value: value || "",
     valueWei: useAmountBN(token?.decimals, value),
     onChange,
-    isLoading: isSrcToken ? false : marketPriceLoading,
+    isLoading: !typedSrcAmount ? false : isSrcToken ? false : marketPriceLoading,
     token,
     isInsufficientBalance: isSrcToken ? error : undefined,
   };

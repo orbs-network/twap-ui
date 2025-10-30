@@ -38,6 +38,7 @@ import { useGetToken } from "./hooks";
 import styled from "styled-components";
 import { abbreviate } from "../utils";
 import clsx from "clsx";
+import { useSearchParams } from "react-router-dom";
 export const useSwitchChain = () => {
   const { data: walletClient } = useWalletClient();
 
@@ -283,17 +284,39 @@ const useTokens = () => {
   const chainId = useDappContext().config.chainId;
   const account = useAccount().address;
   const { isLoading } = useTokensWithBalancesUSD();
+  const [searchParams] = useSearchParams();
+  const srcTokenAddress = searchParams.get("srcToken");
+  const dstTokenAddress = searchParams.get("dstToken");
 
   useEffect(() => {
-    if (account && !isLoading) {
-      if (!srcToken) {
+    if (isLoading) return;
+    if (!allTokens?.length) return;
+
+    // Only set from URL if not already set
+    if (srcTokenAddress && !srcToken) {
+      const token = allTokens.find((it) => it.address === srcTokenAddress);
+      if (token) {
+        setSrcToken(token);
+      }
+    }
+
+    if (dstTokenAddress && !dstToken) {
+      const token = allTokens.find((it) => it.address === dstTokenAddress);
+      if (token) {
+        setDstToken(token);
+      }
+    }
+
+    // Set defaults only if account is connected AND no token has been selected
+    if (account) {
+      if (!srcToken && !srcTokenAddress) {
         setSrcToken(allTokens[1]);
       }
-      if (!dstToken) {
+      if (!dstToken && !dstTokenAddress) {
         setDstToken(allTokens[2]);
       }
     }
-  }, [allTokens, dstToken, srcToken, account, isLoading]);
+  }, [allTokens, srcTokenAddress, dstTokenAddress, srcToken, dstToken, account, isLoading]);
 
   useEffect(() => {
     resetTokens();
@@ -310,7 +333,15 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const panel = isSrcToken ? srcTokenPanel : dstTokenPanel;
   const { setSrcToken, setDstToken } = useDappStore();
 
-  const onSelect = isSrcToken ? setSrcToken : setDstToken;
+  const onSelect = useCallback(
+    (token: Token) => {
+      const queryParams = new URLSearchParams(window.location.search);
+      queryParams.set(isSrcToken ? "srcToken" : "dstToken", token.address);
+      window.history.pushState(null, "", `${window.location.pathname}?${queryParams.toString()}`);
+      isSrcToken ? setSrcToken(token) : setDstToken(token);
+    },
+    [setSrcToken, setDstToken, isSrcToken],
+  );
 
   return (
     <Section>

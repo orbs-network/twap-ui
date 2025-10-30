@@ -63,5 +63,5 @@ export function useInputErrors() {
     return undefined;
   }
 
-  return balanceError || triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError || maxOrderSizeError;
+  return maxOrderSizeError || triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError || balanceError;
 }

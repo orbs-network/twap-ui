@@ -9,7 +9,7 @@ export * from "./lib/build-repermit-order-data";
 export * from "./lib/submit-order";
 export { analytics } from "./lib/analytics";
 
-export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase, getConfigByExchange, getOrderFillDelayMillis } from "./lib/utils";
+export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase, getConfigByExchange, getOrderFillDelayMillis, getQueryParam } from "./lib/utils";
 export { networks } from "./lib/networks";
 
 export { getAccountOrders } from "./lib/orders";

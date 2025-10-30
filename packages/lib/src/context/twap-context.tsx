@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { analytics, getConfig, Module } from "@orbs-network/twap-sdk";
+import { analytics, getConfig, Module, getQueryParam, QUERY_PARAMS } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType } from "../types";
 import { initiateWallet } from "../lib";
 import { ErrorBoundary } from "react-error-boundary";
@@ -67,6 +67,7 @@ const useParsedMarketPrice = ({ marketReferencePrice }: TwapProps) => {
   return useMemo(() => {
     if (BN(marketReferencePrice.value || 0).isZero()) return marketReferencePrice;
     if (BN(typedSrcAmount || 0).isZero()) return marketReferencePrice;
+
     const value = BN(marketReferencePrice.value || 0)
       .dividedBy(typedSrcAmount || 0)
       .toFixed();
@@ -78,6 +79,8 @@ const useParsedMarketPrice = ({ marketReferencePrice }: TwapProps) => {
   }, [marketReferencePrice, typedSrcAmount]);
 };
 
+const minChunkSizeUsdFromQuery = getQueryParam(QUERY_PARAMS.MIN_CHUNK_SIZE_USD);
+const minChunkSizeUsd = minChunkSizeUsdFromQuery ? parseInt(minChunkSizeUsdFromQuery) : undefined;
 const Content = (props: TwapProps) => {
   const acceptedMarketPrice = useTwapStore((s) => s.state.acceptedMarketPrice);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
@@ -94,6 +97,9 @@ const Content = (props: TwapProps) => {
     <TwapContext.Provider
       value={{
         ...props,
+        overrides: {
+          minChunkSizeUsd,
+        },
         account: props.account as `0x${string}` | undefined,
         walletClient,
         publicClient,

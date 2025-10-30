@@ -209,3 +209,8 @@ export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui
 export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";
 export const ORBS_WEBSITE_URL = "https://www.orbs.com/";
 export const DISCLAIMER_URL = "https://www.orbs.com/dtwap-dlimit-disclaimer";
+
+export enum QUERY_PARAMS {
+  FRESHNESS = "freshness",
+  MIN_CHUNK_SIZE_USD = "minChunkSizeUsd",
+}

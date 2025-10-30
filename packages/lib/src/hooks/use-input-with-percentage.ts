@@ -81,7 +81,7 @@ export const useInputWithPercentage = ({
       result = isInverted ? (BN(amount).isZero() ? "0" : BN(1).div(amount).toFixed()) : amount;
     }
 
-    return formatDecimals(result, 6);
+    return formatDecimals(result, 6, tokenDecimals);
   }, [typedValue, tokenDecimals, priceWei, isInverted]);
 
   const usd = useUsdAmount(isInverted ? srcUsd1Token : dstUsd1Token, amountUI || "0");
