@@ -62,7 +62,7 @@ const useConfig = () => {
 export const DappProvider = ({ children }: { children: React.ReactNode }) => {
   const { config, setConfig } = useConfig();
   const [theme, _setTheme] = useState<ThemeMode>((localStorage.getItem("theme") as ThemeMode) || "dark");
-  const [slippage, setSlippage] = useState(0.5);
+  const [slippage, setSlippage] = useState(5);
   const { module, onModuleSelect } = useAppParams();
   const setTheme = useCallback(
     (theme: ThemeMode) => {
