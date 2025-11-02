@@ -5,6 +5,7 @@ import { useAmountBN } from "./helper-hooks";
 import BN from "bignumber.js";
 import { amountBN, isNativeAddress } from "@orbs-network/twap-sdk";
 import { getMinNativeBalance } from "../utils";
+import { useTranslations } from "./use-translations";
 
 export const useMaxSrcAmount = () => {
   const { srcToken, srcBalance, chainId } = useTwapContext();
@@ -18,7 +19,8 @@ export const useMaxSrcAmount = () => {
 };
 
 export const useSrcAmount = () => {
-  const { srcToken, translations: t } = useTwapContext();
+  const { srcToken } = useTwapContext();
+  const t = useTranslations();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const acceptedSrcAmount = useTwapStore((s) => s.state.acceptedSrcAmount);
@@ -28,6 +30,6 @@ export const useSrcAmount = () => {
   return {
     amountWei: useAmountBN(srcToken?.decimals, value),
     amountUI: value,
-    error: BN(value || 0).isZero() ? t.enterAmount : undefined,
+    error: BN(value || 0).isZero() ? t("enterAmount") : undefined,
   };
 };

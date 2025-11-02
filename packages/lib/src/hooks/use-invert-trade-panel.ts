@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useTwapStore } from "../useTwapStore";
 import BN from "bignumber.js";
 
-export const useInvertTrade = () => {
+export const useInvertTradePanel = () => {
   const updateState = useTwapStore((s) => s.updateState);
   const isInverted = useTwapStore((s) => s.state.isInvertedTrade);
   const typedTriggerPrice = useTwapStore((s) => s.state.typedTriggerPrice);

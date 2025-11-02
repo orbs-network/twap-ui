@@ -1,16 +1,15 @@
 import { getOrderFillDelayMillis, Order } from "@orbs-network/twap-sdk";
 import { useMemo } from "react";
 import { useTwapContext } from "../context/twap-context";
-import { useAmountUi } from "./helper-hooks";
+import { useAmountUi, useFormatNumber } from "./helper-hooks";
 import { useOrders, useOrderName, useOrderLimitPrice, useOrderAvgExcecutionPrice } from "./order-hooks";
 import { useBaseOrder } from "./use-base-order";
-import { useFormatNumber } from "./useFormatNumber";
-import { useOrderHistoryContext } from "../context/order-history-context";
+import { useTranslations } from "./use-translations";
 
 export const useHistoryOrder = (orderId?: string) => {
   const { orders } = useOrders();
-  const { useToken } = useOrderHistoryContext();
-  const { translations: t, config } = useTwapContext();
+  const { config, useToken } = useTwapContext();
+  const t = useTranslations();
   const order = useMemo(() => orders?.all.find((order) => order.id === orderId), [orders, orderId]) || ({} as Order);
   const title = useOrderName(order);
   const srcToken = useToken?.(order?.srcTokenAddress);
@@ -42,35 +41,35 @@ export const useHistoryOrder = (orderId?: string) => {
       ...extendedOrder,
       title,
       createdAt: {
-        label: t.createdAt,
+        label: t("createdAt"),
         value: order?.createdAt,
       },
       id: {
-        label: t.id,
+        label: t("id"),
         value: order?.id,
       },
       amountInFilled: {
-        label: t.amountSent,
+        label: t("amountOut"),
         value: srcFilledAmount,
         token: srcToken,
       },
       amountOutFilled: {
-        label: t.amountReceived,
+        label: t("amountReceived"),
         value: dstFilledAmount,
         token: dstToken,
       },
       progress: {
-        label: t.progress,
+        label: t("progress"),
         value: order?.totalTradesAmount === 1 ? undefined : progress,
       },
       excecutionPrice: {
-        label: order?.totalTradesAmount === 1 ? t.finalExcecutionPrice : t.AverageExecutionPrice,
+        label: order?.totalTradesAmount === 1 ? t("finalExcecutionPrice") : t("AverageExecutionPrice"),
         value: excecutionPrice,
         sellToken: srcToken,
         buyToken: dstToken,
       },
       version: {
-        label: t.version,
+        label: t("version"),
         value: order?.version,
       },
     };

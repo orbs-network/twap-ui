@@ -8,9 +8,12 @@ import { useDefaultTriggerPricePercent } from "./use-default-values";
 import { getStopLossPriceError, getTakeProfitPriceError, getTriggerPricePerChunk } from "@orbs-network/twap-sdk";
 import { useAmountUi } from "./helper-hooks";
 import { useTrades } from "./use-trades";
+import { useTranslations } from "./use-translations";
+import { useInvertTradePanel } from "./use-invert-trade-panel";
 
 const useTriggerPriceError = (triggerPriceWei = "") => {
-  const { module, marketPrice, translations: t } = useTwapContext();
+  const { module, marketPrice } = useTwapContext();
+  const t = useTranslations();
 
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   return useMemo((): InputError | undefined => {
@@ -21,7 +24,7 @@ const useTriggerPriceError = (triggerPriceWei = "") => {
       return {
         type: InputErrors.STOP_LOSS_TRIGGER_PRICE_GREATER_THAN_MARKET_PRICE,
         value: stopLossError.value,
-        message: t.StopLossTriggerPriceError,
+        message: t("StopLossTriggerPriceError") || "",
       };
     }
     const takeProfitError = getTakeProfitPriceError(marketPrice || "", triggerPriceWei || "", module);
@@ -30,7 +33,7 @@ const useTriggerPriceError = (triggerPriceWei = "") => {
       return {
         type: InputErrors.TAKE_PROFIT_TRIGGER_PRICE_LESS_THAN_MARKET_PRICE,
         value: takeProfitError.value,
-        message: t.TakeProfitTriggerPriceError,
+        message: t("TakeProfitTriggerPriceError") || "",
       };
     }
 
@@ -38,7 +41,7 @@ const useTriggerPriceError = (triggerPriceWei = "") => {
       return {
         type: InputErrors.EMPTY_TRIGGER_PRICE,
         value: triggerPriceWei,
-        message: t.emptyTriggerPrice,
+        message: t("emptyTriggerPrice") || "",
       };
     }
   }, [marketPrice, triggerPriceWei, module, t, typedSrcAmount]);
@@ -94,4 +97,39 @@ export const useTriggerPrice = () => {
       pricePerChunkUI: triggerAmountPerChunkUI,
     };
   }, [result, error, triggerAmountPerChunk, triggerAmountPerChunkUI]);
+};
+
+export const useTriggerPricePanel = () => {
+  const { srcToken, dstToken, module, marketPrice, marketPriceLoading } = useTwapContext();
+  const t = useTranslations();
+  const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useTriggerPrice();
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const updateState = useTwapStore((s) => s.updateState);
+  const { isInverted, onInvert } = useInvertTradePanel();
+
+  const onSetDefault = useCallback(() => {
+    updateState({ triggerPricePercent: undefined, typedTriggerPrice: undefined });
+  }, [updateState]);
+
+  const hide = module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT;
+
+  return {
+    price: amountUI,
+    error,
+    label: t("stopLossLabel"),
+    tooltip: t("stopLossTooltip"),
+    onChange,
+    onPercentageChange,
+    selectedPercentage,
+    isActive: !isMarketOrder,
+    onSetDefault,
+    usd,
+    fromToken: isInverted ? dstToken : srcToken,
+    toToken: isInverted ? srcToken : dstToken,
+    prefix: "",
+    isLoading: marketPriceLoading || !marketPrice,
+    isInverted,
+    hide,
+    onInvert,
+  };
 };

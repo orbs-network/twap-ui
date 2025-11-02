@@ -1,12 +1,12 @@
-import React, { CSSProperties, createContext, ReactNode, useMemo, FC, useContext } from "react";
+import React, { CSSProperties, ReactNode, useMemo } from "react";
 
 import { fillDelayText, makeElipsisAddress } from "../utils";
-import { Token, TooltipProps } from "../types";
-import { useFormatNumber } from "../hooks/useFormatNumber";
+import { Token } from "../types";
 import { useTwapContext } from "../context/twap-context";
-import { useDateFormat, useNetwork } from "../hooks/helper-hooks";
+import { AiOutlineCopy } from "@react-icons/all-files/ai/AiOutlineCopy";
+import { useCopyToClipboard, useDateFormat, useFormatNumber, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
-import { useCopyToClipboard } from "../hooks/use-copy";
+import { useTranslations } from "../hooks/use-translations";
 const Deadline = ({ deadline, label, tooltip }: { deadline?: number; label: string; tooltip: string }) => {
   const res = useDateFormat(deadline);
   return (
@@ -28,13 +28,12 @@ const TriggerPrice = ({ price, dstToken, label, tooltip }: { price?: string; dst
 };
 
 const LimitPrice = ({ price, dstToken, percentage, isMarketOrder }: { price?: string; dstToken?: Token; percentage?: number; isMarketOrder?: boolean }) => {
-  const t = useTwapContext()?.translations;
   const priceF = useFormatNumber({ value: price });
-
+  const t = useTranslations();
   if (isMarketOrder) return null;
 
   return (
-    <DetailRow title={t.limitPrice} tooltip={t.limitPriceTooltip}>
+    <DetailRow title={t("limitPrice") || ""} tooltip={t("limitPriceTooltip") || ""}>
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         {`${priceF ? priceF : "-"} ${dstToken?.symbol}`}
         {percentage && <small>{`(${percentage}%)`}</small>}
@@ -76,12 +75,13 @@ const TradesAmount = ({ trades, label, tooltip }: { trades?: number; label: stri
 };
 
 const Recipient = () => {
-  const { translations: t, account } = useTwapContext();
+  const t = useTranslations();
+  const { account } = useTwapContext();
   const explorerUrl = useNetwork()?.explorer;
   const makerAddress = makeElipsisAddress(account);
 
   return (
-    <DetailRow title={t.recipient}>
+    <DetailRow title={t("recipient") || ""}>
       {!explorerUrl ? (
         makerAddress
       ) : (
@@ -120,12 +120,13 @@ const DetailRow = ({
   onClick?: () => void;
   style?: CSSProperties;
 }) => {
-  const { Tooltip } = useContext(OrderDetailsContext);
+  const { components } = useTwapContext();
+  const Tooltip = components.Tooltip;
   return (
     <div className={`${className} twap-order-details__detail-row`} onClick={onClick} style={style}>
       <div className="twap-order-details__detail-row-label">
         <p className="twap-order-details__detail-row-label-value">{title}</p>
-        {tooltip && <Tooltip tooltipText={tooltip} />}
+        {tooltip && Tooltip && <Tooltip tooltipText={tooltip} />}
       </div>
       <div className="twap-order-details__detail-row-value">{children}</div>
     </div>
@@ -133,14 +134,22 @@ const DetailRow = ({
 };
 
 const OrderID = ({ id }: { id: string }) => {
-  const { Tooltip } = useContext(OrderDetailsContext);
+  const { components } = useTwapContext();
+  const Tooltip = components?.Tooltip;
   const copy = useCopyToClipboard();
   if (typeof id === "number") {
     return <DetailRow title="ID">{id}</DetailRow>;
   } else {
     return (
       <DetailRow title="ID" onClick={() => copy(id)} style={{ cursor: "pointer" }}>
-        <Tooltip tooltipText={id}>{makeElipsisAddress(id)}</Tooltip>
+        {Tooltip && (
+          <Tooltip tooltipText={id}>
+            <div className="twap-order-details__detail-row-value-id">
+              <p>{makeElipsisAddress(id)}</p>
+              <AiOutlineCopy onClick={() => copy(id)} />
+            </div>
+          </Tooltip>
+        )}
       </DetailRow>
     );
   }
@@ -154,14 +163,8 @@ export function OrderDetails({ children, className = "" }: { children?: ReactNod
   return <div className={`${className} twap-order-details`}>{children}</div>;
 }
 
-const OrderDetailsContext = createContext(
-  {} as {
-    Tooltip: FC<TooltipProps>;
-  },
-);
-
-const OrderDetailsContainer = ({ children, Tooltip }: { children: ReactNode; Tooltip: FC<TooltipProps> }) => {
-  return <OrderDetailsContext.Provider value={{ Tooltip }}>{children}</OrderDetailsContext.Provider>;
+const OrderDetailsContainer = ({ children }: { children: ReactNode }) => {
+  return children;
 };
 
 OrderDetails.Deadline = Deadline;

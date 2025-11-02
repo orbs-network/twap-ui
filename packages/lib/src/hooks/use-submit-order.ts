@@ -1,7 +1,7 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
 import BN from "bignumber.js";
 import { analytics, isNativeAddress, IWETH_ABI, submitOrder } from "@orbs-network/twap-sdk";
-import { SwapCallbacks, Steps, Token } from "../types";
+import { Steps, Token } from "../types";
 import { ensureWrappedToken, isTxRejected } from "../utils";
 import { useSrcAmount } from "./use-src-amount";
 import { useMutation } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import { useTwapStore } from "../useTwapStore";
 import { EIP712_TYPES, REPERMIT_PRIMARY_TYPE } from "@orbs-network/twap-sdk";
 import { useBuildRePermitOrderDataCallback } from "./use-build-repermit-order-data-callback.ts";
 import { erc20Abi, maxUint256, numberToHex, parseSignature } from "viem";
-import { useOptimisticAddOrder } from "./order-hooks";
+import { useOptimisticAddOrder, useOrdersQuery } from "./order-hooks";
 import { useNetwork } from "./helper-hooks";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 
@@ -50,7 +50,6 @@ const useWrapToken = () => {
     if (receipt.status === "reverted") {
       throw new Error("failed to wrap token");
     }
-
     analytics.onWrapSuccess(hash);
     return receipt;
   });
@@ -108,10 +107,10 @@ const useSignAndSend = () => {
 const useEnsureUserApprovedToken = () => {
   const { mutateAsync: hasAllowanceCallback } = useHasAllowanceCallback();
 
-  return useMutation(async (token: Token) => {
+  return useMutation(async ({ token, srcAmount }: { token: Token; srcAmount: string }) => {
     let userApprovedSuccessfully = false;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { approvalRequired } = await hasAllowanceCallback(token.address);
+      const { approvalRequired } = await hasAllowanceCallback({ tokenAddress: token.address, srcAmount });
 
       if (!approvalRequired) {
         userApprovedSuccessfully = true;
@@ -132,7 +131,7 @@ const useHasAllowanceCallback = () => {
   const { account, publicClient, chainId, config } = useTwapContext();
 
   return useMutation({
-    mutationFn: async (tokenAddress: string) => {
+    mutationFn: async ({ tokenAddress, srcAmount }: { tokenAddress: string; srcAmount: string }) => {
       if (!publicClient || !chainId || !account || !config) throw new Error("missing required parameters");
       const allowance = await publicClient
         .readContract({
@@ -142,8 +141,9 @@ const useHasAllowanceCallback = () => {
           args: [account as `0x${string}`, config.repermit],
         })
         .then((res) => res.toString());
+      const approvalRequired = BN(allowance || "0").lt(BN(srcAmount).toString());
 
-      return { allowance, approvalRequired: !BN(allowance || "0").gte(maxUint256.toString()) };
+      return { allowance, approvalRequired };
     },
   });
 };
@@ -188,7 +188,7 @@ const useApproveToken = () => {
 };
 
 export const useSubmitOrderMutation = () => {
-  const { srcToken, dstToken, chainId } = useTwapContext();
+  const { srcToken, dstToken, chainId, callbacks, refetchBalances } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const approveCallback = useApproveToken().mutateAsync;
   const wrapCallback = useWrapToken().mutateAsync;
@@ -196,11 +196,14 @@ export const useSubmitOrderMutation = () => {
   const { mutateAsync: ensureUserApprovedToken } = useEnsureUserApprovedToken();
   const { mutateAsync: hasAllowanceCallback } = useHasAllowanceCallback();
   const updateSwapExecution = useTwapStore((s) => s.updateSwapExecution);
-  const { amountUI: srcAmountUI = "" } = useSrcAmount();
+  const { amountUI: srcAmountUI = "", amountWei: srcAmountWei } = useSrcAmount();
   const addOrder = useOptimisticAddOrder();
+  const { refetch: refetchOrders } = useOrdersQuery();
 
-  return useMutation(async (callbacks?: SwapCallbacks) => {
+  return useMutation(async () => {
     const wrapRequired = isNativeAddress(srcToken?.address || " ");
+    let isWrapSuccess = false;
+
     try {
       if (!srcToken || !dstToken || !chainId) {
         throw new Error("missing required parameters");
@@ -209,8 +212,7 @@ export const useSubmitOrderMutation = () => {
       // analytics.onCreateOrderRequest(params, account)
 
       updateState({ fetchingAllowance: true });
-      const { approvalRequired } = await hasAllowanceCallback(srcToken.address);
-
+      const { approvalRequired } = await hasAllowanceCallback({ tokenAddress: srcWrappedToken.address, srcAmount: srcAmountWei });
       let stepIndex = 0;
       let totalSteps = 1;
       if (wrapRequired) totalSteps++;
@@ -220,34 +222,45 @@ export const useSubmitOrderMutation = () => {
 
       if (wrapRequired) {
         updateSwapExecution({ step: Steps.WRAP });
-        callbacks?.wrap?.onRequest?.(srcAmountUI);
+        callbacks?.onWrapRequest?.(srcAmountUI);
         const wrapReceipt = await wrapCallback({ onHash: (hash) => updateSwapExecution({ wrapTxHash: hash }) });
         stepIndex++;
         updateSwapExecution({ stepIndex });
-        callbacks?.wrap?.onSuccess?.(wrapReceipt, srcAmountUI);
+        callbacks?.onWrapSuccess?.(wrapReceipt, srcAmountUI);
+        isWrapSuccess = true;
       }
 
       if (approvalRequired) {
-        callbacks?.approve?.onRequest?.(srcWrappedToken, srcAmountUI);
+        callbacks?.onApproveRequest?.(srcWrappedToken, srcAmountUI);
         updateSwapExecution({ step: Steps.APPROVE });
 
         const approveReceipt = await approveCallback({ token: srcWrappedToken, onHash: (hash) => updateSwapExecution({ approveTxHash: hash }) });
-        await ensureUserApprovedToken(srcWrappedToken);
-        callbacks?.approve?.onSuccess?.(approveReceipt, srcWrappedToken, srcAmountUI);
+        await ensureUserApprovedToken({ token: srcWrappedToken, srcAmount: srcAmountWei });
+        callbacks?.onApproveSuccess?.(approveReceipt, srcWrappedToken, srcAmountUI);
         stepIndex++;
         updateSwapExecution({ stepIndex });
       }
       updateSwapExecution({ step: Steps.CREATE });
       const order = await createOrderCallback();
 
+      if (order) {
+        addOrder(order);
+      } else {
+        await refetchOrders();
+      }
       updateSwapExecution({ status: SwapStatus.SUCCESS });
-      addOrder(order);
+      updateState({ newOrderId: order?.id });
+
       return order;
     } catch (error) {
       if (isTxRejected(error)) {
         updateSwapExecution({ step: undefined, status: undefined, stepIndex: undefined });
       } else {
         updateSwapExecution({ status: SwapStatus.FAILED, error: (error as any).message });
+      }
+    } finally {
+      if (isWrapSuccess) {
+        refetchBalances?.();
       }
     }
   });

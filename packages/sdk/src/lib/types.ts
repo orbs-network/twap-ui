@@ -242,7 +242,7 @@ export type OrderV2 = {
 
 export enum Partners {
   THENA = "thena",
-  PANCAKESWAP = "pancakeswap",
+  PANCAKESWAP = "pancake",
   QUICKSWAP = "quickswap",
   SWAPX = "swapx",
   DRAGONSWAP = "dragonswap",

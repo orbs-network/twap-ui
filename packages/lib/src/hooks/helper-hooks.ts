@@ -2,8 +2,9 @@ import { amountBN, amountUi, getNetwork } from "@orbs-network/twap-sdk";
 import { useMemo } from "react";
 import { useTwapContext } from "../context/twap-context";
 import BN from "bignumber.js";
-import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
+import { formatDecimals, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import moment from "moment";
+import { useNumericFormat } from "react-number-format";
 
 export const useAmountBN = (decimals?: number, value?: string) => {
   return useMemo(() => amountBN(decimals, value), [decimals, value]);
@@ -66,4 +67,42 @@ export const useDateFormat = (date?: number) => {
     }
     return moment(date).format("DD/MM/YYYY HH:mm");
   }, [date, overrides?.dateFormat]);
+};
+
+export function useCopyToClipboard() {
+  const copy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.error("Copy failed:", error);
+    }
+  };
+
+  return copy;
+}
+
+export const useFormatDecimals = (value?: string | number, decimalPlaces?: number) => {
+  return useMemo(() => formatDecimals(value?.toString(), decimalPlaces), [value, decimalPlaces]);
+};
+
+export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+  const _value = useFormatDecimals(value, decimalScale);
+  const { overrides } = useTwapContext();
+  const numberFormat = overrides?.numberFormat;
+
+  const result = useNumericFormat({
+    allowLeadingZeros: true,
+    thousandSeparator: ",",
+    displayType: "text",
+    value: _value || "",
+    decimalScale: 18,
+    prefix,
+    suffix,
+  });
+
+  if (numberFormat) {
+    return numberFormat(value || "");
+  }
+
+  return result.value?.toString();
 };

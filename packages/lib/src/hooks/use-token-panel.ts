@@ -1,0 +1,74 @@
+import { useMemo, useCallback } from "react";
+import { useTwapContext } from "../context/twap-context";
+import { InputError, InputErrors } from "../types";
+import { useTwapStore } from "../useTwapStore";
+import { formatDecimals } from "../utils";
+import { useUsdAmount, useShouldWrapOrUnwrapOnly, useAmountBN, useAmountUi } from "./helper-hooks";
+import { useDstTokenAmount } from "./use-dst-amount";
+import { useMaxSrcAmount } from "./use-src-amount";
+import { useTranslations } from "./use-translations";
+import BN from "bignumber.js";
+
+const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
+  const { marketPriceLoading, srcToken, dstToken, srcBalance, dstBalance } = useTwapContext();
+  const t = useTranslations();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const updateState = useTwapStore((s) => s.updateState);
+  const { srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(dstAmount, dstUsd1Token);
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  const maxSrcInputAmount = useMaxSrcAmount();
+  const srcAmountWei = useAmountBN(srcToken?.decimals, typedSrcAmount);
+
+  const token = isSrcToken ? srcToken : dstToken;
+  const balance = useAmountUi(token?.decimals, isSrcToken ? srcBalance : dstBalance);
+  const error = useMemo((): InputError | undefined => {
+    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
+
+    if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+      return {
+        type: InputErrors.INSUFFICIENT_BALANCE,
+        message: t("insufficientFunds"),
+        value: srcBalance || "",
+      };
+    }
+  }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
+
+  const onChange = useCallback(
+    (value: string) => {
+      if (!isSrcToken) return;
+      updateState({ typedSrcAmount: value });
+    },
+    [updateState, isSrcToken],
+  );
+
+  const value = isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(dstAmount || "", 8);
+
+  return {
+    balance,
+    usd: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
+    value: value || "",
+    valueWei: useAmountBN(token?.decimals, value),
+    onChange,
+    isLoading: !typedSrcAmount ? false : isSrcToken ? false : marketPriceLoading,
+    token,
+    isInsufficientBalance: isSrcToken ? error : undefined,
+  };
+};
+
+export const useSrcTokenPanel = () => useTokenPanel(true);
+
+export const useDstTokenPanel = () => {
+  const dstAmount = useDstTokenAmount().amountUI;
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  return useTokenPanel(false, typedSrcAmount ? dstAmount : "");
+};
+
+export const useTypedSrcAmount = () => {
+  const updateState = useTwapStore((s) => s.updateState);
+  return {
+    amount: useTwapStore((s) => s.state.typedSrcAmount) || "",
+    reset: useCallback(() => updateState({ typedSrcAmount: "" }), [updateState]),
+  };
+};

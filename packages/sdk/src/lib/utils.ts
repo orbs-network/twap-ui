@@ -204,3 +204,8 @@ export const getOrderFillDelayMillis = (order: Order, config: Config) => {
   }
   return (order.fillDelay || 0) * 1000;
 };
+
+export const getQueryParam = (name: string) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name);
+};

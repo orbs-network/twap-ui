@@ -3,7 +3,7 @@ import BN from "bignumber.js";
 import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { InputError, InputErrors } from "../types";
-import { useMaxSrcAmount, useSrcAmount } from "./use-src-amount";
+import { useSrcAmount } from "./use-src-amount";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useLimitPrice } from "./use-limit-price";
 import { useTrades } from "./use-trades";
@@ -11,9 +11,11 @@ import { useFillDelay } from "./use-fill-delay";
 import { useDuration } from "./use-duration";
 import { useUsdAmount } from "./helper-hooks";
 import { MAX_ORDER_SIZE_USD } from "../consts";
+import { useTranslations } from "./use-translations";
 
 export const useMaxOrderSizeError = () => {
-  const { translations: t, srcUsd1Token } = useTwapContext();
+  const { srcUsd1Token } = useTwapContext();
+  const t = useTranslations();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const usdAmount = useUsdAmount(typedSrcAmount, srcUsd1Token);
 
@@ -22,28 +24,26 @@ export const useMaxOrderSizeError = () => {
       return {
         type: InputErrors.MAX_ORDER_SIZE,
         value: MAX_ORDER_SIZE_USD,
-        message: t.maxOrderSizeError.replace("{maxOrderSize}", `${MAX_ORDER_SIZE_USD}`),
+        message: t("maxOrderSizeError", { maxOrderSize: `${MAX_ORDER_SIZE_USD}` }),
       };
     }
   }, [usdAmount, t]);
 };
 
 export const useBalanceError = () => {
-  const maxSrcInputAmount = useMaxSrcAmount();
-  const { srcBalance, translations: t } = useTwapContext();
+  const { srcBalance } = useTwapContext();
+  const t = useTranslations();
   const srcAmountWei = useSrcAmount().amountWei;
 
   return useMemo((): InputError | undefined => {
-    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
-
-    if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+    if (srcBalance && BN(srcAmountWei).gt(srcBalance)) {
       return {
         type: InputErrors.INSUFFICIENT_BALANCE,
-        message: t.insufficientFunds,
+        message: t("insufficientFunds"),
         value: srcBalance || "",
       };
     }
-  }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
+  }, [srcBalance?.toString(), srcAmountWei, t]);
 };
 
 export function useInputErrors() {
@@ -63,5 +63,5 @@ export function useInputErrors() {
     return undefined;
   }
 
-  return balanceError || triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError || maxOrderSizeError;
+  return maxOrderSizeError || triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError || balanceError;
 }

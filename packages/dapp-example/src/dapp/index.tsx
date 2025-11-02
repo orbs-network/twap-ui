@@ -1,6 +1,6 @@
 import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD, useUnwrapToken } from "../hooks";
 import { NumberInput, Popup, PanelToggle } from "../Components";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography } from "antd";
 import {
   TWAP,
@@ -15,11 +15,24 @@ import {
   SelectMeuItem,
   ButtonProps,
   Components,
-  useTwap,
   TooltipProps,
   Partners,
+  useTypedSrcAmount,
+  SubmitOrderSuccessViewProps,
+  useOrderHistoryPanel,
+  useSubmitSwapPanel,
+  useSrcTokenPanel,
+  useDstTokenPanel,
+  useTradesPanel,
+  useDurationPanel,
+  useFillDelayPanel,
+  useLimitPricePanel,
+  useMarketPricePanel,
+  useTriggerPricePanel,
+  useDisclaimerPanel,
+  useInputErrors,
 } from "@orbs-network/twap-ui";
-import { Config, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, Configs, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
@@ -36,10 +49,23 @@ import { useGetToken } from "./hooks";
 import styled from "styled-components";
 import { abbreviate } from "../utils";
 import clsx from "clsx";
+import { useSearchParams } from "react-router-dom";
 export const useSwitchChain = () => {
   const { data: walletClient } = useWalletClient();
 
   return useCallback((config: Config) => (walletClient as any)?.switchChain({ id: config.chainId }), [walletClient]);
+};
+
+const dexToPartner = (config: Config) => {
+  switch (config) {
+    case Configs.PancakeSwap:
+    case Configs.PancakeSwapArbitrum:
+    case Configs.PancakeSwapBase:
+      return Partners.PANCAKESWAP;
+
+    default:
+      return Partners.THENA;
+  }
 };
 
 const OrderHistoryModal = () => {
@@ -56,7 +82,7 @@ const OrderHistoryModal = () => {
     onClosePreview,
     selectedOrder,
     onCancelOrders,
-  } = useTwap().orderHistoryPanel;
+  } = useOrderHistoryPanel();
   const [isOpen, setIsOpen] = useState(false);
   const onSelect = useCallback((item: SelectMeuItem) => onSelectStatus(item?.value as OrderStatus), [onSelectStatus]);
 
@@ -91,17 +117,17 @@ const OrderHistoryModal = () => {
             </div>
           </div>
         )}
-        <Components.Orders Tooltip={TwapTooltip} Button={TwapButton} useToken={useToken} />
+        <Components.Orders />
       </Popup>
       <button onClick={() => setIsOpen(true)} className="twap-orders__button">
-        {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Orders</Typography>}
+        {isLoading ? <Typography>Loading...</Typography> : <Typography> {openOrdersCount} Open orders</Typography>}
       </button>
     </>
   );
 };
 
 const ErrorView = () => {
-  const { resetSwap, srcAmountWei } = useTwap().submitSwapPanel;
+  const { resetSwap, srcAmountWei } = useSubmitSwapPanel();
   const chainId = useChainId();
   const network = getNetwork(chainId);
   const { mutateAsync: onUnwrap } = useUnwrapToken();
@@ -117,8 +143,16 @@ const ErrorView = () => {
   );
 };
 
+const SubmitOrderErrorView = ({ wrapTxHash, children }: { wrapTxHash?: string; children: ReactNode }) => {
+  if (wrapTxHash) {
+    return <ErrorView />;
+  }
+
+  return children;
+};
+
 const SubmitOrderPanelModal = () => {
-  const { onCloseModal, onOpenModal, onSubmitOrder, swapLoading, wrapTxHash, openSubmitModalButton } = useTwap().submitSwapPanel;
+  const { onCloseModal, onOpenModal, onSubmitOrder, swapLoading, openSubmitModalButton } = useSubmitSwapPanel();
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -136,8 +170,6 @@ const SubmitOrderPanelModal = () => {
     <>
       <Popup isOpen={isOpen} onClose={onClose} title="Submit Order">
         <Components.SubmitOrderPanel
-          Tooltip={TwapTooltip}
-          ErrorView={wrapTxHash ? <ErrorView /> : null}
           reviewDetails={
             <>
               <Flex justify="space-between" align="center" style={{ width: "100%", marginTop: 10 }}>
@@ -226,12 +258,14 @@ const SelectMenu = (props: SelectMenuProps) => {
 };
 
 const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: () => void; text: string; disabled: boolean }) => {
-  const { address, chainId } = useAccount();
+  const { chainId } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const isConnected = !!walletClient;
   const { openConnectModal } = useConnectModal();
   const switchChain = useSwitchChain();
   const config = useDappContext().config;
   const isWrongChain = config.chainId !== chainId;
-  const disabled = !address ? false : isWrongChain ? false : _disabled;
+  const disabled = !isConnected ? false : isWrongChain ? false : _disabled;
 
   return (
     <StyledButton
@@ -241,7 +275,7 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
         width: "100%",
       }}
       onClick={() => {
-        if (!address) {
+        if (!isConnected) {
           openConnectModal?.();
         } else if (config.chainId !== chainId) {
           switchChain(config);
@@ -251,7 +285,7 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
       }}
       disabled={disabled}
     >
-      {!address ? "Connect Wallet" : isWrongChain ? "Switch Network" : text}
+      {!isConnected ? "Connect Wallet" : isWrongChain ? "Switch Network" : text}
     </StyledButton>
   );
 };
@@ -262,17 +296,39 @@ const useTokens = () => {
   const chainId = useDappContext().config.chainId;
   const account = useAccount().address;
   const { isLoading } = useTokensWithBalancesUSD();
+  const [searchParams] = useSearchParams();
+  const srcTokenAddress = searchParams.get("srcToken");
+  const dstTokenAddress = searchParams.get("dstToken");
 
   useEffect(() => {
-    if (account && !isLoading) {
-      if (!srcToken) {
+    if (isLoading) return;
+    if (!allTokens?.length) return;
+
+    // Only set from URL if not already set
+    if (srcTokenAddress && !srcToken) {
+      const token = allTokens.find((it) => it.address === srcTokenAddress);
+      if (token) {
+        setSrcToken(token);
+      }
+    }
+
+    if (dstTokenAddress && !dstToken) {
+      const token = allTokens.find((it) => it.address === dstTokenAddress);
+      if (token) {
+        setDstToken(token);
+      }
+    }
+
+    // Set defaults only if account is connected AND no token has been selected
+    if (account) {
+      if (!srcToken && !srcTokenAddress) {
         setSrcToken(allTokens[1]);
       }
-      if (!dstToken) {
+      if (!dstToken && !dstTokenAddress) {
         setDstToken(allTokens[2]);
       }
     }
-  }, [allTokens, dstToken, srcToken, account, isLoading]);
+  }, [allTokens, srcTokenAddress, dstTokenAddress, srcToken, dstToken, account, isLoading]);
 
   useEffect(() => {
     resetTokens();
@@ -285,11 +341,20 @@ const useTokens = () => {
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const { srcTokenPanel, dstTokenPanel } = useTwap();
+  const srcTokenPanel = useSrcTokenPanel();
+  const dstTokenPanel = useDstTokenPanel();
   const panel = isSrcToken ? srcTokenPanel : dstTokenPanel;
   const { setSrcToken, setDstToken } = useDappStore();
 
-  const onSelect = isSrcToken ? setSrcToken : setDstToken;
+  const onSelect = useCallback(
+    (token: Token) => {
+      const queryParams = new URLSearchParams(window.location.search);
+      queryParams.set(isSrcToken ? "srcToken" : "dstToken", token.address);
+      window.history.pushState(null, "", `${window.location.pathname}?${queryParams.toString()}`);
+      isSrcToken ? setSrcToken(token) : setDstToken(token);
+    },
+    [setSrcToken, setDstToken, isSrcToken],
+  );
 
   return (
     <Section>
@@ -360,7 +425,7 @@ const PercentageButton = ({ onClick, children, selected }: { onClick: () => void
 };
 
 const TradeAmountMessage = () => {
-  const { error, amountPerTradeUsd, fromToken, amountPerTrade, totalTrades } = useTwap().tradesPanel;
+  const { error, amountPerTradeUsd, fromToken, amountPerTrade, totalTrades } = useTradesPanel();
   const tokenAmountF = useFormatNumber({ value: amountPerTrade });
   const amountPerTradeUsdF = useFormatNumber({ value: amountPerTradeUsd });
 
@@ -396,7 +461,7 @@ const TwapTooltip = ({ tooltipText, children }: TooltipProps) => {
 };
 
 const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) => {
-  const { label, tooltip, duration, onUnitSelect, onInputChange, onChange } = useTwap().durationPanel;
+  const { label, tooltip, duration, onUnitSelect, onInputChange, onChange } = useDurationPanel();
   const [isCustom, setIsCustom] = useState(false);
 
   const onCustomChange = useCallback(
@@ -451,7 +516,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
 };
 
 const FillDelay = ({ className }: { className?: string }) => {
-  const { label, tooltip, onUnitSelect, fillDelay, onInputChange } = useTwap().fillDelayPanel;
+  const { label, tooltip, onUnitSelect, fillDelay, onInputChange } = useFillDelayPanel();
 
   const selected = DEFAULT_DURATION_OPTIONS.find((it) => it.value === fillDelay.unit);
 
@@ -467,7 +532,7 @@ const FillDelay = ({ className }: { className?: string }) => {
 };
 
 const PriceToggle = () => {
-  const { label, tooltip, isLimitPrice, toggleLimitPrice, hide } = useTwap().limitPricePanel;
+  const { label, tooltip, isLimitPrice, toggleLimitPrice, hide } = useLimitPricePanel();
 
   return (
     <div className="flex flex-row gap-2 items-center flex-1">
@@ -483,7 +548,7 @@ const PriceToggle = () => {
 };
 
 const MarketPriceDisplay = () => {
-  const { onInvert, fromToken, toToken, price } = useTwap().marketPricePanel;
+  const { onInvert, fromToken, toToken, price } = useMarketPricePanel();
   const priceF = useFormatNumber({ value: price });
 
   if (!fromToken || !toToken) return null;
@@ -563,7 +628,7 @@ const ResetButton = ({ onClick, text }: { onClick: () => void; text: string }) =
 };
 
 const LimitPrice = () => {
-  const { warning, price, toToken, onReset, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice, usd } = useTwap().limitPricePanel;
+  const { warning, price, toToken, onReset, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice, usd } = useLimitPricePanel();
 
   return (
     <div className="flex flex-col gap-2">
@@ -592,8 +657,7 @@ const LimitPrice = () => {
 };
 
 const PriceRate = () => {
-  const { isInverted, onInvert } = useTwap().invertTradePanel;
-  const { fromToken, isLimitPrice } = useTwap().limitPricePanel;
+  const { fromToken, isLimitPrice, isInverted, onInvert } = useLimitPricePanel();
 
   return (
     <div className="flex flex-row gap-4 justify-between items-center">
@@ -614,7 +678,7 @@ const PriceRate = () => {
 };
 
 const TriggerPrice = () => {
-  const { price, toToken, onSetDefault, usd, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } = useTwap().triggerPricePanel;
+  const { price, toToken, onSetDefault, usd, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } = useTriggerPricePanel();
 
   return (
     <>
@@ -635,7 +699,7 @@ const TriggerPrice = () => {
 };
 
 const TradeAmount = ({ className }: { className?: string }) => {
-  const { onChange, totalTrades, tooltip, label } = useTwap().tradesPanel;
+  const { onChange, totalTrades, tooltip, label } = useTradesPanel();
 
   return (
     <Section className={clsx(`trade-amount twap-input-panel ${className}`)}>
@@ -657,7 +721,7 @@ const TwapButton = (props: ButtonProps) => {
 };
 
 const DisclaimerMessage = () => {
-  const disclaimerPanel = useTwap().disclaimerPanel;
+  const disclaimerPanel = useDisclaimerPanel();
   if (!disclaimerPanel) return null;
   const { text } = disclaimerPanel;
   return (
@@ -669,7 +733,7 @@ const DisclaimerMessage = () => {
 };
 
 const InputsError = () => {
-  const error = useTwap().inputsError;
+  const error = useInputErrors();
   if (!error) return null;
   return <Typography style={{ color: "red", textAlign: "left", width: "100%" }}>{error.message}</Typography>;
 };
@@ -681,6 +745,10 @@ const PoweredByOrbs = () => {
       <img src={ORBS_LOGO} alt="Orbs" style={{ width: 22, height: 22 }} />
     </a>
   );
+};
+
+const SubmitOrderSuccessView = ({ children }: SubmitOrderSuccessViewProps) => {
+  return <div className="flex flex-col gap-2 w-full">{children}</div>;
 };
 
 const DEFAULT_LIMIT_DURATION = { unit: TimeUnit.Days, value: 7 };
@@ -710,8 +778,8 @@ const PanelInputs = () => {
 
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
-  const [srcAmount, setSrcAmount] = useState("");
-  const { module, slippage } = useDappContext();
+  const { amount: typedSrcAmount } = useTypedSrcAmount();
+  const { module, slippage, config } = useDappContext();
 
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
@@ -720,36 +788,53 @@ export const Dapp = () => {
   const marketReferencePrice = useMemo(() => {
     return {
       value: BN(marketPrice || "")
-        .multipliedBy(BN(srcAmount || "0"))
+        .multipliedBy(BN(typedSrcAmount || "0"))
         .toFixed(),
       isLoading: marketPriceLoading,
       noLiquidity: false,
     };
-  }, [marketPrice, marketPriceLoading, srcAmount]);
+  }, [marketPrice, marketPriceLoading, typedSrcAmount]);
 
-  const onInputAmountChange = useCallback((_: string, value: string) => setSrcAmount(value), [setSrcAmount]);
+  const { data: srcBalance, refetch: refetchSrcBalance } = useTokenBalance(srcToken);
+  const { data: dstBalance, refetch: refetchDstBalance } = useTokenBalance(dstToken);
+
+  const refetchBalances = useCallback(() => {
+    refetchSrcBalance();
+    refetchDstBalance();
+  }, [refetchSrcBalance, refetchDstBalance]);
+
+  const srcUsd1Token = useUSD(srcToken?.address);
+  const dstUsd1Token = useUSD(dstToken?.address);
 
   return (
     <>
       <GlobalStyles isDarkMode={true} />
       <TWAP
         slippage={slippage}
-        partner={Partners.THENA}
+        partner={dexToPartner(config)}
         chainId={chainId}
         provider={client.data?.transport}
-        callbacks={{
-          onInputAmountChange,
-        }}
         srcToken={srcToken}
         dstToken={dstToken}
         module={module}
-        srcUsd1Token={useUSD(srcToken?.address)}
-        dstUsd1Token={useUSD(dstToken?.address)}
-        srcBalance={useTokenBalance(srcToken).data?.wei}
-        dstBalance={useTokenBalance(dstToken).data?.wei}
+        srcUsd1Token={srcUsd1Token}
+        dstUsd1Token={dstUsd1Token}
+        srcBalance={srcBalance?.wei}
+        dstBalance={dstBalance?.wei}
         marketReferencePrice={marketReferencePrice}
         account={account}
         fees={0.25}
+        useToken={useToken}
+        components={{
+          Tooltip: TwapTooltip,
+          Button: TwapButton,
+          SubmitOrderErrorView,
+          SubmitOrderSuccessView,
+        }}
+        refetchBalances={refetchBalances}
+        overrides={{
+          minChunkSizeUsd: 5,
+        }}
       >
         <div className="flex flex-col gap-4 justify-center items-center max-w-[450px] w-full">
           <PanelToggle />

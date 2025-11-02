@@ -75,6 +75,7 @@ export const useTokenListBalances = () => {
     },
     enabled: (tokens?.length || 0) > 0 && !!client && !!account,
     staleTime: Infinity,
+    refetchInterval: 60_000,
   });
 };
 
@@ -88,7 +89,7 @@ export const useRefetchBalances = () => {
 export const useTokenBalance = (token?: Token) => {
   const client = usePublicClient();
   const { address: account } = useAccount();
-  const { data: balances, isLoading: balancesListLoading } = useTokenListBalances();
+  const { data: balances, isLoading: balancesListLoading, refetch: refetchBalances } = useTokenListBalances();
 
   const addressNotInList = Boolean(balances && token && !Object.keys(balances).some((it) => eqIgnoreCase(it, token.address)));
 
@@ -114,6 +115,7 @@ export const useTokenBalance = (token?: Token) => {
   return {
     data: !token ? undefined : addressNotInList ? balance : balances?.[token.address],
     isLoading: addressNotInList ? isLoading : balancesListLoading,
+    refetch: refetchBalances,
   };
 };
 

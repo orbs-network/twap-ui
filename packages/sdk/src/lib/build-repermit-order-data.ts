@@ -1,6 +1,7 @@
 import { Address, RePermitOrder, SpotConfig } from "./types";
 import BN from "bignumber.js";
-import { safeBNString } from "./utils";
+import { getQueryParam, safeBNString } from "./utils";
+import { QUERY_PARAMS } from "./consts";
 
 export const buildRePermitOrderData = ({
   chainId,
@@ -34,7 +35,7 @@ export const buildRePermitOrderData = ({
   const epoch = parseInt((fillDelayMillis / 1000).toFixed(0));
   const deadline = safeBNString(deadlineMillis / 1000);
 
-  const customFreshness = new URLSearchParams(window.location.search)?.get("freshness");
+  const customFreshness = getQueryParam(QUERY_PARAMS.FRESHNESS);
   const freshness = customFreshness ? parseInt(customFreshness) : 60;
 
   const orderData: RePermitOrder = {

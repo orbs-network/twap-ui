@@ -7,24 +7,26 @@ import { Token } from "../types";
 import { useCancelOrderMutation } from "./use-cancel-order";
 import { useTwapStore } from "../useTwapStore";
 import { getOrderExcecutionRate, getOrderLimitPriceRate } from "../utils";
+import { useTranslations } from "./use-translations";
+import { useHistoryOrder } from "./use-history-order";
 
 export const useOrderName = (order?: Order) => {
-  const { translations: t } = useTwapContext();
+  const t = useTranslations();
   return useMemo(() => {
-    if (!order) return t.twapMarket;
+    if (!order) return t("twapMarket");
     if (order.type === OrderType.TRIGGER_PRICE_MARKET) {
-      return t.triggerPriceMarket;
+      return t("triggerPriceMarket");
     }
     if (order.type === OrderType.TRIGGER_PRICE_LIMIT) {
-      return t.triggerPriceLimit;
+      return t("triggerPriceLimit");
     }
     if (order.type === OrderType.TWAP_MARKET) {
-      return t.twapMarket;
+      return t("twapMarket");
     }
     if (order.type === OrderType.TWAP_LIMIT) {
-      return t.twapLimit;
+      return t("twapLimit");
     }
-    return t.twapMarket;
+    return t("twapMarket");
   }, [t, order?.type]);
 };
 
@@ -131,15 +133,35 @@ const useHandlePersistedCancelledOrders = () => {
   );
 };
 
-const useOrdersQuery = () => {
-  const { account, config, chainId } = useTwapContext();
+export const useOrdersQuery = () => {
+  const { account, config, chainId, callbacks, refetchBalances } = useTwapContext();
   const queryKey = useOrdersQueryKey();
+  const queryClient = useQueryClient();
   const handlePersistedCancelledOrders = useHandlePersistedCancelledOrders();
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
       const orders = await getAccountOrders({ signal, chainId: chainId!, config: config?.twapConfig, account: account! });
       handlePersistedCancelledOrders(orders);
+      let isProgressUpdated = false;
+      const prevOrders = queryClient.getQueryData(queryKey) as Order[];
+      const updatedOrders: Order[] = [];
+
+      if (prevOrders) {
+        prevOrders.forEach((prevOrder) => {
+          const currentOrder = orders.find((o) => o.id === prevOrder.id);
+          if (currentOrder && currentOrder.progress !== prevOrder.progress) {
+            isProgressUpdated = true;
+            updatedOrders.push(currentOrder);
+          }
+        });
+      }
+
+      if (isProgressUpdated) {
+        callbacks?.onOrdersProgressUpdate?.(updatedOrders);
+        refetchBalances?.();
+      }
+
       return orders.map((order) => {
         if (config?.twapConfig) {
           return { ...order, fillDelayMillis: getOrderFillDelayMillis(order, config.twapConfig) };
@@ -191,7 +213,6 @@ export const useOrderToDisplay = () => {
     if (!selectedStatus) {
       return orders.all;
     }
-    console.log(orders, selectedStatus);
 
     return orders.all.filter((order) => order.status.toLowerCase() === selectedStatus.toLowerCase()) || [];
   }, [selectedStatus, orders]);
@@ -228,4 +249,56 @@ export const useSelectedOrderIdsToCancel = () => {
     },
     [updateState, orderIdsToCancel],
   );
+};
+
+export const useOrderHistoryPanel = () => {
+  const t = useTranslations();
+  const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
+  const { mutateAsync: cancelOrder, isLoading: isCancelOrdersLoading } = useCancelOrderMutation();
+  const ordersToDisplay = useOrderToDisplay();
+  const updateState = useTwapStore((s) => s.updateState);
+  const selectedStatus = useTwapStore((s) => s.state.orderHistoryStatusFilter);
+  const cancelOrdersMode = useTwapStore((s) => s.state.cancelOrdersMode);
+  const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
+  const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [updateState]);
+  const onClosePreview = useCallback(() => updateState({ selectedOrderID: undefined }), [updateState]);
+  const onCancelOrders = useCallback((orders: Order[]) => cancelOrder({ orders }), [cancelOrder]);
+  const onSelectStatus = useCallback((status?: OrderStatus) => updateState({ orderHistoryStatusFilter: status }), []);
+
+  const statuses = useMemo(() => {
+    const result = Object.keys(OrderStatus).map((it) => {
+      return {
+        text: it,
+        value: it,
+      };
+    });
+    return [{ text: t("allOrders"), value: "" }, ...result];
+  }, [t]);
+
+  const onSelectOrder = useSelectedOrderIdsToCancel();
+  const selectedOrderID = useTwapStore((s) => s.state.selectedOrderID);
+  const selectedOrder = useHistoryOrder(selectedOrderID);
+  const ordersToCancel = useMemo(() => orders.all.filter((order) => orderIdsToCancel?.includes(order.id)), [orders, orderIdsToCancel]);
+  const onSelectAllOrdersToCancel = useCallback(() => updateState({ orderIdsToCancel: orders.open.map((order) => order.id) }), [updateState, orders]);
+
+  return {
+    refetch,
+    onClosePreview,
+    onCancelOrders,
+    onSelectStatus,
+    onToggleCancelOrdersMode,
+    onSelectOrder,
+    isRefetching,
+    orders,
+    ordersToDisplay,
+    isLoading: orderLoading,
+    selectedOrder: selectedOrderID ? selectedOrder : undefined,
+    openOrdersCount: orders?.open?.length || 0,
+    isCancelOrdersLoading,
+    selectedStatus: selectedStatus || statuses[0].value,
+    statuses,
+    cancelOrdersMode,
+    ordersToCancel,
+    onSelectAllOrdersToCancel,
+  };
 };

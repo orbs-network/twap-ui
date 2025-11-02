@@ -1,16 +1,16 @@
-import { Step, SwapFlow } from "@orbs-network/swap-ui";
+import { Step, SwapFlow, SwapStatus } from "@orbs-network/swap-ui";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useTwapContext } from "../../context/twap-context";
 import { isNativeAddress, Module, ORBS_TWAP_FAQ_URL } from "@orbs-network/twap-sdk";
 import { Steps, SubmitOrderPanelProps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
-import { useExplorerLink, useNetwork } from "../../hooks/helper-hooks";
+import { useExplorerLink, useFormatNumber, useNetwork } from "../../hooks/helper-hooks";
 import { useTrades } from "../../hooks/use-trades";
 import { useSrcAmount } from "../../hooks/use-src-amount";
 import { useDstTokenAmount } from "../../hooks/use-dst-amount";
-import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { OrderDetails } from "../../components/order-details";
 import { useCurrentOrderDetails } from "../../hooks/use-current-order";
+import { useTranslations } from "../../hooks/use-translations";
 
 const Context = createContext({} as SubmitOrderPanelProps);
 
@@ -27,39 +27,42 @@ export const useSubmitOrderPanelContext = () => {
 };
 
 const useOrderName = (isMarketOrder = false, chunks = 1) => {
-  const { translations: t, module } = useTwapContext();
+  const { module } = useTwapContext();
+  const t = useTranslations();
   return useMemo(() => {
     if (module === Module.STOP_LOSS) {
-      return t.stopLoss;
+      return t("stopLoss");
     }
     if (module === Module.TAKE_PROFIT) {
-      return t.takeProfit;
+      return t("takeProfit");
     }
     if (isMarketOrder) {
-      return t.twapMarket;
+      return t("twapMarket");
     }
     if (chunks === 1) {
-      return t.limit;
+      return t("limit");
     }
-    return t.twapLimit;
+    return t("twapLimit");
   }, [t, module, isMarketOrder, chunks]);
 };
 
 const useTitle = () => {
-  const { translations: t } = useTwapContext();
+  const t = useTranslations();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const { totalTrades } = useTrades();
   const orderName = useOrderName(isMarketOrder, totalTrades);
-  return t.createOrderAction.replace("{name}", orderName);
+  return t("createOrderAction", { name: orderName });
 };
 
 const useStep = () => {
-  const { translations: t, srcToken } = useTwapContext();
+  const { srcToken } = useTwapContext();
+  const t = useTranslations();
   const { step, wrapTxHash, approveTxHash } = useTwapStore((s) => s.state.swapExecution);
   const network = useNetwork();
   const wrapExplorerUrl = useExplorerLink(wrapTxHash);
   const unwrapExplorerUrl = useExplorerLink(wrapTxHash);
   const approveExplorerUrl = useExplorerLink(approveTxHash);
+  const status = useTwapStore((s) => s.state.swapExecution.status);
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
   const wSymbol = network?.wToken.symbol;
@@ -68,20 +71,23 @@ const useStep = () => {
   return useMemo((): Step | undefined => {
     if (step === Steps.WRAP) {
       return {
-        title: t.wrapAction.replace("{symbol}", symbol),
-        explorerUrl: wrapExplorerUrl,
+        title: t("wrapAction", { symbol: symbol }),
+        footerLink: wrapExplorerUrl,
+        footerText: wrapExplorerUrl ? t("viewOnExplorer") : t("proceedInWallet"),
       };
     }
     if (step === Steps.APPROVE) {
       return {
-        title: t.approveAction?.replace("{symbol}", symbol),
-        explorerUrl: approveExplorerUrl,
+        title: t("approveAction", { symbol: symbol }),
+        footerLink: approveExplorerUrl,
+        footerText: approveExplorerUrl ? t("viewOnExplorer") : t("proceedInWallet"),
       };
     }
     return {
       title: swapTitle,
+      footerText: status === SwapStatus.LOADING ? t("proceedInWallet") : undefined,
     };
-  }, [step, approveExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol]);
+  }, [step, approveExplorerUrl, symbol, swapTitle, t, wrapExplorerUrl, unwrapExplorerUrl, wSymbol, status]);
 };
 
 const TxError = ({ error }: { error?: any }) => {
@@ -93,39 +99,49 @@ const TxError = ({ error }: { error?: any }) => {
 };
 
 function Failed({ error }: { error?: any }) {
-  const { ErrorView } = useSubmitOrderPanelContext();
+  const { components } = useTwapContext();
+  const t = useTranslations();
+  const wrapTxHash = useTwapStore((s) => s.state.swapExecution?.wrapTxHash);
+  const ErrorView = components.SubmitOrderErrorView;
+
+  const content = <SwapFlow.Failed error={<TxError error={error} />} footerLink={ORBS_TWAP_FAQ_URL} footerText={t("viewOnExplorer")} />;
+
   if (ErrorView) {
-    return ErrorView;
+    return (
+      <ErrorView wrapTxHash={wrapTxHash} error={error}>
+        {content}
+      </ErrorView>
+    );
   }
 
-  return <SwapFlow.Failed error={<TxError error={error} />} link={ORBS_TWAP_FAQ_URL} />;
+  return content;
 }
 
 const Main = () => {
-  const { translations, srcToken, dstToken } = useTwapContext();
+  const { srcToken, dstToken, components } = useTwapContext();
+  const { reviewDetails } = useSubmitOrderPanelContext();
+  const t = useTranslations();
   const isSubmitted = useTwapStore((s) => Boolean(s.state.swapExecution?.status));
   const order = useCurrentOrderDetails();
 
   const inUsd = useFormatNumber({ value: order.srcAmountUsd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: order.dstAmountUsd, decimalScale: 2 });
-  const { Tooltip, USD, reviewDetails, MainView } = useSubmitOrderPanelContext();
-  if (MainView) {
-    return MainView;
-  }
+  const USD = components.USD;
+  const MainView = components.SubmitOrderMainView;
 
-  return (
+  const content = (
     <>
       <SwapFlow.Main
-        fromTitle={translations.from}
-        toTitle={translations.to}
+        fromTitle={t("from")}
+        toTitle={t("to")}
         inUsd={USD ? <USD value={order.srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
         outUsd={USD ? <USD value={order.dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
       />
       {!isSubmitted && (
         <div className="twap-create-order-bottom">
-          <OrderDetails.Container Tooltip={Tooltip}>
+          <OrderDetails.Container>
             <div className="twap-create-order-details">
-              <OrderDetails.DetailRow title={order.tradePrice.label}>
+              <OrderDetails.DetailRow title={order.tradePrice.label || ""}>
                 1 {order.tradePrice.sellToken?.symbol} = {order.tradePrice.value} {order.tradePrice.buyToken?.symbol}
               </OrderDetails.DetailRow>
               <OrderDetails.Deadline deadline={order.display.deadline.value} label={order.display.deadline.label} tooltip={order.display.deadline.tooltip || ""} />
@@ -164,12 +180,21 @@ const Main = () => {
       )}
     </>
   );
+
+  if (MainView) {
+    return <MainView>{content}</MainView>;
+  }
+
+  return content;
 };
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const { status, stepIndex, totalSteps } = useTwapStore((s) => s.state.swapExecution);
-  const { LoadingView, Spinner, SuccessIcon, ErrorIcon, Link } = props;
-  const { TokenLogo } = props;
+  const { components } = useTwapContext();
+  const Spinner = components.Spinner;
+  const SuccessIcon = components.SuccessIcon;
+  const ErrorIcon = components.ErrorIcon;
+  const TokenLogo = components.TokenLogo;
 
   const { srcToken, dstToken } = useTwapContext();
   const srcAmount = useSrcAmount().amountUI;
@@ -210,23 +235,24 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
           Loader: Spinner,
           SuccessIcon: SuccessIcon,
           FailedIcon: ErrorIcon,
-          Link: Link,
-          LoadingView,
         }}
       />
     </SubmitOrderContextProvider>
   );
 };
 
-const SuccessContent = ({ explorerUrl }: { explorerUrl?: string }) => {
+const SuccessContent = () => {
   const successTitle = useTitle();
+  const t = useTranslations();
+  const { components } = useTwapContext();
+  const newOrderId = useTwapStore((s) => s.state.newOrderId);
+  const SuccessView = components.SubmitOrderSuccessView;
 
-  const { SuccessView } = useSubmitOrderPanelContext();
-
+  const content = <SwapFlow.Success title={successTitle} footerText={t("orderCreatedSuccessfully")} />;
   if (SuccessView) {
-    return SuccessView;
+    return <SuccessView newOrderId={newOrderId}>{content}</SuccessView>;
   }
-  return <SwapFlow.Success title={successTitle} explorerUrl={explorerUrl} />;
+  return content;
 };
 
 export { SubmitOrderPanel };

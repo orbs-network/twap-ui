@@ -6,13 +6,13 @@ import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { getChunks, getMaxChunksError, getMaxPossibleChunks, getSrcTokenChunkAmount, getMinTradeSizeError } from "@orbs-network/twap-sdk";
 import { useFillDelay } from "./use-fill-delay";
 import { useSrcAmount } from "./use-src-amount";
-import { useAmountUi } from "./helper-hooks";
+import { useAmountUi, useFormatNumber } from "./helper-hooks";
 import BN from "bignumber.js";
-import { useFormatNumber } from "./useFormatNumber";
+import { useTranslations } from "./use-translations";
 
 const useTradesError = (amount: number, maxAmount: number) => {
   const { module, srcUsd1Token } = useTwapContext();
-  const t = useTwapContext().translations;
+  const t = useTranslations();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const minChunkSizeUsd = useMinChunkSizeUsd();
 
@@ -22,7 +22,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
       return {
         type: InputErrors.MIN_CHUNKS,
         value: 1,
-        message: `${t.minChunksError} 1`,
+        message: `${t("minChunksError")} 1`,
       };
     }
     const { isError: maxChunksError } = getMaxChunksError(amount, maxAmount, module);
@@ -30,7 +30,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
       return {
         type: InputErrors.MAX_CHUNKS,
         value: maxAmount,
-        message: t.maxChunksError.replace("{maxChunks}", `${maxAmount}`),
+        message: t("maxChunksError", { maxChunks: `${maxAmount}` }),
       };
     }
     const { isError: minTradeSizeError, value: minTradeSizeValue } = getMinTradeSizeError(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0);
@@ -39,7 +39,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
       return {
         type: InputErrors.MIN_TRADE_SIZE,
         value: minTradeSizeValue,
-        message: t.minTradeSizeError.replace("{minTradeSize}", `${minTradeSizeValue} USD`),
+        message: t("minTradeSizeError", { minTradeSize: `${minTradeSizeValue} USD` }),
       };
     }
   }, [amount, maxAmount, module, typedSrcAmount, srcUsd1Token, minChunkSizeUsd, t]);
@@ -86,5 +86,25 @@ export const useTrades = () => {
     amountPerTradeUsd: usd,
     onChange,
     error: useTradesError(totalTrades, maxTrades),
+  };
+};
+
+export const useTradesPanel = () => {
+  const { srcToken, dstToken } = useTwapContext();
+  const t = useTranslations();
+  const { onChange, totalTrades, amountPerTradeUsd, amountPerTradeUI, error, maxTrades, amountPerTradeWei } = useTrades();
+
+  return {
+    error,
+    maxTrades,
+    totalTrades,
+    amountPerTrade: amountPerTradeUI,
+    amountPerTradeWei,
+    onChange,
+    label: t("tradesAmountTitle"),
+    tooltip: t("totalTradesTooltip"),
+    amountPerTradeUsd,
+    fromToken: srcToken,
+    toToken: dstToken,
   };
 };

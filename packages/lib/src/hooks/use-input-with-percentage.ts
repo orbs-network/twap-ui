@@ -4,7 +4,7 @@ import BN from "bignumber.js";
 import { useTwapContext } from "../context/twap-context";
 import { formatDecimals } from "../utils";
 import { useUsdAmount } from "./helper-hooks";
-import { useInvertTrade } from "./use-invert-trade";
+import { useInvertTradePanel } from "./use-invert-trade-panel";
 
 export const useInputWithPercentage = ({
   typedValue,
@@ -22,7 +22,7 @@ export const useInputWithPercentage = ({
   setPercentage: (percentage?: number | null) => void;
 }) => {
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();
-  const { isInverted } = useInvertTrade();
+  const { isInverted } = useInvertTradePanel();
   const priceWei = useMemo(() => {
     if (typedValue !== undefined) {
       const value = isInverted ? (BN(typedValue).isZero() ? BN(0) : BN(1).div(typedValue)) : BN(typedValue);
@@ -81,7 +81,7 @@ export const useInputWithPercentage = ({
       result = isInverted ? (BN(amount).isZero() ? "0" : BN(1).div(amount).toFixed()) : amount;
     }
 
-    return formatDecimals(result, 6);
+    return formatDecimals(result, 6, tokenDecimals);
   }, [typedValue, tokenDecimals, priceWei, isInverted]);
 
   const usd = useUsdAmount(isInverted ? srcUsd1Token : dstUsd1Token, amountUI || "0");

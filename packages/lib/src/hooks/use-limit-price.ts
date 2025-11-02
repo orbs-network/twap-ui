@@ -6,10 +6,13 @@ import { InputErrors, InputError, Module } from "../types";
 import BN from "bignumber.js";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useDefaultLimitPricePercent } from "./use-default-values";
-import { getStopLossLimitPriceError, getTakeProfitLimitPriceError } from "@orbs-network/twap-sdk";
+import { getStopLossLimitPriceError, getTakeProfitLimitPriceError, ORBS_TWAP_FAQ_URL } from "@orbs-network/twap-sdk";
+import { useTranslations } from "./use-translations";
+import { useInvertTradePanel } from "./use-invert-trade-panel";
 
 export const useLimitPriceError = (limitPriceWei?: string) => {
-  const { translations: t, module } = useTwapContext();
+  const { module } = useTwapContext();
+  const t = useTranslations();
   const { amountWei: triggerPrice } = useTriggerPrice();
 
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
@@ -22,7 +25,7 @@ export const useLimitPriceError = (limitPriceWei?: string) => {
     if (_stopLossError?.isError) {
       return {
         type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
-        message: t.triggerLimitPriceError,
+        message: t("triggerLimitPriceError") || "",
         value: _stopLossError.value,
       };
     }
@@ -30,7 +33,7 @@ export const useLimitPriceError = (limitPriceWei?: string) => {
     if (_takeProfitError?.isError) {
       return {
         type: InputErrors.TRIGGER_LIMIT_PRICE_GREATER_THAN_TRIGGER_PRICE,
-        message: t.triggerLimitPriceError,
+        message: t("triggerLimitPriceError") || "",
         value: _takeProfitError.value,
       };
     }
@@ -38,7 +41,7 @@ export const useLimitPriceError = (limitPriceWei?: string) => {
     if (limitPriceWei && BN(limitPriceWei || 0).isZero()) {
       return {
         type: InputErrors.MISSING_LIMIT_PRICE,
-        message: t.emptyLimitPrice,
+        message: t("emptyLimitPrice") || "",
         value: limitPriceWei || "",
       };
     }
@@ -93,5 +96,63 @@ export const useLimitPriceToggle = () => {
   return {
     isLimitPrice: !isMarketOrder,
     toggleLimitPrice,
+  };
+};
+
+export const useLimitPricePanel = () => {
+  const { module, srcToken, dstToken, marketPrice, marketPriceLoading } = useTwapContext();
+  const t = useTranslations();
+  const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useLimitPrice();
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const updateState = useTwapStore((s) => s.updateState);
+  const defaultLimitPricePercent = useDefaultLimitPricePercent();
+  const { isLimitPrice, toggleLimitPrice } = useLimitPriceToggle();
+  const { triggerPricePercent } = useTwapStore((s) => s.state);
+  const { isInverted, onInvert } = useInvertTradePanel();
+
+  const hide = module === Module.LIMIT;
+
+  const warning = useMemo(() => {
+    if (module !== Module.STOP_LOSS) return;
+
+    return {
+      text: t("triggerMarketPriceDisclaimer"),
+      url: ORBS_TWAP_FAQ_URL,
+    };
+  }, [triggerPricePercent, t, module]);
+
+  const reset = useCallback(() => {
+    updateState({ typedLimitPrice: undefined });
+    updateState({ limitPricePercent: defaultLimitPricePercent });
+  }, [updateState, module, defaultLimitPricePercent]);
+
+  const tooltip = useMemo(() => {
+    if (module === Module.STOP_LOSS) {
+      return t("stopLossLimitPriceTooltip");
+    }
+    return t("limitPriceTooltip");
+  }, [t, module]);
+
+  return {
+    price: amountUI,
+    error,
+    warning,
+    label: t("limitPrice"),
+    tooltip,
+    onChange,
+    onPercentageChange,
+    isActive: !isMarketOrder,
+    onReset: reset,
+    usd,
+    fromToken: isInverted ? dstToken : srcToken,
+    toToken: isInverted ? srcToken : dstToken,
+    selectedPercentage: selectedPercentage,
+    isInverted,
+    prefix: "",
+    isLoading: marketPriceLoading || !marketPrice,
+    isLimitPrice,
+    toggleLimitPrice,
+    hide,
+    onInvert,
   };
 };

@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-sdk",
-  "version": "5.0.15",
+  "version": "5.0.41",
   "description": "TWAP UI SDK",
   "license": "MIT",
   "author": "Orbs",
@@ -20,12 +20,12 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@orbs-network/spot": "^0.0.8",
+    "@orbs-network/spot": "^0.0.11",
     "@orbs-network/twap": "^2.7.25",
     "bignumber.js": "9.x"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0"
+  "gitHead": "f63ed0fd7a3ff957eea7623f12bd0dedd0b7258d"
 }

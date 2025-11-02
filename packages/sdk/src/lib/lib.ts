@@ -50,7 +50,7 @@ export const getDuration = (module: Module, chunks: number, fillDelay: TimeDurat
   }
 
   if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
-    return { unit: TimeUnit.Days, value: 30 } as TimeDuration;
+    return { unit: TimeUnit.Days, value: 1 } as TimeDuration;
   }
 
   return { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
@@ -184,7 +184,8 @@ export const getConfig = (chainId?: number, _dex?: Partners): SpotConfig | undef
     if (!chainId || !_dex) throw new Error("Invalid chainId or _dex");
 
     const twapConfig = Object.entries(Configs).find(([key, value]) => value.chainId === chainId && key.toLowerCase().indexOf(_dex.toLowerCase()) >= 0)?.[1];
-    const dexConfig = Spot.config(chainId, _dex);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { abi, ...dexConfig } = Spot.config(chainId, _dex);
 
     const result = {
       ...dexConfig,

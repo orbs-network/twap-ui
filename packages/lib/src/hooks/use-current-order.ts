@@ -9,8 +9,9 @@ import { useTrades } from "./use-trades";
 import { useTriggerPrice } from "./use-trigger-price";
 import { useMemo } from "react";
 import BN from "bignumber.js";
-import { useFormatNumber } from "./useFormatNumber";
 import { useAmountsUsd } from "./use-amounts-usd";
+import { useTranslations } from "./use-translations";
+import { useFormatNumber } from "./helper-hooks";
 
 const useFees = () => {
   const { fees } = useTwapContext();
@@ -43,7 +44,8 @@ const usePrice = () => {
 };
 
 export const useCurrentOrderDetails = () => {
-  const { srcToken, dstToken, account, translations: t } = useTwapContext();
+  const { srcToken, dstToken, account } = useTwapContext();
+  const t = useTranslations();
   const { amountWei: srcAmountWei } = useSrcAmount();
   const dstMinAmountPerTrade = useDstMinAmountPerTrade().amountWei;
   const { totalTrades, amountPerTradeWei } = useTrades();
@@ -74,11 +76,11 @@ export const useCurrentOrderDetails = () => {
       srcAmountUsd,
       dstAmountUsd,
       fee: {
-        label: t.fees.replace("{{value}}", feesPercent?.toString() || "0"),
+        label: t("fees", { value: `${feesPercent}%` }),
         value: feesAmount,
       },
       tradePrice: {
-        label: t.tradePrice,
+        label: t("tradePrice") || "",
         value: tradePrice,
         sellToken: srcToken,
         buyToken: dstToken,
