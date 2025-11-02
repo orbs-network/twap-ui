@@ -146,7 +146,7 @@ const OrderID = ({ id }: { id: string }) => {
           <Tooltip tooltipText={id}>
             <div className="twap-order-details__detail-row-value-id">
               <p>{makeElipsisAddress(id)}</p>
-              <AiOutlineCopy onClick={() => copy(id)} />
+              <AiOutlineCopy />
             </div>
           </Tooltip>
         )}

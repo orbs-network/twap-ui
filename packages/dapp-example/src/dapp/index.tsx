@@ -1,4 +1,4 @@
-import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD, useUnwrapToken } from "../hooks";
+import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useTokensWithBalancesUSD, useUnwrapToken, useWrapToken } from "../hooks";
 import { NumberInput, Popup, PanelToggle } from "../Components";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography } from "antd";
@@ -31,8 +31,9 @@ import {
   useTriggerPricePanel,
   useDisclaimerPanel,
   useInputErrors,
+  makeElipsisAddress,
 } from "@orbs-network/twap-ui";
-import { Config, Configs, getNetwork, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, Configs, eqIgnoreCase, getNetwork, isNativeAddress, Order, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
@@ -50,6 +51,7 @@ import styled from "styled-components";
 import { abbreviate } from "../utils";
 import clsx from "clsx";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 export const useSwitchChain = () => {
   const { data: walletClient } = useWalletClient();
 
@@ -127,7 +129,7 @@ const OrderHistoryModal = () => {
 };
 
 const ErrorView = () => {
-  const { resetSwap, srcAmountWei } = useSubmitSwapPanel();
+  const { resetSwap } = useSubmitSwapPanel();
   const chainId = useChainId();
   const network = getNetwork(chainId);
   const { mutateAsync: onUnwrap } = useUnwrapToken();
@@ -138,7 +140,7 @@ const ErrorView = () => {
       <p>
         Note: {network?.native.symbol} was wrapped to {network?.wToken.symbol}
       </p>
-      <Button onClick={() => onUnwrap({ onSuccess: resetSwap, srcAmount: srcAmountWei })}>Unwrap</Button>
+      <Button onClick={() => onUnwrap(resetSwap)}>Unwrap</Button>
     </div>
   );
 };
@@ -266,6 +268,35 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
   const config = useDappContext().config;
   const isWrongChain = config.chainId !== chainId;
   const disabled = !isConnected ? false : isWrongChain ? false : _disabled;
+  const { srcToken, dstToken } = useTokens();
+  const network = getNetwork(chainId);
+  const { mutateAsync: onUnwrap, isLoading: isUnwrapLoading } = useUnwrapToken();
+  const { mutateAsync: onWrap, isLoading: isWrapLoading } = useWrapToken();
+
+  const isUnwrap = isNativeAddress(srcToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", dstToken?.address || "");
+  const isWrap = isNativeAddress(dstToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", srcToken?.address || "");
+
+  const onConfirm = useCallback(() => {
+    if (!isConnected) {
+      openConnectModal?.();
+    } else if (config.chainId !== chainId) {
+      switchChain(config);
+    } else if (isUnwrap) {
+      onUnwrap(undefined);
+    } else if (isWrap) {
+      onWrap(undefined);
+    } else {
+      onClick();
+    }
+  }, [isConnected, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap]);
+
+  const buttonText = useMemo(() => {
+    if (!isConnected) return "Connect Wallet";
+    if (isWrongChain) return "Switch Network";
+    if (isUnwrap) return "Unwrap";
+    if (isWrap) return "Wrap";
+    return text;
+  }, [isUnwrap, isWrap, text]);
 
   return (
     <StyledButton
@@ -274,18 +305,10 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
       style={{
         width: "100%",
       }}
-      onClick={() => {
-        if (!isConnected) {
-          openConnectModal?.();
-        } else if (config.chainId !== chainId) {
-          switchChain(config);
-        } else {
-          onClick();
-        }
-      }}
-      disabled={disabled}
+      onClick={onConfirm}
+      disabled={disabled || isUnwrapLoading || isWrapLoading}
     >
-      {!isConnected ? "Connect Wallet" : isWrongChain ? "Switch Network" : text}
+      {buttonText}
     </StyledButton>
   );
 };
@@ -293,6 +316,7 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
 const useTokens = () => {
   const { srcToken, dstToken, setSrcToken, setDstToken, resetTokens } = useDappStore();
   const allTokens = useTokenList();
+
   const chainId = useDappContext().config.chainId;
   const account = useAccount().address;
   const { isLoading } = useTokensWithBalancesUSD();
@@ -776,6 +800,27 @@ const PanelInputs = () => {
   return null;
 };
 
+const useCallbacks = () => {
+  const getToken = useGetToken();
+  const onOrderFilled = useCallback(
+    (order: Order) => {
+      const srcToken = getToken(order.srcTokenAddress);
+      const dstToken = getToken(order.dstTokenAddress);
+      toast.success(`Order ${makeElipsisAddress(order.id)} filled ${srcToken?.symbol} -> ${dstToken?.symbol}`);
+    },
+    [getToken],
+  );
+
+  const onCopy = useCallback(() => {
+    toast.success("Copied to clipboard");
+  }, []);
+
+  return {
+    onOrderFilled,
+    onCopy,
+  };
+};
+
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
   const { amount: typedSrcAmount } = useTypedSrcAmount();
@@ -806,6 +851,8 @@ export const Dapp = () => {
   const srcUsd1Token = useUSD(srcToken?.address);
   const dstUsd1Token = useUSD(dstToken?.address);
 
+  const { onOrderFilled, onCopy } = useCallbacks();
+
   return (
     <>
       <GlobalStyles isDarkMode={true} />
@@ -832,6 +879,7 @@ export const Dapp = () => {
           SubmitOrderSuccessView,
         }}
         refetchBalances={refetchBalances}
+        callbacks={{ onOrderFilled, onCopy }}
         overrides={{
           minChunkSizeUsd: 5,
         }}

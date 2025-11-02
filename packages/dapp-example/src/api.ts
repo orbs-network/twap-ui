@@ -56,7 +56,9 @@ const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<
 const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
   const tokens = await getDefaultTokens(chainId, signal);
 
-  const result = _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol)).reverse();
+  const result = _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol))
+    .reverse()
+    .slice(0, 200);
   const native = getNetwork(chainId)?.native as Token;
 
   return [native, ...result];

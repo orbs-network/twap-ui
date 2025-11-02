@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@ethersproject/hash": "^5.8.0",
-    "@orbs-network/swap-ui": "^0.0.53",
+    "@orbs-network/swap-ui": "^0.0.54",
     "@orbs-network/twap-sdk": "^5.0.41",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",

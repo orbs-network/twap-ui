@@ -6,8 +6,10 @@ export * from "./utils";
 export { Configs } from "./consts";
 export { useFormatNumber } from "./hooks/helper-hooks";
 export const useTypedSrcAmount = () => {
+  const updateState = useTwapStore((s) => s.updateState);
+
   return {
     amount: useTwapStore((s) => s.state.typedSrcAmount),
-    reset: useCallback(() => useTwapStore((s) => s.updateState({ typedSrcAmount: "" })), []),
+    reset: useCallback(() => updateState({ typedSrcAmount: "" }), [updateState]),
   };
 };

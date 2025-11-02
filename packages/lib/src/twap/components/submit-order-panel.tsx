@@ -26,6 +26,18 @@ export const useSubmitOrderPanelContext = () => {
   return useContext(Context);
 };
 
+const WrapMsg = () => {
+  const t = useTranslations();
+  const { srcToken } = useTwapStore((s) => s.state.swapExecution);
+  const wSymbol = useNetwork()?.wToken?.symbol;
+
+  if (!isNativeAddress(srcToken?.address || "")) {
+    return null;
+  }
+
+  return <p className="twap-wrap-msg">{t("wrapMsg", { symbol: srcToken?.symbol || "", wSymbol: wSymbol || "" })}</p>;
+};
+
 const useOrderName = (isMarketOrder = false, chunks = 1) => {
   const { module } = useTwapContext();
   const t = useTranslations();
@@ -49,13 +61,19 @@ const useOrderName = (isMarketOrder = false, chunks = 1) => {
 const useTitle = () => {
   const t = useTranslations();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const status = useTwapStore((s) => s.state.swapExecution.status);
   const { totalTrades } = useTrades();
   const orderName = useOrderName(isMarketOrder, totalTrades);
+
+  if (status === SwapStatus.SUCCESS) {
+    return t("createOrderActionSuccess", { name: orderName });
+  }
+
   return t("createOrderAction", { name: orderName });
 };
 
 const useStep = () => {
-  const { srcToken } = useTwapContext();
+  const srcToken = useTwapStore((s) => s.state.swapExecution.srcToken);
   const t = useTranslations();
   const { step, wrapTxHash, approveTxHash } = useTwapStore((s) => s.state.swapExecution);
   const network = useNetwork();
@@ -94,6 +112,7 @@ const TxError = ({ error }: { error?: any }) => {
   return (
     <div className="twap-failed-unwrap">
       <h2 className="twap-failed-unwrap-title">{error ? error : `Transaction failed`}</h2>
+      <WrapMsg />
     </div>
   );
 };
@@ -118,7 +137,9 @@ function Failed({ error }: { error?: any }) {
 }
 
 const Main = () => {
-  const { srcToken, dstToken, components } = useTwapContext();
+  const { components } = useTwapContext();
+  const srcToken = useTwapStore((s) => s.state.swapExecution.srcToken);
+  const dstToken = useTwapStore((s) => s.state.swapExecution.dstToken);
   const { reviewDetails } = useSubmitOrderPanelContext();
   const t = useTranslations();
   const isSubmitted = useTwapStore((s) => Boolean(s.state.swapExecution?.status));
@@ -243,12 +264,16 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
 
 const SuccessContent = () => {
   const successTitle = useTitle();
-  const t = useTranslations();
   const { components } = useTwapContext();
   const newOrderId = useTwapStore((s) => s.state.newOrderId);
   const SuccessView = components.SubmitOrderSuccessView;
 
-  const content = <SwapFlow.Success title={successTitle} footerText={t("orderCreatedSuccessfully")} />;
+  const content = (
+    <>
+      <SwapFlow.Success title={successTitle} />
+      <WrapMsg />
+    </>
+  );
   if (SuccessView) {
     return <SuccessView newOrderId={newOrderId}>{content}</SuccessView>;
   }

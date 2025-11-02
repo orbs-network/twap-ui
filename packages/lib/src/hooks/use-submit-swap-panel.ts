@@ -45,9 +45,9 @@ export const useSubmitSwapPanel = () => {
 
   const onOpenModal = useCallback(() => {
     if (swapExecution?.status !== SwapStatus.LOADING) {
-      updateState({ acceptedSrcAmount: undefined, acceptedMarketPrice: undefined, swapExecution: {} as SwapExecution });
+      updateState({ acceptedSrcAmount: undefined, acceptedMarketPrice: undefined, swapExecution: { srcToken, dstToken } as SwapExecution });
     }
-  }, [updateState]);
+  }, [updateState, srcToken, dstToken]);
 
   const submitSwapMutation = useMutation(async () => {
     updateState({ acceptedSrcAmount: srcAmountUI, acceptedMarketPrice: marketPrice });

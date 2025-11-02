@@ -85,5 +85,6 @@
   "maxOrderSizeError": "Max. trade size is {maxOrderSize} USD",
   "viewOnExplorer": "View on explorer",
   "proceedInWallet": "Proceed in wallet",
-  "orderCreatedSuccessfully": "Order created successfully"
+  "wrapMsg": "Note: {symbol} was wrapped to {wSymbol}",
+  "createOrderActionSuccess": "{name} order placed"
 }

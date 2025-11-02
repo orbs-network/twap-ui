@@ -1,5 +1,5 @@
 import { amountBN, amountUi, getNetwork } from "@orbs-network/twap-sdk";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../context/twap-context";
 import BN from "bignumber.js";
 import { formatDecimals, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
@@ -70,15 +70,19 @@ export const useDateFormat = (date?: number) => {
 };
 
 export function useCopyToClipboard() {
-  const copy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (error) {
-      console.error("Copy failed:", error);
-    }
-  };
+  const { callbacks } = useTwapContext();
+  return useCallback(
+    async (text: string) => {
+      try {
+        await navigator.clipboard.writeText(text);
 
-  return copy;
+        callbacks?.onCopy?.();
+      } catch (error) {
+        console.error("Copy failed:", error);
+      }
+    },
+    [callbacks?.onCopy],
+  );
 }
 
 export const useFormatDecimals = (value?: string | number, decimalPlaces?: number) => {

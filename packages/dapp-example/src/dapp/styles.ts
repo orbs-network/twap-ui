@@ -13,6 +13,12 @@ const getColors = (isDarkMode?: boolean) => {
 export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDarkMode }) => {
   const colors = getColors(isDarkMode);
   return {
+    ".twap-wrap-msg": {
+      textAlign: "center",
+      marginTop: 10,
+      fontSize: 17,
+      fontWeight: 500,
+    },
     ".twap-order-details__detail-row-value-id": {
       display: "flex",
       alignItems: "center",

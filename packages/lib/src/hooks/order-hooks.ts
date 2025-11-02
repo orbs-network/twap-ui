@@ -153,6 +153,9 @@ export const useOrdersQuery = () => {
           if (currentOrder && currentOrder.progress !== prevOrder.progress) {
             isProgressUpdated = true;
             updatedOrders.push(currentOrder);
+            if (currentOrder.status === OrderStatus.Completed) {
+              callbacks?.onOrderFilled?.(currentOrder);
+            }
           }
         });
       }

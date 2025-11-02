@@ -14,6 +14,7 @@ import { useDstTokenPanel, useSrcTokenPanel } from "../hooks/use-token-panel";
 import { useLimitPricePanel } from "../hooks/use-limit-price";
 import { useInvertTradePanel } from "../hooks/use-invert-trade-panel";
 import { useInputErrors } from "../hooks/use-input-errors";
+import { useBuildRePermitOrderDataCallback } from "../hooks/use-build-repermit-order-data-callback.ts";
 
 const Components = {
   SubmitOrderPanel,
@@ -40,4 +41,5 @@ export {
   useDisclaimerPanel,
   useInvertTradePanel,
   useInputErrors,
+  useBuildRePermitOrderDataCallback,
 };

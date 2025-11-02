@@ -6,6 +6,7 @@ import { useDappContext } from "./context";
 import { GlobalStyles, darkTheme } from "./styles";
 import { ConfigSelector } from "./Components";
 import { ConfigProvider } from "antd";
+import { Toaster } from "sonner";
 
 function App() {
   const { config } = useDappContext();
@@ -28,6 +29,7 @@ function App() {
             <ConnectButton />
           </div>
           <Dapp />
+          <Toaster position="top-right" duration={7_000} />
         </div>
       </ConfigProvider>
     </ThemeProvider>

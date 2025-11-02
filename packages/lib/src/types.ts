@@ -16,10 +16,11 @@ export interface Translations {
   minDstAmountTooltip: string;
   marketPriceTooltip: string;
   limitPriceTooltip: string;
+  wrapMsg: string;
   tradeIntervalTootlip: string;
   triggerPriceTooltip: string;
+  createOrderActionSuccess: string;
   version: string;
-  orderCreatedSuccessfully: string;
   viewOnExplorer: string;
   proceedInWallet: string;
   outAmountLoading: string;
@@ -273,6 +274,8 @@ export type Callbacks = {
   onApproveSuccess?: (receipt: TransactionReceipt, token: Token, amount: string) => void;
   onWrapRequest?: (amount: string) => void;
   onWrapSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
+  onOrderFilled?: (order: Order) => void;
+  onCopy?: () => void;
 };
 
 export type SubmitOrderSuccessViewProps = {
@@ -381,6 +384,8 @@ export type SwapExecution = {
   approveTxHash?: string;
   wrapTxHash?: string;
   totalSteps?: number;
+  srcToken?: Token;
+  dstToken?: Token;
 };
 
 export interface State {

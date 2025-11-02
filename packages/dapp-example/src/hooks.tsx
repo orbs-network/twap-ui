@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Token } from "@orbs-network/twap-ui";
+import { Token, useTypedSrcAmount } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 import { amountBN, amountUi, Configs, eqIgnoreCase, getNetwork, isNativeAddress, IWETH_ABI, networks } from "@orbs-network/twap-sdk";
 import _ from "lodash";
@@ -8,6 +8,8 @@ import { useAccount, useChainId, usePublicClient, useReadContracts, useWalletCli
 import { api } from "./api";
 import { erc20Abi } from "viem";
 import { useDappContext } from "./context";
+import { useDappStore } from "./dapp/store";
+import { toast } from "sonner";
 
 type Balance = {
   ui: string;
@@ -407,13 +409,17 @@ export const useUnwrapToken = () => {
   const chainId = useChainId();
   const walletClient = useWalletClient();
   const { address: account } = useAccount();
+  const { srcToken } = useDappStore();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const { amount: srcAmount } = useTypedSrcAmount();
   const wTokenAddress = getNetwork(chainId)?.wToken.address;
-  return useMutation(async ({ srcAmount, onSuccess }: { srcAmount: string; onSuccess: () => void }) => {
+  return useMutation(async (onSuccess?: () => void) => {
     try {
       if (!wTokenAddress) throw new Error("wTokenAddress is not defined");
-      const value = BigInt(BN(srcAmount).decimalPlaces(0).toFixed());
+      const srcAmountWei = amountBN(srcToken?.decimals, srcAmount);
+
+      const value = BigInt(BN(srcAmountWei).decimalPlaces(0).toFixed());
 
       const hash = await writeContractAsync({
         abi: IWETH_ABI,
@@ -428,10 +434,51 @@ export const useUnwrapToken = () => {
         throw new Error("failed to get transaction receipt");
       }
 
-      onSuccess();
+      toast.success("Unwrapped token successfully");
+
+      onSuccess?.();
+
       return receipt;
     } catch (error) {
       console.error("failed to unwrap token", error);
+    }
+  });
+};
+
+export const useWrapToken = () => {
+  const chainId = useChainId();
+  const walletClient = useWalletClient();
+  const { address: account } = useAccount();
+  const { srcToken } = useDappStore();
+  const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
+  const { amount: srcAmount } = useTypedSrcAmount();
+  const wTokenAddress = getNetwork(chainId)?.wToken.address;
+  return useMutation(async (onSuccess?: () => void) => {
+    try {
+      if (!wTokenAddress) throw new Error("wTokenAddress is not defined");
+      const srcAmountWei = amountBN(srcToken?.decimals, srcAmount);
+      const value = BigInt(BN(srcAmountWei).decimalPlaces(0).toFixed());
+      const hash = await writeContractAsync({
+        abi: IWETH_ABI,
+        functionName: "deposit",
+        account: account,
+        address: wTokenAddress as `0x${string}`,
+        args: [value],
+        chain: walletClient.data?.chain,
+      });
+      const receipt = await publicClient?.getTransactionReceipt({ hash });
+      if (!receipt) {
+        throw new Error("failed to get transaction receipt");
+      }
+
+      toast.success("Wrapped token successfully");
+
+      onSuccess?.();
+
+      return receipt;
+    } catch (error) {
+      console.error("failed to wrap token", error);
     }
   });
 };
