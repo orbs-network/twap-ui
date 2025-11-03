@@ -261,13 +261,13 @@ const SelectMenu = (props: SelectMenuProps) => {
 
 const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: () => void; text: string; disabled: boolean }) => {
   const { chainId } = useAccount();
-  const { data: walletClient } = useWalletClient();
-  const isConnected = !!walletClient;
+  const { address: account } = useAccount();
+
   const { openConnectModal } = useConnectModal();
   const switchChain = useSwitchChain();
   const config = useDappContext().config;
   const isWrongChain = config.chainId !== chainId;
-  const disabled = !isConnected ? false : isWrongChain ? false : _disabled;
+  const disabled = !account ? false : isWrongChain ? false : _disabled;
   const { srcToken, dstToken } = useTokens();
   const network = getNetwork(chainId);
   const { mutateAsync: onUnwrap, isLoading: isUnwrapLoading } = useUnwrapToken();
@@ -277,7 +277,7 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
   const isWrap = isNativeAddress(dstToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", srcToken?.address || "");
 
   const onConfirm = useCallback(() => {
-    if (!isConnected) {
+    if (!account) {
       openConnectModal?.();
     } else if (config.chainId !== chainId) {
       switchChain(config);
@@ -288,10 +288,10 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
     } else {
       onClick();
     }
-  }, [isConnected, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap]);
+  }, [account, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap]);
 
   const buttonText = useMemo(() => {
-    if (!isConnected) return "Connect Wallet";
+    if (!account) return "Connect Wallet";
     if (isWrongChain) return "Switch Network";
     if (isUnwrap) return "Unwrap";
     if (isWrap) return "Wrap";

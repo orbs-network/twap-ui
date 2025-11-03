@@ -69,6 +69,7 @@ export const NumberInput = (props: {
           disabled={disabled}
           decimalScale={decimalScale}
           onBlur={onBlur}
+          name="number-input"
           onFocus={onFocus}
           placeholder={placeholder || "0"}
           max={maxValue}
