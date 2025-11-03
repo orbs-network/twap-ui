@@ -93,6 +93,7 @@ export type Order = {
   chainId: number;
   filledOrderTimestamp: number;
   status: OrderStatus;
+  rawOrder: OrderV2 | OrderV1;
 };
 
 export type Address = `0x${string}`;

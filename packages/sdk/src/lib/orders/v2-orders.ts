@@ -83,6 +83,7 @@ export const buildV2Order = (order: OrderV2): Order => {
     chainId: order.order.witness.chainid,
     filledOrderTimestamp: 0,
     status: getStatus(order, progress),
+    rawOrder: order,
   };
 };
 

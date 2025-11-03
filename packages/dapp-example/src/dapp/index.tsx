@@ -273,30 +273,30 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
   const { mutateAsync: onUnwrap, isLoading: isUnwrapLoading } = useUnwrapToken();
   const { mutateAsync: onWrap, isLoading: isWrapLoading } = useWrapToken();
 
-  const isUnwrap = isNativeAddress(srcToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", dstToken?.address || "");
-  const isWrap = isNativeAddress(dstToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", srcToken?.address || "");
+  const isWrapToken = isNativeAddress(srcToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", dstToken?.address || "");
+  const isUnwrapToken = isNativeAddress(dstToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", srcToken?.address || "");
 
   const onConfirm = useCallback(() => {
     if (!account) {
       openConnectModal?.();
     } else if (config.chainId !== chainId) {
       switchChain(config);
-    } else if (isUnwrap) {
+    } else if (isUnwrapToken) {
       onUnwrap(undefined);
-    } else if (isWrap) {
+    } else if (isWrapToken) {
       onWrap(undefined);
     } else {
       onClick();
     }
-  }, [account, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap]);
+  }, [account, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap, isUnwrapToken, isWrapToken]);
 
   const buttonText = useMemo(() => {
     if (!account) return "Connect Wallet";
     if (isWrongChain) return "Switch Network";
-    if (isUnwrap) return "Unwrap";
-    if (isWrap) return "Wrap";
+    if (isUnwrapToken) return "Unwrap";
+    if (isWrapToken) return "Wrap";
     return text;
-  }, [isUnwrap, isWrap, text]);
+  }, [isUnwrapToken, isWrapToken, text, account, isWrongChain]);
 
   return (
     <StyledButton

@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { analytics, getConfig, Module, getQueryParam, QUERY_PARAMS } from "@orbs-network/twap-sdk";
-import { TwapProps, TwapContextType } from "../types";
+import { analytics, getConfig, Module, getQueryParam, QUERY_PARAMS, amountBN } from "@orbs-network/twap-sdk";
+import { TwapProps, TwapContextType, Overrides, MarketReferencePrice } from "../types";
 import { initiateWallet } from "../lib";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTwapStore } from "../useTwapStore";
 import BN from "bignumber.js";
+import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 
 const TwapFallbackUI = () => {
   return (
@@ -61,12 +62,18 @@ const Listeners = (props: TwapProps) => {
   return null;
 };
 
-const useParsedMarketPrice = ({ marketReferencePrice }: TwapProps) => {
+const useParsedMarketPrice = ({ marketReferencePrice, srcToken, dstToken, chainId }: TwapProps) => {
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
-  return useMemo(() => {
-    if (BN(marketReferencePrice.value || 0).isZero()) return marketReferencePrice;
-    if (BN(typedSrcAmount || 0).isZero()) return marketReferencePrice;
+  return useMemo((): MarketReferencePrice => {
+    if (shouldWrapOnly(srcToken, dstToken, chainId) || shouldUnwrapOnly(srcToken, dstToken, chainId)) {
+      return {
+        isLoading: false,
+        noLiquidity: false,
+        value: amountBN(srcToken?.decimals || 18, typedSrcAmount || "0"),
+      };
+    }
+    if (BN(marketReferencePrice.value || 0).isZero() || BN(typedSrcAmount || 0).isZero()) return marketReferencePrice;
 
     const value = BN(marketReferencePrice.value || 0)
       .dividedBy(typedSrcAmount || 0)
@@ -76,11 +83,14 @@ const useParsedMarketPrice = ({ marketReferencePrice }: TwapProps) => {
       ...marketReferencePrice,
       value,
     };
-  }, [marketReferencePrice, typedSrcAmount]);
+  }, [marketReferencePrice, typedSrcAmount, srcToken, dstToken, chainId]);
 };
 
-const minChunkSizeUsdFromQuery = getQueryParam(QUERY_PARAMS.MIN_CHUNK_SIZE_USD);
-const minChunkSizeUsd = minChunkSizeUsdFromQuery ? parseInt(minChunkSizeUsdFromQuery) : undefined;
+const getMinChunkSizeUsd = (overrides?: Overrides) => {
+  const minChunkSizeUsdFromQuery = getQueryParam(QUERY_PARAMS.MIN_CHUNK_SIZE_USD);
+  return minChunkSizeUsdFromQuery ? parseInt(minChunkSizeUsdFromQuery) : overrides?.minChunkSizeUsd;
+};
+
 const Content = (props: TwapProps) => {
   const acceptedMarketPrice = useTwapStore((s) => s.state.acceptedMarketPrice);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
@@ -98,7 +108,7 @@ const Content = (props: TwapProps) => {
       value={{
         ...props,
         overrides: {
-          minChunkSizeUsd,
+          minChunkSizeUsd: getMinChunkSizeUsd(props.overrides),
         },
         account: props.account as `0x${string}` | undefined,
         walletClient,

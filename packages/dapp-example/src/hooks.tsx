@@ -414,6 +414,7 @@ export const useUnwrapToken = () => {
   const publicClient = usePublicClient();
   const { amount: srcAmount } = useTypedSrcAmount();
   const wTokenAddress = getNetwork(chainId)?.wToken.address;
+  const refetchBalances = useRefetchBalances();
   return useMutation(async (onSuccess?: () => void) => {
     try {
       if (!wTokenAddress) throw new Error("wTokenAddress is not defined");
@@ -438,6 +439,8 @@ export const useUnwrapToken = () => {
 
       onSuccess?.();
 
+      refetchBalances();
+
       return receipt;
     } catch (error) {
       console.error("failed to unwrap token", error);
@@ -454,17 +457,20 @@ export const useWrapToken = () => {
   const publicClient = usePublicClient();
   const { amount: srcAmount } = useTypedSrcAmount();
   const wTokenAddress = getNetwork(chainId)?.wToken.address;
+  const refetchBalances = useRefetchBalances();
+
   return useMutation(async (onSuccess?: () => void) => {
     try {
       if (!wTokenAddress) throw new Error("wTokenAddress is not defined");
       const srcAmountWei = amountBN(srcToken?.decimals, srcAmount);
       const value = BigInt(BN(srcAmountWei).decimalPlaces(0).toFixed());
+
       const hash = await writeContractAsync({
         abi: IWETH_ABI,
         functionName: "deposit",
         account: account,
         address: wTokenAddress as `0x${string}`,
-        args: [value],
+        value,
         chain: walletClient.data?.chain,
       });
       const receipt = await publicClient?.getTransactionReceipt({ hash });
@@ -473,7 +479,7 @@ export const useWrapToken = () => {
       }
 
       toast.success("Wrapped token successfully");
-
+      refetchBalances();
       onSuccess?.();
 
       return receipt;

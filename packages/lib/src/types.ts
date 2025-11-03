@@ -289,6 +289,12 @@ export type SubmitOrderErrorViewProps = {
   error?: string;
 };
 
+export type MarketReferencePrice = {
+  value?: string;
+  isLoading?: boolean;
+  noLiquidity?: boolean;
+};
+
 export interface TwapProps {
   children?: React.ReactNode;
   provider?: Provider;
@@ -304,7 +310,7 @@ export interface TwapProps {
   dstBalance?: string;
   slippage: number;
   module: Module;
-  marketReferencePrice: { value?: string; isLoading?: boolean; noLiquidity?: boolean };
+  marketReferencePrice: MarketReferencePrice;
   overrides?: Overrides;
   fees?: number;
   callbacks?: Callbacks;

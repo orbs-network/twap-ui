@@ -195,6 +195,7 @@ const buildV1Order = (order: OrderV1, chainId: number, fills: TwapFill[], status
     chainId,
     filledOrderTimestamp: filledOrderTimestamp || 0,
     status,
+    rawOrder: order,
   };
 };
 
