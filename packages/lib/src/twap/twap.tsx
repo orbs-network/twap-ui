@@ -15,6 +15,7 @@ import { useLimitPricePanel } from "../hooks/use-limit-price";
 import { useInvertTradePanel } from "../hooks/use-invert-trade-panel";
 import { useInputErrors } from "../hooks/use-input-errors";
 import { useBuildRePermitOrderDataCallback } from "../hooks/use-build-repermit-order-data-callback.ts";
+import { useTogglePricePanel } from "../hooks/use-toggle-price";
 
 const Components = {
   SubmitOrderPanel,
@@ -41,5 +42,6 @@ export {
   useDisclaimerPanel,
   useInvertTradePanel,
   useInputErrors,
+  useTogglePricePanel,
   useBuildRePermitOrderDataCallback,
 };

@@ -100,7 +100,7 @@ export const useLimitPriceToggle = () => {
 };
 
 export const useLimitPricePanel = () => {
-  const { module, srcToken, dstToken, marketPrice, marketPriceLoading } = useTwapContext();
+  const { module, marketPrice, marketPriceLoading } = useTwapContext();
   const t = useTranslations();
   const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useLimitPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
@@ -108,7 +108,7 @@ export const useLimitPricePanel = () => {
   const defaultLimitPricePercent = useDefaultLimitPricePercent();
   const { isLimitPrice, toggleLimitPrice } = useLimitPriceToggle();
   const { triggerPricePercent } = useTwapStore((s) => s.state);
-  const { isInverted, onInvert } = useInvertTradePanel();
+  const { isInverted, onInvert, fromToken, toToken } = useInvertTradePanel();
 
   const hide = module === Module.LIMIT;
 
@@ -144,8 +144,8 @@ export const useLimitPricePanel = () => {
     isActive: !isMarketOrder,
     onReset: reset,
     usd,
-    fromToken: isInverted ? dstToken : srcToken,
-    toToken: isInverted ? srcToken : dstToken,
+    fromToken,
+    toToken,
     selectedPercentage: selectedPercentage,
     isInverted,
     prefix: "",

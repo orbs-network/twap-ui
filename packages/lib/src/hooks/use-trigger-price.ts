@@ -100,12 +100,12 @@ export const useTriggerPrice = () => {
 };
 
 export const useTriggerPricePanel = () => {
-  const { srcToken, dstToken, module, marketPrice, marketPriceLoading } = useTwapContext();
+  const { module, marketPrice, marketPriceLoading } = useTwapContext();
   const t = useTranslations();
   const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useTriggerPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const updateState = useTwapStore((s) => s.updateState);
-  const { isInverted, onInvert } = useInvertTradePanel();
+  const { isInverted, onInvert, fromToken, toToken } = useInvertTradePanel();
 
   const onSetDefault = useCallback(() => {
     updateState({ triggerPricePercent: undefined, typedTriggerPrice: undefined });
@@ -124,8 +124,8 @@ export const useTriggerPricePanel = () => {
     isActive: !isMarketOrder,
     onSetDefault,
     usd,
-    fromToken: isInverted ? dstToken : srcToken,
-    toToken: isInverted ? srcToken : dstToken,
+    fromToken,
+    toToken,
     prefix: "",
     isLoading: marketPriceLoading || !marketPrice,
     isInverted,

@@ -5,9 +5,14 @@ import { Module } from "@orbs-network/twap-sdk";
 import { LIMIT_TRIGGER_PRICE_DELTA_PERCENTAGE, SLIPPAGE_MULTIPLIER } from "../consts";
 import { useTwapStore } from "../useTwapStore";
 
-export const useDefaultTriggerPricePercent = () => {
-  const { slippage, module } = useTwapContext();
+const useSlippage = () => {
+  const { slippage: _slippage } = useTwapContext();
+  return Math.min(_slippage, 2);
+};
 
+export const useDefaultTriggerPricePercent = () => {
+  const { module } = useTwapContext();
+  const slippage = useSlippage();
   return useMemo(() => {
     let result = BN(slippage).multipliedBy(SLIPPAGE_MULTIPLIER);
     result = module === Module.STOP_LOSS ? result.multipliedBy(-1) : result;
@@ -16,7 +21,8 @@ export const useDefaultTriggerPricePercent = () => {
 };
 
 export const useDefaultLimitPricePercent = () => {
-  const { slippage, module } = useTwapContext();
+  const { module } = useTwapContext();
+  const slippage = useSlippage();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   return useMemo(() => {
     if ((module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) || isMarketOrder) {

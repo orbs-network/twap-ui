@@ -11,7 +11,7 @@ export const submitOrder = async (order: RePermitOrder, signature: Signature): P
 
   console.log("body", body);
 
-  const response = await fetch(`${API_ENDPOINT}/orders`, {
+  const response = await fetch(`${API_ENDPOINT}/orders/new`, {
     method: "POST",
     body: JSON.stringify(body),
   });

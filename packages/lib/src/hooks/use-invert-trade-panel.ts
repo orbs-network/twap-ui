@@ -1,8 +1,10 @@
 import { useCallback } from "react";
 import { useTwapStore } from "../useTwapStore";
 import BN from "bignumber.js";
+import { useTwapContext } from "../context/twap-context";
 
 export const useInvertTradePanel = () => {
+  const { srcToken, dstToken } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
   const isInverted = useTwapStore((s) => s.state.isInvertedTrade);
   const typedTriggerPrice = useTwapStore((s) => s.state.typedTriggerPrice);
@@ -21,5 +23,7 @@ export const useInvertTradePanel = () => {
   return {
     onInvert,
     isInverted,
+    fromToken: isInverted ? dstToken : srcToken,
+    toToken: isInverted ? srcToken : dstToken,
   };
 };
