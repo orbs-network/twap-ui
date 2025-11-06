@@ -89,7 +89,6 @@ const OrderInfo = () => {
   return (
     <OrderDetails>
       <OrderID />
-      <LimitPrice />
       <CreatedAt />
       <Expiry />
       <AmountIn />
@@ -98,6 +97,7 @@ const OrderInfo = () => {
       <MinDestAmount />
       <TradeInterval />
       <TriggerPricePerChunk />
+      <LimitPrice />
       <OrderDetails.Recipient />
     </OrderDetails>
   );

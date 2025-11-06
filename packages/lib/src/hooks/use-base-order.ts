@@ -70,7 +70,7 @@ export const useBaseOrder = (props: Props) => {
           label: t("numberOfTrades"),
           value: props.totalTrades || 0,
         },
-        minDestAmountPerTrade: {
+      minDestAmountPerTrade: {
           tooltip: t("minDstAmountTooltip"),
           label: props.totalTrades && props.totalTrades > 1 ? t("minReceivedPerTrade") : t("minReceived"),
           value: minDestAmountPerTrade || "",

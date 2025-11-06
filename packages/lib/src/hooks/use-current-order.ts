@@ -11,10 +11,10 @@ import { useMemo } from "react";
 import BN from "bignumber.js";
 import { useAmountsUsd } from "./use-amounts-usd";
 import { useTranslations } from "./use-translations";
-import { useFormatNumber } from "./helper-hooks";
+import { useFormatNumber, useUsdAmount } from "./helper-hooks";
 
 const useFees = () => {
-  const { fees } = useTwapContext();
+  const { fees, dstUsd1Token } = useTwapContext();
   const { amountUI: dstAmount } = useDstTokenAmount();
 
   const amount = useMemo(() => {
@@ -25,6 +25,7 @@ const useFees = () => {
   return {
     amount: useFormatNumber({ value: amount }),
     percent: useFormatNumber({ value: fees }),
+    usd: useUsdAmount(amount, dstUsd1Token),
   };
 };
 
@@ -37,7 +38,7 @@ const usePrice = () => {
       BN(dstAmount || 0)
         .dividedBy(srcAmount || 0)
         .toString(),
-    [dstAmount, srcAmount],
+    [dstAmount, srcAmount]
   );
 
   return useFormatNumber({ value: price, decimalScale: 4 });
@@ -47,13 +48,13 @@ export const useCurrentOrderDetails = () => {
   const { srcToken, dstToken, account } = useTwapContext();
   const t = useTranslations();
   const { amountWei: srcAmountWei } = useSrcAmount();
-  const dstMinAmountPerTrade = useDstMinAmountPerTrade().amountWei;
+  const {amountWei: dstMinAmountPerTrade, usd: dstMinAmountPerTradeUsd} = useDstMinAmountPerTrade();
   const { totalTrades, amountPerTradeWei } = useTrades();
-  const triggerPricePerChunk = useTriggerPrice().pricePerChunkWei;
+  const { amountWei: triggerPricePerChunk, usd: triggerPricePerChunkUsd } = useTriggerPrice();
   const { fillDelay } = useFillDelay();
   const deadline = useDeadline();
-  const limitAmountPerChunk = useLimitPrice().amountWei;
-  const { amount: feesAmount, percent: feesPercent } = useFees();
+  const { amountWei: limitAmountPerChunk } = useLimitPrice();
+  const { amount: feesAmount, percent: feesPercent, usd: feesUsd } = useFees();
   const tradePrice = useFormatNumber({ value: usePrice(), decimalScale: 4 });
   const { srcAmountUsd, dstAmountUsd } = useAmountsUsd();
   const order = useBaseOrder({
@@ -78,13 +79,19 @@ export const useCurrentOrderDetails = () => {
       fee: {
         label: t("fees", { value: `${feesPercent}%` }),
         value: feesAmount,
+        usd: feesUsd,
       },
-      tradePrice: {
-        label: t("tradePrice") || "",
-        value: tradePrice,
-        sellToken: srcToken,
-        buyToken: dstToken,
+      display: {
+        ...order.display,
+        minDestAmountPerTrade: {
+          ...order.display.minDestAmountPerTrade,
+          usd: dstMinAmountPerTradeUsd,
+        },
+        triggerPricePerTrade: {
+          ...order.display.triggerPricePerTrade,
+          usd: triggerPricePerChunkUsd,
+        },
       },
     };
-  }, [order, feesPercent, feesAmount, t, tradePrice, srcToken, dstToken, srcAmountUsd, dstAmountUsd]);
+  }, [order, feesPercent, feesAmount, t, tradePrice, srcToken, dstToken, srcAmountUsd, dstAmountUsd, dstMinAmountPerTradeUsd, triggerPricePerChunkUsd, feesUsd]);
 };

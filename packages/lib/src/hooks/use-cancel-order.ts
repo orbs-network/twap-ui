@@ -14,42 +14,60 @@ export const useCancelOrderMutation = () => {
   const optimisticCancelOrder = useOptimisticCancelOrder();
 
   const cancelOrdersV1 = async (orders: Order[]) => {
-    const hashes = await Promise.all(
-      orders.map((order) =>
-        walletClient!.writeContract({
-          account: account as `0x${string}`,
-          address: order.twapAddress as `0x${string}`,
-          abi: TWAP_ABI,
-          functionName: "cancel",
-          args: [order.id],
-          chain: walletClient!.chain,
-        }),
-      ),
+    analytics.onCancelOrderRequest(
+      orders.map((o) => o.id.toString()),
+      1,
     );
+    try {
+      const hashes = await Promise.all(
+        orders.map((order) =>
+          walletClient!.writeContract({
+            account: account as `0x${string}`,
+            address: order.twapAddress as `0x${string}`,
+            abi: TWAP_ABI,
+            functionName: "cancel",
+            args: [order.id],
+            chain: walletClient!.chain,
+          }),
+        ),
+      );
 
-    const receipts = await Promise.all(hashes.map((hash) => getTransactionReceipt(hash)));
+      const receipts = await Promise.all(hashes.map((hash) => getTransactionReceipt(hash)));
 
-    return receipts.filter((receipt) => receipt !== undefined);
+      return receipts.filter((receipt) => receipt !== undefined);
+    } catch (error) {
+      analytics.onCancelOrderError(error);
+      throw error;
+    }
   };
 
   const cancelOrdersV2 = async (orders: Order[]) => {
-    const hash = await walletClient!.writeContract({
-      account: account as `0x${string}`,
-      address: config!.repermit,
-      abi: REPERMIT_ABI,
-      functionName: "cancel",
-      args: [orders.map((order) => order.hash)],
-      chain: walletClient!.chain,
-    });
+    try {
+      analytics.onCancelOrderRequest(
+        orders.map((o) => o.hash),
+        2,
+      );
+      const hash = await walletClient!.writeContract({
+        account: account as `0x${string}`,
+        address: config!.repermit,
+        abi: REPERMIT_ABI,
+        functionName: "cancel",
+        args: [orders.map((order) => order.hash)],
+        chain: walletClient!.chain,
+      });
 
-    const receipt = await getTransactionReceipt(hash!);
-    if (!receipt) throw new Error("failed to get transaction receipt");
-    if (receipt.status === "reverted") throw new Error("failed to cancel order");
+      const receipt = await getTransactionReceipt(hash!);
+      if (!receipt) throw new Error("failed to get transaction receipt");
+      if (receipt.status === "reverted") throw new Error("failed to cancel order");
 
-    analytics.onCancelOrderSuccess(hash);
-    callbacks?.onCancelOrderSuccess?.(orders, receipt);
+      analytics.onCancelOrderSuccess(hash);
+      callbacks?.onCancelOrderSuccess?.(orders, receipt);
 
-    return receipt;
+      return receipt;
+    } catch (error) {
+      analytics.onCancelOrderError(error);
+      throw error;
+    }
   };
 
   return useMutation(async ({ orders }: { orders: Order[] }) => {

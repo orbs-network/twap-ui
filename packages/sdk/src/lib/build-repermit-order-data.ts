@@ -1,7 +1,7 @@
 import { Address, RePermitOrder, SpotConfig } from "./types";
 import BN from "bignumber.js";
 import { getQueryParam, safeBNString } from "./utils";
-import { QUERY_PARAMS } from "./consts";
+import { EIP712_TYPES, QUERY_PARAMS, REPERMIT_PRIMARY_TYPE } from "./consts";
 
 export const buildRePermitOrderData = ({
   chainId,
@@ -28,7 +28,6 @@ export const buildRePermitOrderData = ({
   srcAmountPerTrade: string;
   dstMinAmountPerTrade?: string;
   triggerAmountPerTrade?: string;
-  limitAmountPerTrade?: string;
   config: SpotConfig;
 }) => {
   const nonce = Date.now().toString();
@@ -87,5 +86,7 @@ export const buildRePermitOrderData = ({
   return {
     domain,
     order: orderData,
+    types: EIP712_TYPES,
+    primaryType: REPERMIT_PRIMARY_TYPE,
   };
 };

@@ -566,27 +566,10 @@ const PriceToggle = () => {
           <Label text={label} tooltip={tooltip} />
         </div>
       )}
-      {!isLimitPrice && <MarketPriceDisplay />}
     </div>
   );
 };
 
-const MarketPriceDisplay = () => {
-  const { onInvert, fromToken, toToken, price } = useMarketPricePanel();
-  const priceF = useFormatNumber({ value: price });
-
-  if (!fromToken || !toToken) return null;
-
-  return (
-    <div className="flex gap-2 items-center justify-end flex-end flex-1 text-[13px] text-white">
-      <p>1 {fromToken?.symbol}</p>
-      <Repeat size={16} onClick={onInvert} className="cursor-pointer text-white" />
-      <p>
-        {priceF} {toToken?.symbol}
-      </p>
-    </div>
-  );
-};
 
 const PercentageInput = ({ value, onChange, prefix, isLoading }: { value: string; onChange: (value: string) => void; prefix?: string; isLoading?: boolean }) => {
   return (

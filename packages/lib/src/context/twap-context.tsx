@@ -8,6 +8,8 @@ import { useTwapStore } from "../useTwapStore";
 import BN from "bignumber.js";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 
+analytics.onLoad();
+
 const TwapFallbackUI = () => {
   return (
     <div className="twap-error-fallback">

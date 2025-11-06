@@ -162,21 +162,20 @@ const Main = () => {
         <div className="twap-create-order-bottom">
           <OrderDetails.Container>
             <div className="twap-create-order-details">
-              <OrderDetails.DetailRow title={order.tradePrice.label || ""}>
-                1 {order.tradePrice.sellToken?.symbol} = {order.tradePrice.value} {order.tradePrice.buyToken?.symbol}
-              </OrderDetails.DetailRow>
               <OrderDetails.Deadline deadline={order.display.deadline.value} label={order.display.deadline.label} tooltip={order.display.deadline.tooltip || ""} />
               <OrderDetails.TriggerPrice
                 price={order.display.triggerPricePerTrade.value}
                 dstToken={dstToken}
                 label={order.display.triggerPricePerTrade.label}
                 tooltip={order.display.triggerPricePerTrade.tooltip || ""}
+                usd={order.display.triggerPricePerTrade.usd}
               />
               <OrderDetails.MinDestAmount
                 dstToken={dstToken}
                 dstMinAmountOut={order.display.minDestAmountPerTrade.value}
                 label={order.display.minDestAmountPerTrade.label}
                 tooltip={order.display.minDestAmountPerTrade.tooltip || ""}
+                usd={order.display.minDestAmountPerTrade.usd}
               />
               <OrderDetails.TradeSize
                 tradeSize={order.display.tradeSize.value}
@@ -193,7 +192,7 @@ const Main = () => {
                 tooltip={order.display.tradeInterval.tooltip}
               />
               <OrderDetails.Recipient />
-              {order.fee.value && <OrderDetails.DetailRow title={order.fee.label}>{order.fee.value ? `${order.fee.value} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
+              {order.fee.value && <OrderDetails.Fees fees={order.fee.value} label={order.fee.label} usd={order.fee.usd} dstTokenSymbol={dstToken?.symbol} />}
             </div>
           </OrderDetails.Container>
           {reviewDetails}

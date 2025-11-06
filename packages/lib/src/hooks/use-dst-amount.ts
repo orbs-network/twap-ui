@@ -2,7 +2,7 @@ import { getDestTokenAmount, getDestTokenMinAmountPerChunk } from "@orbs-network
 import { useMemo } from "react";
 import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
-import { useAmountUi } from "./helper-hooks";
+import { useAmountUi, useUsdAmount } from "./helper-hooks";
 import { useTradePrice } from "./use-trade-price";
 import { useTrades } from "./use-trades";
 import { useSrcAmount } from "./use-src-amount";
@@ -21,7 +21,7 @@ export const useDstTokenAmount = () => {
 };
 
 export const useDstMinAmountPerTrade = () => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { srcToken, dstToken, dstUsd1Token } = useTwapContext();
   const tradePrice = useTradePrice();
   const chunkPerTrade = useTrades().amountPerTradeWei;
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
@@ -30,9 +30,10 @@ export const useDstMinAmountPerTrade = () => {
     () => getDestTokenMinAmountPerChunk(chunkPerTrade, tradePrice, Boolean(isMarketOrder), srcToken?.decimals || 0),
     [chunkPerTrade, tradePrice, isMarketOrder, srcToken?.decimals],
   );
-
+const amountUI = useAmountUi(dstToken?.decimals, amountWei);
   return {
     amountWei,
-    amountUI: useAmountUi(dstToken?.decimals, amountWei),
+    amountUI,
+    usd: useUsdAmount(amountUI, dstUsd1Token),
   };
 };

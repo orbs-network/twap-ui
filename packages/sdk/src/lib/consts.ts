@@ -75,7 +75,7 @@ export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELA
 export const FEES = 0.25;
 export const EXCLUSIVITY_OVERRIDE_BPS = "100";
 
-export const REPERMIT_PRIMARY_TYPE = "RePermitWitnessTransferFrom";
+export const REPERMIT_PRIMARY_TYPE = "RePermitWitnessTransferFrom" as const;
 
 export const EIP712_TYPES = {
   RePermitWitnessTransferFrom: [
@@ -205,6 +205,8 @@ export const EIP712_TYPES = {
 };
 
 export const ORBS_TWAP_FAQ_URL = "https://www.orbs.com/dtwap-and-dlimit-faq/";
+export const ORBS_SLTP_FAQ_URL = "https://www.orbs.com/dtwap-and-dlimit-faq/#dSLTP";
+
 export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg";
 export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";
 export const ORBS_WEBSITE_URL = "https://www.orbs.com/";

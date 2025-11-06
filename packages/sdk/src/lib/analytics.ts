@@ -1,12 +1,11 @@
-import { SpotConfig } from "./types";
+import { Address, Module, Partners, RePermitOrder, SpotConfig } from "./types";
 import BN from "bignumber.js";
 import pkg from "@orbs-network/spot/package.json";
+import pkgUI from "@orbs-network/twap-ui/package.json";
 
-const Version = 0.6;
+const Version = 0.7;
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 const SPOT_VERSION = pkg.version;
-
-type Action = "cancel order" | "wrap" | "approve" | "create order" | "module-import";
 
 function generateId() {
   const part1 = Math.random().toString(36).substring(2, 16); // Generate 16 random characters
@@ -14,40 +13,98 @@ function generateId() {
   const timestamp = Date.now().toString(36); // Generate a timestamp
   return `id_${part1 + part2 + timestamp}`; // Concatenate all parts
 }
+interface Token {
+  address: string;
+  symbol: string;
+  decimals: number;
+}
+
+const getConfigDetails = (config: SpotConfig, chainId?: number) => {
+  return {
+    spotVersion: SPOT_VERSION,
+    partner: config.partner,
+    adapter: config.adapter,
+    cosigner: config.cosigner,
+    executor: config.executor,
+    fee: config.fee,
+    reactor: config.reactor,
+    refinery: config.refinery,
+    repermit: config.repermit,
+    router: config.router,
+    type: config.type,
+    wm: config.wm,
+    chainName: config.twapConfig?.chainName || "",
+    chainId: chainId || 0,
+    twapVersion: config.twapConfig?.twapVersion || 0,
+    twapAddress: config.twapConfig?.twapAddress || "",
+    lensAddress: config.twapConfig?.lensAddress || "",
+    bidDelaySeconds: config.twapConfig?.bidDelaySeconds || 0,
+    minChunkSizeUsd: config.twapConfig?.minChunkSizeUsd || 0,
+    name: config.twapConfig?.name || "",
+    exchangeAddress: config.twapConfig?.exchangeAddress || "",
+    exchangeType: config.twapConfig?.exchangeType || "",
+    pathfinderKey: config.twapConfig?.pathfinderKey || "",
+  };
+};
+
+type Action = "cancel order" | "wrap" | "approve" | "sign order" | "create order" | "module-import" | "reset";
 
 interface Data {
   _id: string;
   spotVersion?: string;
+  uiVersion?: string;
+  origin?: string;
   actionError?: string;
-  newOrderId?: number;
   cancelOrderSuccess?: boolean;
-  cancelOrderId?: number;
   orderSubmitted?: boolean;
+  orderHash?: string;
   orderSuccess?: boolean;
   action?: Action;
-  createOrderTxHash?: string;
   wrapTxHash?: string;
   cancelOrderTxHash?: string;
+  cancelOrderIdsV1?: string[];
+  cancelOrderIdsV2?: string[];
   approvalTxHash?: string;
   walletAddress?: string;
   fromTokenAddress?: string;
+  fromTokenSymbol?: string;
   toTokenAddress?: string;
+  order?: RePermitOrder;
+  signature?: string;
+  toTokenSymbol?: string;
   fromTokenAmount?: string;
   chunksAmount?: number;
-  minDstAmountOut?: string;
+  minDstAmountOutPerTrade?: string;
+  triggerPricePerTrade?: string;
   deadline?: number;
   fillDelay?: number;
   srcChunkAmount?: string;
-  bidDelaySeconds?: number;
-  chainId?: number;
+  module?: Module;
+  slippage?: number;
+  orderType?: "market" | "limit";
+
+  partner?: Partners;
+  adapter?: Address;
+  cosigner?: Address;
+  executor?: Address;
+  fee?: Address;
+  reactor?: Address;
+  refinery?: Address;
+  repermit?: Address;
+  router?: Address;
+  type?: string;
+  wm?: Address;
   chainName?: string;
+  chainId?: number;
+  twapVersion?: number;
+  twapAddress?: string;
+  lensAddress?: string;
+  bidDelaySeconds?: number;
+  minChunkSizeUsd?: number;
+  name?: string;
   exchangeAddress?: string;
   exchangeType?: string;
-  lensAddress?: string;
-  name?: string;
-  partner?: string;
-  twapAddress?: string;
-  twapVersion?: number;
+  pathfinderKey?: string;
 }
 
 const sendBI = async (data: Partial<Data>) => {
@@ -67,29 +124,39 @@ const sendBI = async (data: Partial<Data>) => {
 
 class Analytics {
   timeout: any = undefined;
+  config: SpotConfig | undefined;
   data: Data = {
     _id: generateId(),
   };
 
-  updateAndSend(values = {} as Partial<Data>, noTimeout = false) {
-    this.data = {
-      ...this.data,
-      ...values,
-    };
-    if (noTimeout) {
-      sendBI(this.data);
-    } else {
-      clearTimeout(this.timeout);
-      this.timeout = setTimeout(() => {
-        sendBI(this.data);
-      }, 1_000);
+  async updateAndSend(values = {} as Partial<Data>, noTimeout = false, callback?: () => void) {
+    try {
+      this.data = {
+        ...this.data,
+        ...values,
+      };
+      if (noTimeout) {
+        await sendBI(this.data);
+        callback?.();
+      } else {
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+          sendBI(this.data);
+          callback?.();
+        }, 1_000);
+      }
+    } catch (error) {
+      console.error("Failed to update and send BI", error);
     }
   }
 
-  onCancelOrderRequest(orderId: number) {
+  onCancelOrderRequest(cancelOrderIds: string[], version: 1 | 2) {
     this.updateAndSend({
-      cancelOrderId: orderId,
+      cancelOrderIdsV1: version === 1 ? cancelOrderIds : undefined,
+      cancelOrderIdsV2: version === 2 ? cancelOrderIds : undefined,
       action: "cancel order",
+      cancelOrderSuccess: false,
+      cancelOrderTxHash: undefined,
     });
   }
 
@@ -136,83 +203,127 @@ class Analytics {
     this.onTxError(error);
   }
 
-  onCreateOrderError(error: any) {
-    this.onTxError(error);
-  }
-
   onTxError(error: any) {
     const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
     this.updateAndSend({ actionError });
   }
 
-  onCreateOrderRequest(askParams: any, account?: string) {
-    const values = askParams;
-    const fromTokenAmount = values[3];
-    const srcChunkAmount = values[4];
+  onRequestOrder({
+    account,
+    chainId,
+    module,
+    srcToken,
+    dstToken,
+    fromTokenAmount,
+    srcChunkAmount,
+    minDstAmountOutPerTrade = "",
+    triggerPricePerTrade = "",
+    deadline,
+    fillDelay,
+    slippage,
+    isMarketOrder,
+  }: {
+    account: string;
+    chainId: number;
+    module: Module;
+    srcToken: Token;
+    dstToken: Token;
+    fromTokenAmount: string;
+    srcChunkAmount: string;
+    minDstAmountOutPerTrade: string;
+    triggerPricePerTrade: string;
+    deadline: number;
+    fillDelay: number;
+    slippage: number;
+    isMarketOrder: boolean;
+  }) {
     const chunksAmount = BN(fromTokenAmount).div(srcChunkAmount).integerValue(BN.ROUND_FLOOR).toNumber();
-
     this.updateAndSend({
-      fromTokenAddress: values[1],
-      toTokenAddress: values[2],
-      fromTokenAmount: values[3],
+      toTokenAddress: dstToken.address,
+      toTokenSymbol: dstToken.symbol,
+      fromTokenAddress: srcToken.address,
+      fromTokenSymbol: srcToken.symbol,
+      fromTokenAmount,
       chunksAmount,
-      minDstAmountOut: values[5],
-      deadline: values[6],
-      fillDelay: values[8],
       srcChunkAmount,
-      action: "create order",
+      minDstAmountOutPerTrade,
+      triggerPricePerTrade,
+      deadline,
+      fillDelay,
+      slippage,
+      chainId,
       walletAddress: account,
-      orderSubmitted: true,
+      module,
+      orderType: isMarketOrder ? "market" : "limit",
+    });
+  }
+
+  onSignOrderRequest(order: RePermitOrder) {
+    this.updateAndSend({
+      action: "sign order",
+      order: order,
+    });
+  }
+
+  onSignOrderError(error: any) {
+    this.onTxError(error);
+  }
+
+  onSignOrderSuccess(signature: string) {
+    this.updateAndSend({
+      action: "sign order",
+      signature: signature,
     });
   }
 
   init(config: SpotConfig, chainId?: number) {
+    this.config = config;
     if (chainId !== this.data?.chainId) {
-      const { twapConfig = {}, ...rest } = config;
       this.data = {
         _id: generateId(),
         action: "module-import",
-        spotVersion: SPOT_VERSION,
-        ...rest,
-        ...twapConfig,
+        uiVersion: pkgUI.version,
+        ...getConfigDetails(config, chainId),
+        origin: window.location.origin,
       };
       this.updateAndSend(this.data);
     }
   }
 
-  onCreateOrderSuccess(createOrderTxHash?: string, newOrderId?: number) {
+  onCreateOrderError(error: any) {
+    this.onTxError(error);
+  }
+
+  onCreateOrderRequest() {
+    this.updateAndSend({
+      action: "create order",
+    });
+  }
+
+  async onCreateOrderSuccess(orderHash?: string) {
     this.updateAndSend(
       {
-        newOrderId,
-        createOrderTxHash,
+        orderHash,
         orderSuccess: true,
       },
-      true,
+      undefined,
+      () => {
+        this.data = {
+          _id: generateId(),
+          action: "reset",
+          uiVersion: pkgUI.version,
+          origin: this.data.origin,
+          ...getConfigDetails(this.config!, this.data.chainId),
+        };
+      },
     );
-
-    this.data = {
-      _id: generateId(),
-      action: "module-import",
-      bidDelaySeconds: this.data?.bidDelaySeconds,
-      chainId: this.data.chainId,
-      chainName: this.data.chainName,
-      exchangeAddress: this.data.exchangeAddress,
-      exchangeType: this.data.exchangeType,
-      lensAddress: this.data.lensAddress,
-      name: this.data.name,
-      partner: this.data.partner,
-      twapAddress: this.data.twapAddress,
-      twapVersion: this.data.twapVersion,
-    };
   }
 
   onLoad() {
-    this.updateAndSend(
-      {
-        action: "module-import",
-      },
-      true,
-    );
+    this.updateAndSend({
+      action: "module-import",
+      origin: window.location.origin,
+    });
   }
 }
 

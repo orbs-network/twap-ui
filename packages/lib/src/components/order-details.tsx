@@ -7,6 +7,13 @@ import { AiOutlineCopy } from "@react-icons/all-files/ai/AiOutlineCopy";
 import { useCopyToClipboard, useDateFormat, useFormatNumber, useNetwork } from "../hooks/helper-hooks";
 import BN from "bignumber.js";
 import { useTranslations } from "../hooks/use-translations";
+
+
+const USD = ({ value }: { value?: string }) => {
+  const formattedValue = useFormatNumber({ value: value, decimalScale: 2 });
+  if (!formattedValue) return null;
+  return <small className="twap-order-details__detail-row-value-usd">{` ($${formattedValue})`}</small>;
+};
 const Deadline = ({ deadline, label, tooltip }: { deadline?: number; label: string; tooltip: string }) => {
   const res = useDateFormat(deadline);
   return (
@@ -16,13 +23,16 @@ const Deadline = ({ deadline, label, tooltip }: { deadline?: number; label: stri
   );
 };
 
-const TriggerPrice = ({ price, dstToken, label, tooltip }: { price?: string; dstToken?: Token; label: string; tooltip: string }) => {
+const TriggerPrice = ({ price, dstToken, label, tooltip, usd }: { price?: string; dstToken?: Token; label: string; tooltip: string; usd?: string }) => {
   const priceF = useFormatNumber({ value: price });
   if (BN(price || 0).isZero()) return null;
 
   return (
     <DetailRow title={label} tooltip={tooltip}>
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>{`${priceF ? priceF : "-"} ${dstToken?.symbol}`}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        {`${priceF ? priceF : "-"} ${dstToken?.symbol}`}
+        <USD value={usd} />
+      </div>
     </DetailRow>
   );
 };
@@ -52,7 +62,7 @@ const TradeSize = ({ tradeSize, srcToken, trades, label, tooltip }: { tradeSize?
   );
 };
 
-const MinDestAmount = ({ dstToken, dstMinAmountOut, label, tooltip }: { dstToken?: Token; dstMinAmountOut?: string; label: string; tooltip: string }) => {
+const MinDestAmount = ({ dstToken, dstMinAmountOut, label, tooltip, usd }: { dstToken?: Token; dstMinAmountOut?: string; label: string; tooltip: string; usd?: string }) => {
   const formattedValue = useFormatNumber({ value: dstMinAmountOut });
 
   if (BN(dstMinAmountOut || 0).isZero()) return null;
@@ -60,6 +70,7 @@ const MinDestAmount = ({ dstToken, dstMinAmountOut, label, tooltip }: { dstToken
   return (
     <DetailRow title={label} tooltip={tooltip}>
       {`${dstMinAmountOut ? formattedValue : "-"} ${dstToken?.symbol}`}
+      <USD value={usd} />
     </DetailRow>
   );
 };
@@ -167,7 +178,19 @@ const OrderDetailsContainer = ({ children }: { children: ReactNode }) => {
   return children;
 };
 
+const Fees = ({ fees, label, usd, dstTokenSymbol }: { fees?: string; label: string; usd?: string; dstTokenSymbol?: string }) => {
+  const formattedValue = useFormatNumber({ value: fees });
+
+  return (
+    <DetailRow title={label}>
+      {`${fees ? formattedValue : "-"} ${dstTokenSymbol}`}
+      <USD value={usd} />
+    </DetailRow>
+  );
+};
+
 OrderDetails.Deadline = Deadline;
+OrderDetails.Fees = Fees;
 OrderDetails.TradeSize = TradeSize;
 OrderDetails.MinDestAmount = MinDestAmount;
 OrderDetails.TradesAmount = TradesAmount;
