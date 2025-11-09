@@ -27,7 +27,6 @@ import {
   useDurationPanel,
   useFillDelayPanel,
   useLimitPricePanel,
-  useMarketPricePanel,
   useTriggerPricePanel,
   useDisclaimerPanel,
   useInputErrors,
@@ -43,7 +42,7 @@ import { useDappContext } from "../context";
 import { GlobalStyles } from "./styles";
 import { CurrencyInputPanel, Section, SwitchTokensButton } from "./components";
 import { useDappStore } from "./store";
-import { ChevronDown, Info, Repeat } from "react-feather";
+import { ChevronDown, Info } from "react-feather";
 import { ArrowUpDown, TriangleAlert } from "lucide-react";
 import BN from "bignumber.js";
 import { useGetToken } from "./hooks";
@@ -261,7 +260,7 @@ const SelectMenu = (props: SelectMenuProps) => {
 
 const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: () => void; text: string; disabled: boolean }) => {
   const { chainId } = useAccount();
-  const { address: account } = useAccount();
+  const { address: account, isConnected } = useAccount();
 
   const { openConnectModal } = useConnectModal();
   const switchChain = useSwitchChain();
@@ -277,7 +276,7 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
   const isUnwrapToken = isNativeAddress(dstToken?.address || "") && eqIgnoreCase(network?.wToken.address || "", srcToken?.address || "");
 
   const onConfirm = useCallback(() => {
-    if (!account) {
+    if (!isConnected) {
       openConnectModal?.();
     } else if (config.chainId !== chainId) {
       switchChain(config);
@@ -288,15 +287,15 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
     } else {
       onClick();
     }
-  }, [account, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap, isUnwrapToken, isWrapToken]);
+  }, [isConnected, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap, isUnwrapToken, isWrapToken]);
 
   const buttonText = useMemo(() => {
-    if (!account) return "Connect Wallet";
+    if (!isConnected) return "Connect Wallet";
     if (isWrongChain) return "Switch Network";
     if (isUnwrapToken) return "Unwrap";
     if (isWrapToken) return "Wrap";
     return text;
-  }, [isUnwrapToken, isWrapToken, text, account, isWrongChain]);
+  }, [isUnwrapToken, isWrapToken, text, isConnected, isWrongChain]);
 
   return (
     <StyledButton
@@ -570,7 +569,6 @@ const PriceToggle = () => {
   );
 };
 
-
 const PercentageInput = ({ value, onChange, prefix, isLoading }: { value: string; onChange: (value: string) => void; prefix?: string; isLoading?: boolean }) => {
   return (
     <NumberInput
@@ -840,7 +838,7 @@ export const Dapp = () => {
     <>
       <GlobalStyles isDarkMode={true} />
       <TWAP
-        slippage={slippage}
+        priceProtection={slippage}
         partner={dexToPartner(config)}
         chainId={chainId}
         provider={client.data?.transport}

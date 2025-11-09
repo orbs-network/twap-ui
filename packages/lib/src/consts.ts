@@ -24,5 +24,3 @@ export const DEFAULT_DURATION_OPTIONS: { text: string; value: TimeUnit }[] = [
     value: TimeUnit.Days,
   },
 ];
-
-export const MAX_ORDER_SIZE_USD = 10_000;

@@ -311,7 +311,7 @@ const SettingsModal = ({ className }: { className?: string }) => {
       >
         <div className="text-white pt-6">
           <div className="flex flex-row gap-2 items-center justify-between">
-            <p>Slippage</p>
+            <p>Price protection</p>
             <NumberInput onChange={(value) => setSlippage(Number(value))} value={slippage} />
           </div>
         </div>

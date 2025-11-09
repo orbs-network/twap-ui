@@ -119,6 +119,7 @@ const Content = (props: TwapProps) => {
         marketPriceLoading: !acceptedMarketPrice && marketReferencePrice.isLoading,
         noLiquidity: !acceptedMarketPrice && marketReferencePrice.noLiquidity,
         config,
+        slippage: props.priceProtection,
       }}
     >
       <Listeners {...props} />

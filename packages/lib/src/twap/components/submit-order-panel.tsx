@@ -58,6 +58,15 @@ const useOrderName = (isMarketOrder = false, chunks = 1) => {
   }, [t, module, isMarketOrder, chunks]);
 };
 
+const LimitPrice = ({ price, dstTokenSymbol, label, usd }: { price?: string; dstTokenSymbol?: string; label: string; usd?: string }) => {
+  return (
+    <OrderDetails.DetailRow title={label}>
+      {`${price ? price : "-"} ${dstTokenSymbol || ""}`}
+      <OrderDetails.USD value={usd} />
+    </OrderDetails.DetailRow>
+  );
+};
+
 const useTitle = () => {
   const t = useTranslations();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
@@ -170,6 +179,7 @@ const Main = () => {
                 tooltip={order.display.triggerPricePerTrade.tooltip || ""}
                 usd={order.display.triggerPricePerTrade.usd}
               />
+              <LimitPrice price={order.display.limitPrice.value} dstTokenSymbol={dstToken?.symbol} label={order.display.limitPrice.label} usd={order.display.limitPrice.usd} />
               <OrderDetails.MinDestAmount
                 dstToken={dstToken}
                 dstMinAmountOut={order.display.minDestAmountPerTrade.value}

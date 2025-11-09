@@ -30,7 +30,7 @@ export const useDstMinAmountPerTrade = () => {
     () => getDestTokenMinAmountPerChunk(chunkPerTrade, tradePrice, Boolean(isMarketOrder), srcToken?.decimals || 0),
     [chunkPerTrade, tradePrice, isMarketOrder, srcToken?.decimals],
   );
-const amountUI = useAmountUi(dstToken?.decimals, amountWei);
+  const amountUI = useAmountUi(dstToken?.decimals, amountWei);
   return {
     amountWei,
     amountUI,

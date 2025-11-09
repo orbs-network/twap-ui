@@ -9,26 +9,7 @@ import { useLimitPrice } from "./use-limit-price";
 import { useTrades } from "./use-trades";
 import { useFillDelay } from "./use-fill-delay";
 import { useDuration } from "./use-duration";
-import { useUsdAmount } from "./helper-hooks";
-import { MAX_ORDER_SIZE_USD } from "../consts";
 import { useTranslations } from "./use-translations";
-
-export const useMaxOrderSizeError = () => {
-  const { srcUsd1Token } = useTwapContext();
-  const t = useTranslations();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const usdAmount = useUsdAmount(typedSrcAmount, srcUsd1Token);
-
-  return useMemo(() => {
-    if (BN(usdAmount || "0").gt(MAX_ORDER_SIZE_USD)) {
-      return {
-        type: InputErrors.MAX_ORDER_SIZE,
-        value: MAX_ORDER_SIZE_USD,
-        message: t("maxOrderSizeError", { maxOrderSize: `${MAX_ORDER_SIZE_USD}` }),
-      };
-    }
-  }, [usdAmount, t]);
-};
 
 export const useBalanceError = () => {
   const { srcBalance } = useTwapContext();
@@ -55,7 +36,6 @@ export function useInputErrors() {
   const { error: tradesError } = useTrades();
   const { error: fillDelayError } = useFillDelay();
   const { error: durationError } = useDuration();
-  const maxOrderSizeError = useMaxOrderSizeError();
 
   const ignoreErrors = useMemo(() => new URLSearchParams(window.location.search)?.get("ignore-errors"), []);
 
@@ -63,5 +43,5 @@ export function useInputErrors() {
     return undefined;
   }
 
-  return maxOrderSizeError || triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError || balanceError;
+  return triggerPriceError || limitPriceError || tradesError || fillDelayError || durationError || balanceError;
 }

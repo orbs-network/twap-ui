@@ -308,7 +308,7 @@ export interface TwapProps {
   dstUsd1Token?: string;
   srcBalance?: string;
   dstBalance?: string;
-  slippage: number;
+  priceProtection: number;
   module: Module;
   marketReferencePrice: MarketReferencePrice;
   overrides?: Overrides;
@@ -341,6 +341,7 @@ export interface TwapContextType extends TwapProps {
   account?: `0x${string}`;
   noLiquidity?: boolean;
   config?: SpotConfig;
+  slippage: number;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };

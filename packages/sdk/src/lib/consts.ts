@@ -216,3 +216,9 @@ export enum QUERY_PARAMS {
   FRESHNESS = "freshness",
   MIN_CHUNK_SIZE_USD = "minChunkSizeUsd",
 }
+
+export const DEFAULT_STOP_LOSS_PERCENTAGE = -5;
+export const DEFAULT_TAKE_PROFIT_PERCENTAGE = 10;
+
+export const DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE = -10;
+export const DEFAULT_TAKE_PROFIT_LIMIT_PERCENTAGE = 5;

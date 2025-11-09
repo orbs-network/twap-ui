@@ -8,7 +8,6 @@ import { useCopyToClipboard, useDateFormat, useFormatNumber, useNetwork } from "
 import BN from "bignumber.js";
 import { useTranslations } from "../hooks/use-translations";
 
-
 const USD = ({ value }: { value?: string }) => {
   const formattedValue = useFormatNumber({ value: value, decimalScale: 2 });
   if (!formattedValue) return null;
@@ -202,3 +201,4 @@ OrderDetails.LimitPrice = LimitPrice;
 OrderDetails.OrderID = OrderID;
 OrderDetails.Container = OrderDetailsContainer;
 OrderDetails.OrderVersion = OrderVersion;
+OrderDetails.USD = USD;

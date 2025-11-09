@@ -38,7 +38,7 @@ const usePrice = () => {
       BN(dstAmount || 0)
         .dividedBy(srcAmount || 0)
         .toString(),
-    [dstAmount, srcAmount]
+    [dstAmount, srcAmount],
   );
 
   return useFormatNumber({ value: price, decimalScale: 4 });
@@ -48,12 +48,12 @@ export const useCurrentOrderDetails = () => {
   const { srcToken, dstToken, account } = useTwapContext();
   const t = useTranslations();
   const { amountWei: srcAmountWei } = useSrcAmount();
-  const {amountWei: dstMinAmountPerTrade, usd: dstMinAmountPerTradeUsd} = useDstMinAmountPerTrade();
+  const { amountWei: dstMinAmountPerTrade, usd: dstMinAmountPerTradeUsd } = useDstMinAmountPerTrade();
   const { totalTrades, amountPerTradeWei } = useTrades();
   const { amountWei: triggerPricePerChunk, usd: triggerPricePerChunkUsd } = useTriggerPrice();
   const { fillDelay } = useFillDelay();
   const deadline = useDeadline();
-  const { amountWei: limitAmountPerChunk } = useLimitPrice();
+  const { amountUI: limitAmountPerChunk, usd: limitPriceUsd } = useLimitPrice();
   const { amount: feesAmount, percent: feesPercent, usd: feesUsd } = useFees();
   const tradePrice = useFormatNumber({ value: usePrice(), decimalScale: 4 });
   const { srcAmountUsd, dstAmountUsd } = useAmountsUsd();
@@ -91,7 +91,11 @@ export const useCurrentOrderDetails = () => {
           ...order.display.triggerPricePerTrade,
           usd: triggerPricePerChunkUsd,
         },
+        limitPrice: {
+          ...order.display.limitPrice,
+          usd: limitPriceUsd,
+        },
       },
     };
-  }, [order, feesPercent, feesAmount, t, tradePrice, srcToken, dstToken, srcAmountUsd, dstAmountUsd, dstMinAmountPerTradeUsd, triggerPricePerChunkUsd, feesUsd]);
+  }, [order, feesPercent, feesAmount, t, tradePrice, srcToken, dstToken, srcAmountUsd, dstAmountUsd, dstMinAmountPerTradeUsd, triggerPricePerChunkUsd, feesUsd, limitPriceUsd]);
 };
