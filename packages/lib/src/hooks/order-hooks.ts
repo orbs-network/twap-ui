@@ -150,9 +150,11 @@ export const useOrdersQuery = () => {
       if (prevOrders) {
         prevOrders.forEach((prevOrder) => {
           const currentOrder = orders.find((o) => o.id === prevOrder.id);
+
           if (currentOrder && currentOrder.progress !== prevOrder.progress) {
             isProgressUpdated = true;
             updatedOrders.push(currentOrder);
+
             if (currentOrder.status === OrderStatus.Completed) {
               callbacks?.onOrderFilled?.(currentOrder);
             }

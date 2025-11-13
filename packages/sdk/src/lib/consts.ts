@@ -4,8 +4,16 @@ import { Config, TimeDuration, TimeUnit } from "./types";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 
-export const API_ENDPOINT = "https://order-sink.orbs.network";
-
+export const getApiEndpoint = () => {
+  try {
+    if (window.location.hostname.includes("netlify") || window.location.host.includes("localhost:3005")) {
+      return "https://order-sink-dev.orbs.network";
+    }
+    return "https://order-sink.orbs.network";
+  } catch (error) {
+    return "https://order-sink.orbs.network";
+  }
+};
 export const SUGGEST_CHUNK_VALUE = 100;
 
 export const MIN_CHUNKS = 1;
@@ -217,8 +225,8 @@ export enum QUERY_PARAMS {
   MIN_CHUNK_SIZE_USD = "minChunkSizeUsd",
 }
 
-export const DEFAULT_STOP_LOSS_PERCENTAGE = -5;
-export const DEFAULT_TAKE_PROFIT_PERCENTAGE = 10;
+export const DEFAULT_STOP_LOSS_PERCENTAGE = "-5";
+export const DEFAULT_TAKE_PROFIT_PERCENTAGE = "10";
 
-export const DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE = -10;
-export const DEFAULT_TAKE_PROFIT_LIMIT_PERCENTAGE = 5;
+export const DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE = "-10";
+export const DEFAULT_TAKE_PROFIT_LIMIT_PERCENTAGE = "5";

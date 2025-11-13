@@ -51,6 +51,8 @@ import { abbreviate } from "../utils";
 import clsx from "clsx";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import pkg from "@orbs-network/spot/package.json";
+const SPOT_VERSION = pkg.version;
 export const useSwitchChain = () => {
   const { data: walletClient } = useWalletClient();
 
@@ -63,7 +65,8 @@ const dexToPartner = (config: Config) => {
     case Configs.PancakeSwapArbitrum:
     case Configs.PancakeSwapBase:
       return Partners.PANCAKESWAP;
-
+    case Configs.SpookySwapSonic:
+      return Partners.SPOOKYSWAP;
     default:
       return Partners.THENA;
   }
@@ -539,8 +542,8 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
 };
 
 const FillDelay = ({ className }: { className?: string }) => {
-  const { label, tooltip, onUnitSelect, fillDelay, onInputChange } = useFillDelayPanel();
-
+  const { label, tooltip, onUnitSelect, fillDelay, onInputChange, error } = useFillDelayPanel();
+  console.log({ error });
   const selected = DEFAULT_DURATION_OPTIONS.find((it) => it.value === fillDelay.unit);
 
   return (
@@ -555,11 +558,12 @@ const FillDelay = ({ className }: { className?: string }) => {
 };
 
 const PriceToggle = () => {
-  const { label, tooltip, isLimitPrice, toggleLimitPrice, hide } = useLimitPricePanel();
+  const { label, tooltip, isLimitPrice, toggleLimitPrice } = useLimitPricePanel();
+  const module = useDappContext().module;
 
   return (
     <div className="flex flex-row gap-2 items-center flex-1">
-      {!hide && (
+      {module !== Module.LIMIT && (
         <div className="flex flex-row gap-2 items-center">
           <Switch checked={isLimitPrice} onChange={toggleLimitPrice} className="w-fit" />
           <Label text={label} tooltip={tooltip} />
@@ -802,6 +806,14 @@ const useCallbacks = () => {
   };
 };
 
+const SpotVersion = () => {
+  return (
+    <div className="flex flex-col gap-2 w-full fixed bottom-[20px] left-[20px]">
+      <Typography className="text-white text-[17px] font-medium">Spot Version: {SPOT_VERSION}</Typography>
+    </div>
+  );
+};
+
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
   const { amount: typedSrcAmount } = useTypedSrcAmount();
@@ -884,6 +896,7 @@ export const Dapp = () => {
           <OrderHistoryModal />
           <DisclaimerMessage />
           <PoweredByOrbs />
+          <SpotVersion />
         </div>
       </TWAP>
     </>

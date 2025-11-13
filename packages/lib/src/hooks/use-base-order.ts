@@ -82,7 +82,7 @@ export const useBaseOrder = (props: Props) => {
           value: props.tradeInterval || 0,
         },
         triggerPricePerTrade: {
-          tooltip: "Trigger price",
+          tooltip: t("triggerPriceTooltip"),
           label: props.totalTrades && props.totalTrades > 1 ? t("triggerPricePerChunk") : t("triggerPrice"),
           value: triggerPricePerTrade || "",
           token: props.dstToken,

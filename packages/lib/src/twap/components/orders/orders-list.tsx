@@ -3,8 +3,6 @@ import { Order } from "@orbs-network/twap-sdk";
 import * as React from "react";
 import { Virtuoso } from "react-virtuoso";
 import TokenLogo from "../../../components/TokenLogo";
-import { FC } from "react";
-import { TokenLogoProps } from "../../../types";
 import { useTwapStore } from "../../../useTwapStore";
 import { useOrderName, useOrders, useOrderToDisplay, useSelectedOrderIdsToCancel } from "../../../hooks/order-hooks";
 import { useDateFormat } from "../../../hooks/helper-hooks";
@@ -116,8 +114,8 @@ const ListItemHeader = ({ order }: { order: Order }) => {
   );
 };
 
-const TokenDisplay = (props: { address?: string; amount?: string; TokenLogo?: FC<TokenLogoProps> }) => {
-  const { useToken } = useTwapContext();
+const TokenDisplay = (props: { address?: string; amount?: string }) => {
+  const { useToken, components } = useTwapContext();
   const token = useToken?.(props.address);
 
   return (
@@ -126,7 +124,7 @@ const TokenDisplay = (props: { address?: string; amount?: string; TokenLogo?: FC
         <div />
       ) : (
         <>
-          <div className="twap-orders__list-item-token-logo">{props.TokenLogo ? <props.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}</div>
+          <div className="twap-orders__list-item-token-logo">{components.TokenLogo ? <components.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}</div>
           <p className="twap-orders__list-item-token-symbol">{token?.symbol}</p>
         </>
       )}

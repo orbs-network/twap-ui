@@ -9,12 +9,13 @@ import { useFillDelay } from "./use-fill-delay";
 import { useTranslations } from "./use-translations";
 
 const useDurationError = (duration: TimeDuration) => {
-  const { module } = useTwapContext();
+  const { module, marketPrice } = useTwapContext();
   const t = useTranslations();
 
   return useMemo((): InputError | undefined => {
     const maxError = getMaxOrderDurationError(module, duration);
     const minError = getMinOrderDurationError(duration);
+    if (!marketPrice) return undefined;
 
     if (maxError.isError) {
       return {
@@ -30,7 +31,7 @@ const useDurationError = (duration: TimeDuration) => {
         message: t("minDurationError", { duration: `${Math.floor(millisToMinutes(minError.value)).toFixed(0)} ${t("minutes")}` }),
       };
     }
-  }, [duration, t, module]);
+  }, [duration, t, module, marketPrice]);
 };
 
 export const useDuration = () => {

@@ -11,13 +11,13 @@ import BN from "bignumber.js";
 import { useTranslations } from "./use-translations";
 
 const useTradesError = (amount: number, maxAmount: number) => {
-  const { module, srcUsd1Token } = useTwapContext();
+  const { module, srcUsd1Token, marketPrice } = useTwapContext();
   const t = useTranslations();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const minChunkSizeUsd = useMinChunkSizeUsd();
 
   return useMemo((): InputError | undefined => {
-    if (BN(typedSrcAmount || "0").isZero()) return;
+    if (BN(typedSrcAmount || "0").isZero() || !marketPrice) return;
     if (!amount) {
       return {
         type: InputErrors.MIN_CHUNKS,
@@ -42,7 +42,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
         message: t("minTradeSizeError", { minTradeSize: `${minTradeSizeValue} USD` }),
       };
     }
-  }, [amount, maxAmount, module, typedSrcAmount, srcUsd1Token, minChunkSizeUsd, t]);
+  }, [amount, maxAmount, module, typedSrcAmount, srcUsd1Token, minChunkSizeUsd, t, marketPrice]);
 };
 
 export const useTrades = () => {
@@ -81,7 +81,7 @@ export const useTrades = () => {
   return {
     totalTrades,
     maxTrades,
-    amountPerTradeUI: useFormatNumber({ value: amountPerTradeUI }),
+    amountPerTradeUI,
     amountPerTradeWei: amountPerTrade,
     amountPerTradeUsd: usd,
     onChange,
@@ -93,17 +93,18 @@ export const useTradesPanel = () => {
   const { srcToken, dstToken } = useTwapContext();
   const t = useTranslations();
   const { onChange, totalTrades, amountPerTradeUsd, amountPerTradeUI, error, maxTrades, amountPerTradeWei } = useTrades();
-
+  const amountPerTradeUIF = useFormatNumber({ value: amountPerTradeUI });
+  const usdF = useFormatNumber({ value: amountPerTradeUsd });
   return {
     error,
     maxTrades,
     totalTrades,
-    amountPerTrade: amountPerTradeUI,
+    amountPerTrade: amountPerTradeUIF,
     amountPerTradeWei,
     onChange,
     label: t("tradesAmountTitle"),
     tooltip: t("totalTradesTooltip"),
-    amountPerTradeUsd,
+    amountPerTradeUsd: usdF,
     fromToken: srcToken,
     toToken: dstToken,
   };

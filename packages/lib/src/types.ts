@@ -404,9 +404,9 @@ export interface State {
   typedDuration?: TimeDuration;
   typedLimitPrice?: string;
   typedTriggerPrice?: string;
-  triggerPricePercent?: number | null;
+  triggerPricePercent?: string | null;
   isInvertedTrade?: boolean;
-  limitPricePercent?: number | null;
+  limitPricePercent?: string | null;
   isMarketOrder?: boolean;
 
   currentTime: number;

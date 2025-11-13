@@ -1,5 +1,5 @@
 import { analytics } from "./analytics";
-import { API_ENDPOINT } from "./consts";
+import { getApiEndpoint } from "./consts";
 import { buildV2Order } from "./orders/v2-orders";
 import { Order, RePermitOrder, Signature } from "./types";
 
@@ -14,13 +14,13 @@ export const submitOrder = async (order: RePermitOrder, signature: Signature): P
     console.log("body", body);
     analytics.onCreateOrderRequest();
 
-    const response = await fetch(`${API_ENDPOINT}/orders/new`, {
+    const response = await fetch(`${getApiEndpoint()}/orders/new`, {
       method: "POST",
       body: JSON.stringify(body),
     });
     const data = await response.json();
     if (!data.signedOrder) {
-      return undefined;
+      throw new Error("Failed to submit order");
     }
     const newOrder = buildV2Order(data.signedOrder);
     analytics.onCreateOrderSuccess(newOrder.id);

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-constant-condition */
+import { getApiEndpoint } from "../consts";
 import { OrderStatus, OrderType, OrderV2, Order } from "../types";
 import BN from "bignumber.js";
-import { API_ENDPOINT } from "../consts";
 
 const getOrderType = (order: OrderV2) => {
   const isLimit = BN(order.order.witness.output.limit || 0).gt(1);
@@ -89,7 +89,7 @@ export const buildV2Order = (order: OrderV2): Order => {
 
 export const getOrders = async ({ chainId, signal, account }: { chainId: number; signal?: AbortSignal; account?: string }): Promise<Order[]> => {
   if (!account) return [];
-  const response = await fetch(`${API_ENDPOINT}/orders?swapper=${account}&chainId=${chainId}`, {
+  const response = await fetch(`${getApiEndpoint()}/orders?swapper=${account}&chainId=${chainId}`, {
     signal,
   });
 

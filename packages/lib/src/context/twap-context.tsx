@@ -97,6 +97,7 @@ const Content = (props: TwapProps) => {
   const acceptedMarketPrice = useTwapStore((s) => s.state.acceptedMarketPrice);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const config = useMemo(() => getConfig(props.chainId, props.partner), [props.chainId, props.partner]);
+
   const marketReferencePrice = useParsedMarketPrice(props);
 
   useEffect(() => {

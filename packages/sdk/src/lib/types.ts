@@ -247,7 +247,7 @@ export enum Partners {
   QUICKSWAP = "quickswap",
   SWAPX = "swapx",
   DRAGONSWAP = "dragonswap",
-  SPOOKYSWAP = "spookyswap",
+  SPOOKYSWAP = "spooky",
   LYNEX = "lynex",
   BLACKHOLE = "blackhole",
   OMNI = "omni",

@@ -210,10 +210,15 @@ const getCreatedOrdersFilters = (filters?: GetOrdersFilters) => {
   const outTokenAddresses = normalizeSubgraphList(filters.outTokenAddresses, (a) => `"${a.toLowerCase()}"`);
   const transactionHashes = normalizeSubgraphList(filters.transactionHashes, (h) => `"${h.toLowerCase()}"`);
   const orderIds = normalizeSubgraphList(filters.orderIds, (id) => `"${id}"`);
+  const twapAddresses = normalizeSubgraphList(
+    filters.configs?.map((c) => c.twapAddress),
+    (a) => `"${a.toLowerCase()}"`,
+  );
   const minDollarValueIn = filters.minDollarValueIn;
 
   return [
     exchanges ? `exchange_in: [${exchanges.join(", ")}]` : "",
+    twapAddresses ? `twapAddress_in: [${twapAddresses.join(", ")}]` : "",
     accounts ? `maker_in: [${accounts.join(", ")}]` : "",
     transactionHashes ? `transactionHash_in: [${transactionHashes.join(", ")}]` : "",
     orderIds ? `Contract_id_in: [${orderIds.join(", ")}]` : "",

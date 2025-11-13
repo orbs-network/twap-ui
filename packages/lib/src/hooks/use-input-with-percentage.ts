@@ -17,9 +17,9 @@ export const useInputWithPercentage = ({
   typedValue?: string;
   tokenDecimals?: number;
   initialPrice?: string;
-  percentage?: number | null;
+  percentage?: string | null;
   setValue: (value?: string) => void;
-  setPercentage: (percentage?: number | null) => void;
+  setPercentage: (percentage?: string | null) => void;
 }) => {
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();
   const { isInverted } = useInvertTradePanel();
@@ -48,28 +48,28 @@ export const useInputWithPercentage = ({
   );
 
   const onPercentageChange = useCallback(
-    (percent?: string | number) => {
+    (percent?: string) => {
       setValue(undefined);
-      setPercentage(BN(percent || 0).toNumber());
+      setPercentage(percent);
     },
     [setValue, setPercentage],
   );
 
   const selectedPercentage = useMemo(() => {
-    if (!initialPrice || BN(initialPrice).isZero()) return undefined;
+    if (!initialPrice || BN(initialPrice).isZero()) return "";
 
     if (percentage !== undefined && percentage !== null) {
-      return !percentage ? undefined : percentage;
+      return percentage;
     }
 
     if (priceWei) {
       const base = BN(initialPrice);
       const diff = BN(priceWei).minus(base).div(base).multipliedBy(100);
-      const result = Number(diff.toFixed(2));
-      return !result ? undefined : result;
+      const result = diff.decimalPlaces(2).toString();
+      return !result ? "" : result;
     }
 
-    return undefined;
+    return "";
   }, [priceWei, initialPrice, percentage]);
 
   const amountUI = useMemo(() => {
@@ -78,7 +78,11 @@ export const useInputWithPercentage = ({
       result = typedValue;
     } else {
       const amount = amountUi(tokenDecimals, priceWei);
-      result = isInverted ? (BN(amount).isZero() ? "0" : BN(1).div(amount).toFixed()) : amount;
+      if (BN(amount || "0").isZero()) {
+        return "";
+      }
+
+      result = isInverted ? BN(1).div(amount).toFixed() : amount;
     }
 
     return formatDecimals(result, 6, tokenDecimals);

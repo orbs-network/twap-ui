@@ -69,7 +69,7 @@ export const useTriggerPrice = () => {
   const typedPercent = useTwapStore((s) => s.state.triggerPricePercent);
 
   const setPercentage = useCallback(
-    (triggerPricePercent?: number | null) => {
+    (triggerPricePercent?: string | null) => {
       updateState({ triggerPricePercent });
     },
     [updateState],

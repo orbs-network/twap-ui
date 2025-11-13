@@ -30,8 +30,8 @@ export const OrderPreview = () => {
 
   const t = useTranslations();
   const [expanded, setExpanded] = useState<string | false>("panel1");
-  const components = useTwapContext();
-  const { TokenLogo } = components.components;
+  const { components } = useTwapContext();
+  const TokenLogo = components.TokenLogo;
 
   useEffect(() => {
     setExpanded("panel1");
