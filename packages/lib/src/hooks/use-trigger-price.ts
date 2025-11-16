@@ -120,7 +120,7 @@ export const useTriggerPricePanel = () => {
     tooltip: t("stopLossTooltip"),
     onChange,
     onPercentageChange,
-    selectedPercentage,
+    percentage: selectedPercentage,
     isActive: !isMarketOrder,
     onSetDefault,
     usd,

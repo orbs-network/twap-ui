@@ -148,7 +148,7 @@ export const useLimitPricePanel = () => {
     usd,
     fromToken,
     toToken,
-    selectedPercentage: selectedPercentage,
+    percentage: selectedPercentage,
     isInverted,
     prefix: "",
     isLoading: marketPriceLoading || !marketPrice,

@@ -637,7 +637,7 @@ const ResetButton = ({ onClick, text }: { onClick: () => void; text: string }) =
 };
 
 const LimitPrice = () => {
-  const { warning, price, toToken, onReset, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, error, isLimitPrice, usd } = useLimitPricePanel();
+  const { warning, price, toToken, onReset, prefix, percentage, isLoading, onChange, onPercentageChange, error, isLimitPrice, usd } = useLimitPricePanel();
 
   return (
     <div className="flex flex-col gap-2">
@@ -648,7 +648,7 @@ const LimitPrice = () => {
       {isLimitPrice ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1">
           <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} usd={usd} />
-          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={selectedPercentage?.toString() || ""} />
+          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={percentage?.toString() || ""} />
         </div>
       ) : warning ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1 bg-[rgba(255,255,255,0.02)] rounded-[12px] px-2 py-2">
@@ -687,7 +687,7 @@ const PriceRate = () => {
 };
 
 const TriggerPrice = () => {
-  const { price, toToken, onSetDefault, usd, prefix, selectedPercentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } = useTriggerPricePanel();
+  const { price, toToken, onSetDefault, usd, prefix, percentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } = useTriggerPricePanel();
 
   return (
     <>
@@ -699,7 +699,7 @@ const TriggerPrice = () => {
           </div>
           <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
             <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} usd={usd} />
-            <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={selectedPercentage?.toString() || ""} />
+            <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={percentage} />
           </div>
         </div>
       )}
