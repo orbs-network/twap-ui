@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui",
-  "version": "5.0.64",
+  "version": "5.0.65",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -23,7 +23,7 @@
   "dependencies": {
     "@ethersproject/hash": "^5.8.0",
     "@orbs-network/swap-ui": "^0.0.57",
-    "@orbs-network/twap-sdk": "^5.0.64",
+    "@orbs-network/twap-sdk": "^5.0.65",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",
     "bignumber.js": "9.x",
@@ -38,7 +38,9 @@
     "bignumber.js": ">=9.0.0",
     "react": "*",
     "react-dom": "*",
-    "react-number-format": ">=5.0.0"
+    "react-number-format": ">=5.0.0",
+    "viem": ">=2.23.2",
+    "zustand": ">=5.0.4"
   },
   "jest": {
     "preset": "ts-jest",
