@@ -13,6 +13,7 @@ import { useAppParams } from "./dapp/hooks";
 import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
 import clsx from "clsx";
 import { SettingsIcon } from "lucide-react";
+import { configToPartner } from "./utils";
 
 export const NumberInput = (props: {
   onChange: (value: string) => void;
@@ -166,6 +167,8 @@ const Row = ({ onClick, token }: any) => {
           style={{
             width: 30,
             height: 30,
+            borderRadius: "50%",
+            objectFit: "cover",
           }}
         />
         {token.symbol}
@@ -178,7 +181,7 @@ const Row = ({ onClick, token }: any) => {
   );
 };
 
-const configs = Object.values(Configs);
+const configs = Object.values(Configs).filter((it) => configToPartner(it as Config));
 
 export const ConfigSelector = () => {
   const { setConfig, config } = useDappContext();

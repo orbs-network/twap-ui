@@ -66,7 +66,7 @@ export const useInputWithPercentage = ({
       const base = BN(initialPrice);
       const diff = BN(priceWei).minus(base).div(base).multipliedBy(100);
       const result = diff.decimalPlaces(2).toString();
-      return !result ? "" : result;
+      return BN(result || "0").isZero() ? "" : result;
     }
 
     return "";

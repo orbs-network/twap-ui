@@ -103,7 +103,7 @@ export const useLimitPriceToggle = () => {
 };
 
 export const useLimitPricePanel = () => {
-  const { module, marketPrice, marketPriceLoading } = useTwapContext();
+  const { module, marketPriceLoading } = useTwapContext();
   const t = useTranslations();
   const { amountUI, onChange, onPercentageChange, usd, selectedPercentage, error } = useLimitPrice();
   const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
@@ -115,13 +115,13 @@ export const useLimitPricePanel = () => {
   const { isInverted, onInvert, fromToken, toToken } = useInvertTradePanel();
 
   const warning = useMemo(() => {
-    if (module !== Module.STOP_LOSS) return;
+    if (module !== Module.STOP_LOSS || !isMarketOrder) return;
 
     return {
       text: t("triggerMarketPriceDisclaimer"),
       url: ORBS_TWAP_FAQ_URL,
     };
-  }, [triggerPricePercent, t, module]);
+  }, [triggerPricePercent, t, module, isMarketOrder]);
 
   const reset = useCallback(() => {
     updateState({ typedLimitPrice: undefined });
@@ -143,15 +143,13 @@ export const useLimitPricePanel = () => {
     tooltip,
     onChange,
     onPercentageChange,
-    isActive: !isMarketOrder,
     onReset: reset,
     usd,
     fromToken,
     toToken,
     percentage: selectedPercentage,
     isInverted,
-    prefix: "",
-    isLoading: marketPriceLoading || !marketPrice,
+    isLoading: marketPriceLoading,
     isLimitPrice,
     toggleLimitPrice,
     onInvert,

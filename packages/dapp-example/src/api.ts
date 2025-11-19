@@ -22,17 +22,21 @@ const coingekoChainToName = {
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
   const name = coingekoChainToName[chainId];
 
-  if (name) {
-    const payload = await fetch(`https://tokens.coingecko.com/${name}/all.json`, { signal }).then((res) => res.json());
+  try {
+    if (name) {
+      const payload = await fetch(`https://tokens.coingecko.com/${name}/all.json`, { signal }).then((res) => res.json());
 
-    return payload.tokens.map((token: any) => {
-      return {
-        address: token.address,
-        symbol: token.symbol,
-        decimals: token.decimals,
-        logoUrl: token.logoURI,
-      };
-    });
+      return payload.tokens.map((token: any) => {
+        return {
+          address: token.address,
+          symbol: token.symbol,
+          decimals: token.decimals,
+          logoUrl: token.logoURI,
+        };
+      });
+    }
+  } catch (error) {
+    console.error(error);
   }
 
   const response = await fetch("https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokens.1inch.eth.link", { signal }).then((res) => res.json());

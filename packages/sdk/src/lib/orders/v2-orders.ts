@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 const getOrderType = (order: OrderV2) => {
   const isLimit = BN(order.order.witness.output.limit || 0).gt(1);
   const isTriggerPrice = BN(order.order.witness.output.stop || 0).gt(0);
-  const chunks = order.metadata.chunks?.length || 0;
+  const chunks = order.metadata.chunks?.length || BN(order.order.witness.input.maxAmount).div(BN(order.order.witness.input.amount)).toNumber();
 
   if (isTriggerPrice && isLimit) {
     return OrderType.TRIGGER_PRICE_LIMIT;

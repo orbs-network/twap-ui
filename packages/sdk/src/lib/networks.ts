@@ -49,12 +49,12 @@ export const networks = {
     shortname: "poly",
     native: {
       address: zeroAddress,
-      symbol: "MATIC",
+      symbol: "POL",
       decimals: 18,
-      logoUrl: "https://app.1inch.io/assets/images/network-logos/polygon.svg",
+      logoUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/28321.png",
     },
     wToken: {
-      symbol: "WMATIC",
+      symbol: "WPOL",
       address: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
       decimals: 18,
       logoUrl: "https://tokens-data.1inch.io/images/0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270.png",

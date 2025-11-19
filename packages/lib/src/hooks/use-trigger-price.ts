@@ -117,7 +117,7 @@ export const useTriggerPricePanel = () => {
     price: amountUI,
     error,
     label: t("stopLossLabel"),
-    tooltip: t("stopLossTooltip"),
+    tooltip: module === Module.STOP_LOSS ? t("stopLossTooltip") : t("takeProfitTooltip"),
     onChange,
     onPercentageChange,
     percentage: selectedPercentage,

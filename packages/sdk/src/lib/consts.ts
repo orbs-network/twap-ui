@@ -1,17 +1,28 @@
 import Configs from "@orbs-network/twap/configs.json";
 import { networks } from "./networks";
 import { Config, TimeDuration, TimeUnit } from "./types";
+import { getQueryParam } from "./utils";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 
+const DEV_API_URL = "https://order-sink-dev.orbs.network";
+const PROD_API_URL = "https://order-sink.orbs.network";
+
+const DEV_URLS = ["https://twap-v2.netlify.app"];
+
 export const getApiEndpoint = () => {
   try {
-    if (window.location.hostname.includes("netlify") || window.location.host.includes("localhost:3005")) {
-      return "https://order-sink-dev.orbs.network";
+    const env = getQueryParam(QUERY_PARAMS.ENV);
+    if (env === "prod") {
+      return PROD_API_URL;
     }
-    return "https://order-sink.orbs.network";
+
+    if (window.location.hostname.includes("localhost") || DEV_URLS.includes(window.location.origin)) {
+      return DEV_API_URL;
+    }
+    return PROD_API_URL;
   } catch (error) {
-    return "https://order-sink.orbs.network";
+    return PROD_API_URL;
   }
 };
 export const SUGGEST_CHUNK_VALUE = 100;
@@ -223,6 +234,7 @@ export const DISCLAIMER_URL = "https://www.orbs.com/dtwap-dlimit-disclaimer";
 export enum QUERY_PARAMS {
   FRESHNESS = "freshness",
   MIN_CHUNK_SIZE_USD = "minChunkSizeUsd",
+  ENV = "env",
 }
 
 export const DEFAULT_STOP_LOSS_PERCENTAGE = "-5";

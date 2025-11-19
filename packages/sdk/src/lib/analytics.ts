@@ -157,6 +157,7 @@ class Analytics {
       action: "cancel order",
       cancelOrderSuccess: false,
       cancelOrderTxHash: undefined,
+      actionError: undefined,
     });
   }
 
@@ -255,6 +256,7 @@ class Analytics {
       walletAddress: account,
       module,
       orderType: isMarketOrder ? "market" : "limit",
+      actionError: undefined,
     });
   }
 

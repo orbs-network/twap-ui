@@ -16,7 +16,6 @@ import {
   ButtonProps,
   Components,
   TooltipProps,
-  Partners,
   useTypedSrcAmount,
   SubmitOrderSuccessViewProps,
   useOrderHistoryPanel,
@@ -32,7 +31,7 @@ import {
   useInputErrors,
   makeElipsisAddress,
 } from "@orbs-network/twap-ui";
-import { Config, Configs, eqIgnoreCase, getNetwork, isNativeAddress, Order, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { Config, eqIgnoreCase, getNetwork, isNativeAddress, Order, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
@@ -47,7 +46,7 @@ import { ArrowUpDown, TriangleAlert } from "lucide-react";
 import BN from "bignumber.js";
 import { useGetToken } from "./hooks";
 import styled from "styled-components";
-import { abbreviate } from "../utils";
+import { abbreviate, getPartnerDemoLink } from "../utils";
 import clsx from "clsx";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -57,19 +56,6 @@ export const useSwitchChain = () => {
   const { data: walletClient } = useWalletClient();
 
   return useCallback((config: Config) => (walletClient as any)?.switchChain({ id: config.chainId }), [walletClient]);
-};
-
-const dexToPartner = (config: Config) => {
-  switch (config) {
-    case Configs.PancakeSwap:
-    case Configs.PancakeSwapArbitrum:
-    case Configs.PancakeSwapBase:
-      return Partners.PANCAKESWAP;
-    case Configs.SpookySwapSonic:
-      return Partners.SPOOKYSWAP;
-    default:
-      return Partners.THENA;
-  }
 };
 
 const OrderHistoryModal = () => {
@@ -542,8 +528,7 @@ const OrderDuration = ({ defaultDuration }: { defaultDuration: TimeDuration }) =
 };
 
 const FillDelay = ({ className }: { className?: string }) => {
-  const { label, tooltip, onUnitSelect, fillDelay, onInputChange, error } = useFillDelayPanel();
-  console.log({ error });
+  const { label, tooltip, onUnitSelect, fillDelay, onInputChange } = useFillDelayPanel();
   const selected = DEFAULT_DURATION_OPTIONS.find((it) => it.value === fillDelay.unit);
 
   return (
@@ -637,7 +622,7 @@ const ResetButton = ({ onClick, text }: { onClick: () => void; text: string }) =
 };
 
 const LimitPrice = () => {
-  const { warning, price, toToken, onReset, prefix, percentage, isLoading, onChange, onPercentageChange, error, isLimitPrice, usd } = useLimitPricePanel();
+  const { warning, price, toToken, onReset, percentage, isLoading, onChange, onPercentageChange, error, isLimitPrice, usd } = useLimitPricePanel();
 
   return (
     <div className="flex flex-col gap-2">
@@ -648,7 +633,7 @@ const LimitPrice = () => {
       {isLimitPrice ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1">
           <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} usd={usd} />
-          <PercentageInput isLoading={isLoading} prefix={prefix} onChange={onPercentageChange} value={percentage?.toString() || ""} />
+          <PercentageInput isLoading={isLoading} onChange={onPercentageChange} value={percentage?.toString() || ""} />
         </div>
       ) : warning ? (
         <div className="flex flex-row gap-2 justify-between items-stretch flex-1 bg-[rgba(255,255,255,0.02)] rounded-[12px] px-2 py-2">
@@ -662,6 +647,18 @@ const LimitPrice = () => {
         </div>
       ) : null}
     </div>
+  );
+};
+
+const DemoLink = () => {
+  const { partner } = useDappContext();
+
+  const link = useMemo(() => getPartnerDemoLink(partner), [partner]);
+  if (!link) return null;
+  return (
+    <a href={link} target="_blank" rel="noreferrer" className="text-sm text-white underline">
+      Live Demo
+    </a>
   );
 };
 
@@ -680,7 +677,7 @@ const PriceRate = () => {
             {isInverted ? "Buy" : "Sell"} {fromToken?.symbol} at best rate
           </p>
         )}
-        <ArrowUpDown onClick={onInvert} className="cursor-pointer text-white" size={18} />
+        {isLimitPrice && <ArrowUpDown onClick={onInvert} className="cursor-pointer text-white" size={18} />}
       </div>
     </div>
   );
@@ -695,7 +692,7 @@ const TriggerPrice = () => {
         <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
           <div className="flex flex-row gap-2 justify-between items-center w-full">
             <Label text={label} tooltip={tooltip} />
-            <ResetButton onClick={onSetDefault} text="set to default" />
+            <ResetButton onClick={onSetDefault} text="Set to default" />
           </div>
           <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
             <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} usd={usd} />
@@ -806,10 +803,11 @@ const useCallbacks = () => {
   };
 };
 
-const SpotVersion = () => {
+const Footer = () => {
   return (
-    <div className="flex flex-col gap-2 w-full fixed bottom-[20px] left-[20px]">
+    <div className="fixed bottom-[20px] left-[20px] flex flex-col gap-2 items-start justify-start">
       <Typography className="text-white text-[17px] font-medium">Spot Version: {SPOT_VERSION}</Typography>
+      <DemoLink />
     </div>
   );
 };
@@ -817,7 +815,7 @@ const SpotVersion = () => {
 export const Dapp = () => {
   const { chainId, address: account } = useAccount();
   const { amount: typedSrcAmount } = useTypedSrcAmount();
-  const { module, slippage, config } = useDappContext();
+  const { module, slippage, partner } = useDappContext();
 
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
@@ -846,12 +844,16 @@ export const Dapp = () => {
 
   const { onOrderFilled, onCopy } = useCallbacks();
 
+  if (!partner) {
+    return <div>Invalid partner</div>;
+  }
+
   return (
     <>
       <GlobalStyles isDarkMode={true} />
       <TWAP
         priceProtection={slippage}
-        partner={dexToPartner(config)}
+        partner={partner}
         chainId={chainId}
         provider={client.data?.transport}
         srcToken={srcToken}
@@ -896,7 +898,7 @@ export const Dapp = () => {
           <OrderHistoryModal />
           <DisclaimerMessage />
           <PoweredByOrbs />
-          <SpotVersion />
+          <Footer />
         </div>
       </TWAP>
     </>

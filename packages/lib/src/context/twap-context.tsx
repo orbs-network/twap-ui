@@ -37,6 +37,7 @@ const queryClient = new QueryClient({
 
 const Listeners = (props: TwapProps) => {
   const updateStore = useTwapStore((s) => s.updateState);
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   // update current time every minute, so the deadline will be updated when confirmation window is open
   useEffect(() => {
     setInterval(() => {
@@ -52,14 +53,22 @@ const Listeners = (props: TwapProps) => {
       typedDuration: props.overrides?.state?.duration,
       typedLimitPrice: props.overrides?.state?.limitPrice,
       typedTriggerPrice: props.overrides?.state?.triggerPrice,
+      triggerPricePercent: undefined,
+      limitPricePercent: undefined,
     });
-  }, [props.overrides?.state]);
+  }, [props.overrides?.state, props.module]);
 
   useEffect(() => {
     if (props.module === Module.LIMIT) {
       updateStore({ isMarketOrder: false });
     }
   }, [props.module]);
+
+  useEffect(() => {
+    if (isMarketOrder) {
+      updateStore({ isInvertedTrade: false });
+    }
+  }, [isMarketOrder]);
 
   return null;
 };

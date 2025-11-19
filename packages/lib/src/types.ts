@@ -13,6 +13,7 @@ export interface Translations {
   stopLossDurationTooltip: string;
   stopLossTooltip: string;
   stopLossLimitPriceTooltip: string;
+  takeProfitTooltip: string;
   minDstAmountTooltip: string;
   marketPriceTooltip: string;
   limitPriceTooltip: string;

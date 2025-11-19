@@ -27,6 +27,7 @@ export const submitOrder = async (order: RePermitOrder, signature: Signature): P
     return newOrder;
   } catch (error) {
     analytics.onCreateOrderError(error);
+    console.error(error);
     throw error;
   }
 };

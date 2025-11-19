@@ -276,7 +276,7 @@ const chainIdToName: { [key: number]: string } = {
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {
   const nullPrice = {
-    priceUsd: 0,
+    priceUsd: 1,
     priceNative: 0,
     timestamp: Date.now(),
   };

@@ -39,7 +39,7 @@ const useTradesError = (amount: number, maxAmount: number) => {
       return {
         type: InputErrors.MIN_TRADE_SIZE,
         value: minTradeSizeValue,
-        message: t("minTradeSizeError", { minTradeSize: `${minTradeSizeValue} USD` }),
+        message: t("minTradeSizeError", { minTradeSize: `${minTradeSizeValue}` }),
       };
     }
   }, [amount, maxAmount, module, typedSrcAmount, srcUsd1Token, minChunkSizeUsd, t, marketPrice]);
