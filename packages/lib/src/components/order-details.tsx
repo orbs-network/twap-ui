@@ -147,7 +147,8 @@ const OrderID = ({ id }: { id: string }) => {
   const { components } = useTwapContext();
   const Tooltip = components?.Tooltip;
   const copy = useCopyToClipboard();
-  if (typeof id === "number") {
+
+  if (!id.startsWith("0x")) {
     return <DetailRow title="ID">{id}</DetailRow>;
   } else {
     return (

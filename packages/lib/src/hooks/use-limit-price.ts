@@ -115,7 +115,7 @@ export const useLimitPricePanel = () => {
   const { isInverted, onInvert, fromToken, toToken } = useInvertTradePanel();
 
   const warning = useMemo(() => {
-    if (module !== Module.STOP_LOSS || !isMarketOrder) return;
+    if ((module !== Module.STOP_LOSS && module !== Module.TAKE_PROFIT) || !isMarketOrder) return;
 
     return {
       text: t("triggerMarketPriceDisclaimer"),
