@@ -60,7 +60,7 @@ export const useHistoryOrder = (orderId?: string) => {
       },
       progress: {
         label: t("progress"),
-        value: order?.totalTradesAmount === 1 ? undefined : progress,
+        value: progress,
       },
       excecutionPrice: {
         label: order?.totalTradesAmount === 1 ? t("finalExcecutionPrice") : t("AverageExecutionPrice"),
