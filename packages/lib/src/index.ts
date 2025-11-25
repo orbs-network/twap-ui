@@ -3,7 +3,7 @@ import { useTwapStore } from "./useTwapStore";
 export * from "./twap/twap";
 export * from "./types";
 export * from "./utils";
-export { Configs } from "./consts";
+export { Configs, PRICE_PROTECTION_SETTINGS } from "./consts";
 export { useFormatNumber } from "./hooks/helper-hooks";
 export const useTypedSrcAmount = () => {
   const updateState = useTwapStore((s) => s.updateState);

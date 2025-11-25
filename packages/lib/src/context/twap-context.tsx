@@ -59,6 +59,15 @@ const Listeners = (props: TwapProps) => {
   }, [props.overrides?.state, props.module]);
 
   useEffect(() => {
+    updateStore({
+      typedLimitPrice: props.overrides?.state?.limitPrice,
+      typedTriggerPrice: props.overrides?.state?.triggerPrice,
+      triggerPricePercent: undefined,
+      limitPricePercent: undefined,
+    });
+  }, [props.srcToken?.address, props.dstToken?.address]);
+
+  useEffect(() => {
     if (props.module === Module.LIMIT) {
       updateStore({ isMarketOrder: false });
     }

@@ -5,9 +5,8 @@ import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
 import { useUsdAmount, useShouldWrapOrUnwrapOnly, useAmountBN, useAmountUi } from "./helper-hooks";
 import { useDstTokenAmount } from "./use-dst-amount";
-import { useMaxSrcAmount } from "./use-src-amount";
 import { useTranslations } from "./use-translations";
-import BN from "bignumber.js";
+import { useBalanceError } from "./use-input-errors";
 
 const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
   const { marketPriceLoading, srcToken, dstToken, srcBalance, dstBalance } = useTwapContext();
@@ -18,22 +17,10 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
   const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
   const dstUsd = useUsdAmount(dstAmount, dstUsd1Token);
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const maxSrcInputAmount = useMaxSrcAmount();
-  const srcAmountWei = useAmountBN(srcToken?.decimals, typedSrcAmount);
 
   const token = isSrcToken ? srcToken : dstToken;
   const balance = useAmountUi(token?.decimals, isSrcToken ? srcBalance : dstBalance);
-  const error = useMemo((): InputError | undefined => {
-    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmountWei)?.gt(maxSrcInputAmount);
-
-    if ((srcBalance && BN(srcAmountWei).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
-      return {
-        type: InputErrors.INSUFFICIENT_BALANCE,
-        message: t("insufficientFunds"),
-        value: srcBalance || "",
-      };
-    }
-  }, [srcBalance?.toString(), srcAmountWei, maxSrcInputAmount?.toString(), t]);
+  const error = useBalanceError();
 
   const onChange = useCallback(
     (value: string) => {
@@ -43,6 +30,11 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
     [updateState, isSrcToken],
   );
 
+  const onMax = useCallback(() => {
+    if (!isSrcToken) return;
+    updateState({ typedSrcAmount: formatDecimals(balance, 8) });
+  }, [updateState, isSrcToken, balance]);
+
   const value = isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(dstAmount || "", 8);
 
   return {
@@ -51,6 +43,7 @@ const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
     value: value || "",
     valueWei: useAmountBN(token?.decimals, value),
     onChange,
+    onMax,
     isLoading: !typedSrcAmount ? false : isSrcToken ? false : marketPriceLoading,
     token,
     isInsufficientBalance: isSrcToken ? error : undefined,

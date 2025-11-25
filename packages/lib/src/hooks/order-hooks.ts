@@ -266,7 +266,7 @@ export const useOrderHistoryPanel = () => {
   const cancelOrdersMode = useTwapStore((s) => s.state.cancelOrdersMode);
   const orderIdsToCancel = useTwapStore((s) => s.state.orderIdsToCancel);
   const onToggleCancelOrdersMode = useCallback((cancelOrdersMode: boolean) => updateState({ cancelOrdersMode, orderIdsToCancel: [] }), [updateState]);
-  const onClosePreview = useCallback(() => updateState({ selectedOrderID: undefined }), [updateState]);
+  const onHideSelectedOrder = useCallback(() => updateState({ selectedOrderID: undefined }), [updateState]);
   const onCancelOrders = useCallback((orders: Order[]) => cancelOrder({ orders }), [cancelOrder]);
   const onSelectStatus = useCallback((status?: OrderStatus) => updateState({ orderHistoryStatusFilter: status }), []);
 
@@ -288,7 +288,7 @@ export const useOrderHistoryPanel = () => {
 
   return {
     refetch,
-    onClosePreview,
+    onHideSelectedOrder,
     onCancelOrders,
     onSelectStatus,
     onToggleCancelOrdersMode,

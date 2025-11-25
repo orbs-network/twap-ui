@@ -122,7 +122,7 @@ export const useTriggerPricePanel = () => {
     onPercentageChange,
     percentage: selectedPercentage,
     isActive: !isMarketOrder,
-    onSetDefault,
+    onReset: onSetDefault,
     usd,
     fromToken,
     toToken,

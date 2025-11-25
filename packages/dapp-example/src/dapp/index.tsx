@@ -69,7 +69,7 @@ const OrderHistoryModal = () => {
     selectedStatus,
     onToggleCancelOrdersMode,
     cancelOrdersMode,
-    onClosePreview,
+    onHideSelectedOrder,
     selectedOrder,
     onCancelOrders,
   } = useOrderHistoryPanel();
@@ -84,7 +84,7 @@ const OrderHistoryModal = () => {
         title={
           selectedOrder ? (
             <div className="twap-orders__selected-order-header-title">
-              <HiArrowLeft className="twap-orders__selected-order-header-back-icon" onClick={onClosePreview} />
+              <HiArrowLeft className="twap-orders__selected-order-header-back-icon" onClick={onHideSelectedOrder} />
               <p>{selectedOrder.title}</p>
             </div>
           ) : (
@@ -684,7 +684,7 @@ const PriceRate = () => {
 };
 
 const TriggerPrice = () => {
-  const { price, toToken, onSetDefault, usd, prefix, percentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } = useTriggerPricePanel();
+  const { price, toToken, onReset, usd, prefix, percentage, isLoading, onChange, onPercentageChange, tooltip, label, error, hide } = useTriggerPricePanel();
 
   return (
     <>
@@ -692,7 +692,7 @@ const TriggerPrice = () => {
         <div className="flex flex-col gap-2 justify-start items-start flex-1 w-full">
           <div className="flex flex-row gap-2 justify-between items-center w-full">
             <Label text={label} tooltip={tooltip} />
-            <ResetButton onClick={onSetDefault} text="Set to default" />
+            <ResetButton onClick={onReset} text="Set to default" />
           </div>
           <div className="flex flex-row justify-between gap-2 items-stretch  overflow-hidden w-full">
             <SymbolInput isLoading={isLoading} error={Boolean(error)} token={toToken} onChange={onChange} value={price} usd={usd} />
