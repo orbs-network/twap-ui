@@ -8,8 +8,6 @@ import { useTwapStore } from "../useTwapStore";
 import BN from "bignumber.js";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 
-analytics.onLoad();
-
 const TwapFallbackUI = () => {
   return (
     <div className="twap-error-fallback">
@@ -119,6 +117,7 @@ const Content = (props: TwapProps) => {
   const marketReferencePrice = useParsedMarketPrice(props);
 
   useEffect(() => {
+    analytics.onLoad();
     if (config && props.chainId) {
       analytics.init(config, props.chainId);
     }
