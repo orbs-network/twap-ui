@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/spot": "^1.3.0",
-    "@orbs-network/twap": "^2.7.25",
+    "@orbs-network/twap": "^2.7.28",
     "bignumber.js": "9.x"
   },
   "publishConfig": {

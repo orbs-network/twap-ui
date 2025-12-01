@@ -2696,10 +2696,10 @@
   resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.60.tgz#102c4396ee6bf5d37ac2b1623564f76ab1c7161a"
   integrity sha512-yifuRXkQhNj2TyzBY4ppebKhudTunS48BfIurBhjHeDtoeONPzy/wbue+dHbmVnvAkrlwIIHzNMG303SWAr5yQ==
 
-"@orbs-network/twap@^2.7.25":
-  version "2.7.25"
-  resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.7.25.tgz#42e891d9da6caef8a98d5215130783c15030c04c"
-  integrity sha512-KhbbNjIW33MRf0S8fo6tiizNwbuLuQNru4QBkiNbQnlKl4qFJJ14vbWJnFtr87sb48J7hnObwj8YUS48eQ2DOQ==
+"@orbs-network/twap@^2.7.28":
+  version "2.7.28"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.7.28.tgz#bd3926287065e2ac755f77a41421cea5260e3887"
+  integrity sha512-Ec8Cmb7wzNvzWGSJMg56JcA2pyHHQnzteO8FDWRzAjUQATSH6zEnwmV4kaRmiNeT0cRbhD5kyymGS8mtSUsfCg==
 
 "@parcel/watcher@2.0.4":
   version "2.0.4"

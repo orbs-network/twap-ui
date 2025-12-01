@@ -24,7 +24,7 @@ export const useBalanceError = () => {
         value: srcBalance || "",
       };
     }
-  }, [srcBalance?.toString(), srcAmountWei, t]);
+  }, [srcBalance, srcAmountWei, t]);
 };
 
 export function useInputErrors() {
