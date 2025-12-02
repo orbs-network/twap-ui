@@ -17,7 +17,7 @@ type Balance = {
 };
 
 const useGetTokens = () => {
-  const chainId = useDappContext().config.chainId;
+  const chainId = useChainId();
   const { data: cronosZkEvm } = useCronosEvmTokens();
   const isCronosEvm = chainId === Configs.H2Finance.chainId;
 
@@ -45,7 +45,10 @@ export const useTokenListBalances = () => {
     queryKey: ["useTokenListBalances", tokens?.length],
     queryFn: async () => {
       if (!client) return {};
-      const addresses: string[] = tokens!.map((it) => it.address).filter((it) => !isNativeAddress(it));
+      const addresses: string[] = tokens!
+        .map((it) => it.address)
+        .filter((it) => !isNativeAddress(it))
+        .filter((it) => it.startsWith("0x"));
       const nativeToken = tokens!.find((it) => isNativeAddress(it.address));
       const nativeBalanceReponse = await client.getBalance({ address: account! });
 
@@ -237,7 +240,7 @@ export const useCronosEvmTokens = () => {
 };
 
 export const usePriceUSD = (address?: string) => {
-  const chainId = useDappContext().config.chainId;
+  const chainId = useChainId();
   const wToken = getNetwork(chainId)?.wToken.address;
   const { data: cronosZkEvm } = useCronosEvmTokens();
 

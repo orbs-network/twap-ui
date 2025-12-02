@@ -1,7 +1,7 @@
 import { Modal, Typography } from "antd";
 import { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Module, Token, useFormatNumber } from "@orbs-network/twap-ui";
-import { Config, Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
+import { Config, Configs, eqIgnoreCase, getNetwork, PartnerChains, Partners } from "@orbs-network/twap-sdk";
 import { useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
 import { Virtuoso } from "react-virtuoso";
 import { useDappContext } from "./context";
@@ -181,34 +181,30 @@ const Row = ({ onClick, token }: any) => {
   );
 };
 
-const configs = Object.values(Configs).filter((it) => configToPartner(it as Config));
+const partners = Object.entries(PartnerChains).map(([partner, chains]) => ({ partner, chains }));
 
-export const ConfigSelector = () => {
-  const { setConfig, config } = useDappContext();
+export const PartnerSelector = () => {
+  const { partnerSelect, partner, chainId } = useAppParams();
 
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("");
 
   const onClose = useCallback(() => setIsOpen(false), []);
   const onOpen = useCallback(() => setIsOpen(true), []);
-  const { switchChain } = useSwitchChain();
-  const { partnerSelect } = useAppParams();
 
-  const network = useMemo(() => getNetwork(config?.chainId), [config?.chainId]);
+  const network = useMemo(() => getNetwork(chainId), [chainId]);
   const onSelect = useCallback(
-    (config: Config) => {
-      setConfig(config);
-      switchChain({ chainId: config.chainId });
-      partnerSelect(config);
+    (partner: Partners, chainId: number) => {
+      partnerSelect(partner, chainId);
       onClose();
     },
-    [onClose, setConfig, switchChain, partnerSelect],
+    [onClose, partnerSelect],
   );
 
   const list = useMemo(() => {
-    if (!filter) return configs;
-    return configs.filter((it) => {
-      return it.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0 || it.chainId.toString().indexOf(filter) >= 0;
+    if (!filter) return partners;
+    return partners.filter((it) => {
+      return it.partner.toLowerCase().indexOf(filter.toLowerCase()) >= 0 || it.chains.toString().indexOf(filter) >= 0;
     });
   }, [filter]);
 
@@ -216,7 +212,7 @@ export const ConfigSelector = () => {
     <>
       <button className="config-select-button px-4" onClick={onOpen}>
         <p>
-          {config.name} <small>{`(${network?.shortname})`}</small>
+          {partner} <small>{`(${network?.shortname})`}</small>
         </p>
         <svg fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg">
           <title>Dropdown</title>
@@ -243,15 +239,17 @@ export const ConfigSelector = () => {
         <div className="config-select-content">
           <input value={filter} onChange={(e) => setFilter(e.target.value)} className="token-select-input" placeholder="Search..." />
           <div className="config-select-list">
-            {list.map((config, index) => {
-              const chain = getNetwork(config.chainId);
-              return (
-                <div className="config-select-list-item list-item" onClick={() => onSelect(config as Config)} key={index}>
-                  <p>
-                    {config.name} <small>{`(${chain?.shortname})`}</small>
-                  </p>
-                </div>
-              );
+            {list.map((it, index) => {
+              return it.chains.map((chain) => {
+                const network = getNetwork(chain);
+                return (
+                  <div className="config-select-list-item list-item" onClick={() => onSelect(it.partner as Partners, chain)} key={index}>
+                    <p>
+                      <span className="capitalize"> {it.partner}</span> <small>{`(${network?.shortname} ${chain})`}</small>
+                    </p>
+                  </div>
+                );
+              });
             })}
           </div>
         </div>

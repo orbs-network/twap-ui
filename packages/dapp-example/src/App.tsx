@@ -4,13 +4,12 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { Dapp } from "./dapp";
 import { useDappContext } from "./context";
 import { GlobalStyles, darkTheme } from "./styles";
-import { ConfigSelector } from "./Components";
+
 import { ConfigProvider } from "antd";
 import { Toaster } from "sonner";
+import { PartnerSelector } from "./Components";
 
 function App() {
-  const { config } = useDappContext();
-
   return (
     <ThemeProvider theme={darkTheme}>
       <ConfigProvider
@@ -23,9 +22,9 @@ function App() {
         }}
       >
         <div className="app">
-          <GlobalStyles config={config} />
+          <GlobalStyles />
           <div className="navbar">
-            <ConfigSelector />
+            <PartnerSelector />
             <ConnectButton />
           </div>
           <Dapp />

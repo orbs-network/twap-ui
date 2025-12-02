@@ -252,6 +252,7 @@ export enum Partners {
   BLACKHOLE = "blackhole",
   OMNI = "omni",
   SUSHISWAP = "sushiswap",
+  NAMI = "nami",
 }
 
 export type SpotConfig = {

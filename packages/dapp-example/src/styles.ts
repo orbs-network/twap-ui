@@ -31,7 +31,7 @@ const fonts = {
   [Configs.DragonSwap.name]: "Fredoka",
 };
 
-export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) => {
+export const GlobalStyles = createGlobalStyle(({}) => {
   return {
     ".list-item": {
       display: "flex",
@@ -140,7 +140,7 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
     },
 
     body: {
-      fontFamily: fonts[config.name] || "Montserrat",
+      fontFamily: "Montserrat",
       lineHeight: "normal",
       "*": {
         fontFamily: "inherit",

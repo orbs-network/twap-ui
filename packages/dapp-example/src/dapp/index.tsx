@@ -35,7 +35,7 @@ import { Config, eqIgnoreCase, getNetwork, isNativeAddress, Order, OrderStatus, 
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
-import { useAccount, useChainId, useWalletClient } from "wagmi";
+import { useAccount, useChainId, useSwitchChain, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useDappContext } from "../context";
 import { GlobalStyles } from "./styles";
@@ -52,11 +52,6 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import pkg from "@orbs-network/spot/package.json";
 const SPOT_VERSION = pkg.version;
-export const useSwitchChain = () => {
-  const { data: walletClient } = useWalletClient();
-
-  return useCallback((config: Config) => (walletClient as any)?.switchChain({ id: config.chainId }), [walletClient]);
-};
 
 const OrderHistoryModal = () => {
   const {
@@ -248,13 +243,13 @@ const SelectMenu = (props: SelectMenuProps) => {
 };
 
 const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: () => void; text: string; disabled: boolean }) => {
-  const { chainId } = useAccount();
   const { address: account, isConnected } = useAccount();
 
   const { openConnectModal } = useConnectModal();
-  const switchChain = useSwitchChain();
-  const config = useDappContext().config;
-  const isWrongChain = config.chainId !== chainId;
+  const { switchChain } = useSwitchChain();
+  const chainId = useDappContext().chainId;
+  const connectedChainId = useChainId();
+  const isWrongChain = connectedChainId !== chainId;
   const disabled = !account ? false : isWrongChain ? false : _disabled;
   const { srcToken, dstToken } = useTokens();
   const network = getNetwork(chainId);
@@ -267,8 +262,8 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
   const onConfirm = useCallback(() => {
     if (!isConnected) {
       openConnectModal?.();
-    } else if (config.chainId !== chainId) {
-      switchChain(config);
+    } else if (isWrongChain) {
+      switchChain({ chainId: chainId });
     } else if (isUnwrapToken) {
       onUnwrap(undefined);
     } else if (isWrapToken) {
@@ -276,11 +271,11 @@ const ConfirmationButton = ({ onClick, text, disabled: _disabled }: { onClick: (
     } else {
       onClick();
     }
-  }, [isConnected, config.chainId, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap, isUnwrapToken, isWrapToken]);
+  }, [isConnected, chainId, openConnectModal, switchChain, onClick, onUnwrap, onWrap, isUnwrapToken, isWrapToken]);
 
   const buttonText = useMemo(() => {
     if (!isConnected) return "Connect Wallet";
-    if (isWrongChain) return "Switch Network";
+    if (isWrongChain) return `Switch to ${getNetwork(chainId)?.name}`;
     if (isUnwrapToken) return "Unwrap";
     if (isWrapToken) return "Wrap";
     return text;
@@ -305,7 +300,7 @@ const useTokens = () => {
   const { srcToken, dstToken, setSrcToken, setDstToken, resetTokens } = useDappStore();
   const allTokens = useTokenList();
 
-  const chainId = useDappContext().config.chainId;
+  const chainId = useChainId();
   const account = useAccount().address;
   const { isLoading } = useTokensWithBalancesUSD();
   const [searchParams] = useSearchParams();
