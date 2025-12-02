@@ -139,7 +139,7 @@ export const getTakeProfitLimitPriceError = (triggerPrice = "", limitPrice = "",
 
 export const getMaxOrderDurationError = (module: Module, duration: TimeDuration) => {
   if (module === Module.STOP_LOSS || module === Module.TAKE_PROFIT) {
-    const max = 90 * 24 * 60 * 60 * 1000; // 3 months
+    const max = 60 * 24 * 60 * 60 * 1000; // 2 months
     return {
       isError: getTimeDurationMillis(duration) > max,
       value: max,
