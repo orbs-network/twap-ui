@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui",
-  "version": "5.0.95",
+  "version": "5.0.96",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@orbs-network/swap-ui": "^0.0.61",
-    "@orbs-network/twap-sdk": "^5.0.95",
+    "@orbs-network/twap-sdk": "^5.0.96",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",
     "bignumber.js": "9.x",
@@ -52,7 +52,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9531ce1e4410d1d41608748caa903336518cfbbc",
+  "gitHead": "93c9112a3d6af062578b917dd72c79269710660c",
   "devDependencies": {
     "typescript": "5.x"
   }
