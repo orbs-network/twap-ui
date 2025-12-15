@@ -69,5 +69,23 @@ export const getPartnerDemoLink = (partner?: Partners) => {
       return "https://spookyswap-v2.netlify.app/#/swap/twap";
     case Partners.THENA:
       return "https://thena-frontend-mu.vercel.app/swap?inputCurrency=BNB&outputCurrency=0xf4c8e32eadec4bfe97e0f595add0f4450a863a11&swapType=2";
+    case Partners.LYNEX:
+      return "https://defi-zoo-frontend-3pc5.vercel.app/swap?inputCurrency=ETH&outputCurrency=0x1a51b19CE03dbE0Cb44C1528E34a7EDD7771E9Af&swapType=2";
+    case Partners.NAMI:
+      return "https://nami-dex.vercel.app/swap";
+    case Partners.QUICKSWAP:
+      return "http://198.20.104.22:4000/swap/twap/ETH/0xc2132D05D31c914a87C6611C10748AEb04B58e8F?chainId=137";
+  }
+};
+
+export const getProductionLink = (partner?: Partners) => {
+  if (!partner) return undefined;
+  switch (partner) {
+    case Partners.SPOOKYSWAP:
+      return "https://spooky.fi/#/swap/twap";
+    case Partners.THENA:
+      return "https://thena.fi/swap?inputCurrency=BNB&outputCurrency=0xf4c8e32eadec4bfe97e0f595add0f4450a863a11&swapType=2";
+    default:
+      return undefined;
   }
 };

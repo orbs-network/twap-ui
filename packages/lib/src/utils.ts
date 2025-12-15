@@ -177,3 +177,9 @@ export const shouldUnwrapOnly = (srcToken?: Token, dstToken?: Token, chainId?: n
 };
 
 export { eqIgnoreCase, isNativeAddress };
+
+export const getExplorerUrl = (txHash: string, chainId?: number) => {
+  if (!chainId) return "";
+  const network = getNetwork(chainId);
+  return `${network?.explorer}/tx/${txHash}`;
+};

@@ -220,6 +220,7 @@ const Main = () => {
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
   const { status, stepIndex, totalSteps } = useTwapStore((s) => s.state.swapExecution);
+
   const { components } = useTwapContext();
   const Spinner = components.Spinner;
   const SuccessIcon = components.SuccessIcon;

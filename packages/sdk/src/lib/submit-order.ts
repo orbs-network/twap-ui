@@ -19,8 +19,8 @@ export const submitOrder = async (order: RePermitOrder, signature: Signature): P
       body: JSON.stringify(body),
     });
     const data = await response.json();
-    if (!data.signedOrder) {
-      throw new Error("Failed to submit order");
+    if (!data.success) {
+      throw new Error(`error:${data.message}, code:${data.code}`);
     }
     const newOrder = buildV2Order(data.signedOrder);
     analytics.onCreateOrderSuccess(newOrder.id);

@@ -13,7 +13,7 @@ import { useAppParams } from "./dapp/hooks";
 import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
 import clsx from "clsx";
 import { SettingsIcon } from "lucide-react";
-import { configToPartner } from "./utils";
+import { configToPartner, getProductionLink } from "./utils";
 
 export const NumberInput = (props: {
   onChange: (value: string) => void;
@@ -240,13 +240,16 @@ export const PartnerSelector = () => {
           <input value={filter} onChange={(e) => setFilter(e.target.value)} className="token-select-input" placeholder="Search..." />
           <div className="config-select-list">
             {list.map((it, index) => {
+              const productionLink = getProductionLink(it.partner as Partners);
+
               return it.chains.map((chain) => {
                 const network = getNetwork(chain);
                 return (
-                  <div className="config-select-list-item list-item" onClick={() => onSelect(it.partner as Partners, chain)} key={index}>
+                  <div className="config-select-list-item list-item items-center w-full" onClick={() => onSelect(it.partner as Partners, chain)} key={index}>
                     <p>
                       <span className="capitalize"> {it.partner}</span> <small>{`(${network?.shortname} ${chain})`}</small>
                     </p>
+                    {productionLink ? <p className="text-sm text-white ml-auto">Prod</p> : null}
                   </div>
                 );
               });

@@ -46,7 +46,7 @@ import { ArrowUpDown, TriangleAlert } from "lucide-react";
 import BN from "bignumber.js";
 import { useGetToken } from "./hooks";
 import styled from "styled-components";
-import { abbreviate, getPartnerDemoLink } from "../utils";
+import { abbreviate, getPartnerDemoLink, getProductionLink } from "../utils";
 import clsx from "clsx";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -648,11 +648,22 @@ const LimitPrice = () => {
 const DemoLink = () => {
   const { partner } = useDappContext();
 
-  const link = useMemo(() => getPartnerDemoLink(partner), [partner]);
-  if (!link) return null;
+  const demoLink = useMemo(() => getPartnerDemoLink(partner), [partner]);
+  if (!demoLink) return null;
   return (
-    <a href={link} target="_blank" rel="noreferrer" className="text-sm text-white underline">
-      Live Demo
+    <a href={demoLink} target="_blank" rel="noreferrer" className="text-sm text-white underline">
+      Demo
+    </a>
+  );
+};
+
+const ProductionLink = () => {
+  const { partner } = useDappContext();
+  const productionLink = useMemo(() => getProductionLink(partner), [partner]);
+  if (!productionLink) return null;
+  return (
+    <a href={productionLink} target="_blank" rel="noreferrer" className="text-sm text-white underline">
+      Production
     </a>
   );
 };
@@ -803,6 +814,7 @@ const Footer = () => {
     <div className="fixed bottom-[20px] left-[20px] flex flex-col gap-2 items-start justify-start">
       <Typography className="text-white text-[17px] font-medium">Spot Version: {SPOT_VERSION}</Typography>
       <DemoLink />
+      <ProductionLink />
     </div>
   );
 };

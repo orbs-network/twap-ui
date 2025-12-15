@@ -2,13 +2,13 @@ import { SwapStatus } from "@orbs-network/swap-ui";
 import { analytics, Order, REPERMIT_ABI, TWAP_ABI } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/twap-context";
-import { isTxRejected } from "../utils";
+import { getExplorerUrl, isTxRejected } from "../utils";
 import { useGetTransactionReceipt } from "./use-get-transaction-receipt";
 import { useTwapStore } from "../useTwapStore";
 import { useOptimisticCancelOrder } from "./order-hooks";
 
 export const useCancelOrderMutation = () => {
-  const { account, walletClient, publicClient, config, callbacks } = useTwapContext();
+  const { account, walletClient, publicClient, config, callbacks, chainId } = useTwapContext();
   const getTransactionReceipt = useGetTransactionReceipt();
   const updateState = useTwapStore((s) => s.updateState);
   const optimisticCancelOrder = useOptimisticCancelOrder();
@@ -61,7 +61,7 @@ export const useCancelOrderMutation = () => {
       if (receipt.status === "reverted") throw new Error("failed to cancel order");
 
       analytics.onCancelOrderSuccess(hash);
-      callbacks?.onCancelOrderSuccess?.(orders, receipt);
+      callbacks?.onCancelOrderSuccess?.({ orders, txHash: hash, explorerUrl: getExplorerUrl(hash, chainId) });
 
       return receipt;
     } catch (error) {

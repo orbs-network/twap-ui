@@ -1,8 +1,8 @@
 import { SwapStatus } from "@orbs-network/swap-ui";
 import BN from "bignumber.js";
 import { analytics, isNativeAddress, IWETH_ABI, submitOrder } from "@orbs-network/twap-sdk";
-import { Steps, Token } from "../types";
-import { ensureWrappedToken, isTxRejected } from "../utils";
+import { ParsedError, Steps, Token } from "../types";
+import { ensureWrappedToken, getExplorerUrl, isTxRejected } from "../utils";
 import { useSrcAmount } from "./use-src-amount";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/twap-context";
@@ -68,7 +68,7 @@ const useWrapToken = () => {
 };
 
 const useSignAndSend = () => {
-  const { account, walletClient, chainId, srcToken, dstToken, module } = useTwapContext();
+  const { account, walletClient, chainId, srcToken, dstToken, module, callbacks } = useTwapContext();
   const rePermitOrderData = useBuildRePermitOrderDataCallback();
 
   return useMutation(async () => {
@@ -83,7 +83,7 @@ const useSignAndSend = () => {
     const { order, domain, types, primaryType } = rePermitOrderData;
 
     analytics.onSignOrderRequest(order);
-
+    callbacks?.onSignOrderRequest?.();
     console.log({
       domain,
       types,
@@ -106,12 +106,13 @@ const useSignAndSend = () => {
         account: account as `0x${string}`,
       });
     } catch (error) {
+      callbacks?.onSignOrderError?.((error as Error).message);
       analytics.onSignOrderError(error);
       throw error;
     }
 
     analytics.onSignOrderSuccess(signatureStr);
-
+    callbacks?.onSignOrderSuccess?.(signatureStr);
     const parsedSignature = parseSignature(signatureStr);
     const signature = {
       v: numberToHex(parsedSignature.v || 0),
@@ -242,6 +243,20 @@ const useInitOrderRequest = () => {
   });
 };
 
+function parseError(input: string): ParsedError {
+  const codeMatch = input.match(/,\s*code\s*:\s*(\d+)/i);
+
+  const error = input
+    .replace(/^error\s*:/i, "")
+    .replace(/,\s*code\s*:\s*\d+/i, "")
+    .trim();
+
+  return {
+    message: error || "",
+    code: codeMatch ? Number(codeMatch[1]) : 0,
+  };
+}
+
 export const useSubmitOrderMutation = () => {
   const { srcToken, dstToken, chainId, callbacks, refetchBalances } = useTwapContext();
   const updateState = useTwapStore((s) => s.updateState);
@@ -277,21 +292,26 @@ export const useSubmitOrderMutation = () => {
 
       if (wrapRequired) {
         updateSwapExecution({ step: Steps.WRAP });
-        callbacks?.onWrapRequest?.(srcAmountUI);
+        callbacks?.onWrapRequest?.();
         const wrapReceipt = await wrapCallback({ onHash: (hash) => updateSwapExecution({ wrapTxHash: hash }) });
         stepIndex++;
         updateSwapExecution({ stepIndex });
-        callbacks?.onWrapSuccess?.(wrapReceipt, srcAmountUI);
+        callbacks?.onWrapSuccess?.({ txHash: wrapReceipt.transactionHash, explorerUrl: getExplorerUrl(wrapReceipt.transactionHash, chainId), amount: srcAmountUI });
         isWrapSuccess = true;
       }
 
       if (approvalRequired) {
-        callbacks?.onApproveRequest?.(srcWrappedToken, srcAmountUI);
+        callbacks?.onApproveRequest?.();
         updateSwapExecution({ step: Steps.APPROVE });
 
         const approveReceipt = await approveCallback({ token: srcWrappedToken, onHash: (hash) => updateSwapExecution({ approveTxHash: hash }) });
         await ensureUserApprovedToken({ token: srcWrappedToken, srcAmount: srcAmountWei });
-        callbacks?.onApproveSuccess?.(approveReceipt, srcWrappedToken, srcAmountUI);
+        callbacks?.onApproveSuccess?.({
+          txHash: approveReceipt.transactionHash,
+          explorerUrl: getExplorerUrl(approveReceipt.transactionHash, chainId),
+          token: srcWrappedToken,
+          amount: srcAmountUI,
+        });
         stepIndex++;
         updateSwapExecution({ stepIndex });
       }
@@ -299,19 +319,23 @@ export const useSubmitOrderMutation = () => {
       const order = await createOrderCallback();
 
       if (order) {
+        callbacks?.onOrderCreated?.(order);
+
         addOrder(order);
       } else {
         await refetchOrders();
       }
       updateSwapExecution({ status: SwapStatus.SUCCESS });
       updateState({ newOrderId: order?.id });
-
       return order;
     } catch (error) {
       if (isTxRejected(error)) {
+        callbacks?.onSubmitOrderRejected?.();
         updateSwapExecution({ step: undefined, status: undefined, stepIndex: undefined });
       } else {
-        updateSwapExecution({ status: SwapStatus.FAILED, error: (error as any).message });
+        const errorMsg = parseError((error as Error).message);
+        callbacks?.onSubmitOrderFailed?.({ message: errorMsg.message || "", code: errorMsg.code || 0 });
+        updateSwapExecution({ status: SwapStatus.FAILED, error: { message: errorMsg.message || "", code: errorMsg.code || 0 } });
       }
     } finally {
       if (isWrapSuccess) {

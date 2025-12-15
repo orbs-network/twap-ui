@@ -2,7 +2,7 @@ import { amountBN, amountUi, getNetwork } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../context/twap-context";
 import BN from "bignumber.js";
-import { formatDecimals, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
+import { formatDecimals, getExplorerUrl, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import moment from "moment";
 import { useNumericFormat } from "react-number-format";
 
@@ -23,7 +23,7 @@ export const useExplorerLink = (txHash?: string) => {
   const network = useNetwork();
   return useMemo(() => {
     if (!txHash || !network) return undefined;
-    return `${network.explorer}/tx/${txHash}`;
+    return getExplorerUrl(txHash, network.id);
   }, [txHash, network]);
 };
 

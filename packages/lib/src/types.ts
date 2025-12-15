@@ -150,13 +150,6 @@ export enum InputErrors {
   MAX_ORDER_SIZE,
 }
 
-export type onCreateOrderRequest = {
-  srcToken: Token;
-  dstToken: Token;
-  srcAmount: string;
-  dstAmount: string;
-};
-
 export interface Provider {
   request(...args: any): Promise<any>;
   [key: string]: any; // Allow extra properties
@@ -264,19 +257,47 @@ export type Overrides = {
   dateFormat?: (date: number) => string;
 };
 
+export type OnApproveSuccessCallback = {
+  txHash: string;
+  explorerUrl: string;
+  token: Token;
+  amount: string;
+};
+
+export type OnWrapSuccessCallback = {
+  txHash: string;
+  explorerUrl: string;
+  amount: string;
+};
+
+export type OnCancelOrderSuccess = {
+  orders: Order[];
+  txHash: string;
+  explorerUrl: string;
+};
+
+export type ParsedError = {
+  message: string;
+  code: number;
+};
+
 export type Callbacks = {
   onCancelOrderRequest?: (orders: Order[]) => void;
-  onCancelOrderSuccess?: (orders: Order[], receipt: TransactionReceipt) => void;
+  onCancelOrderSuccess?: (props: OnCancelOrderSuccess) => void;
   onCancelOrderFailed?: (error: string) => void;
   onOrdersProgressUpdate?: (orders: Order[]) => void;
-  onCreateOrderRequest?: (args: onCreateOrderRequest) => void;
-  onCreateOrderSuccess?: (order: Order) => void;
-  onApproveRequest?: (token: Token, amount: string) => void;
-  onApproveSuccess?: (receipt: TransactionReceipt, token: Token, amount: string) => void;
-  onWrapRequest?: (amount: string) => void;
-  onWrapSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
+  onSignOrderRequest?: () => void;
+  onOrderCreated?: (order: Order) => void;
+  onSignOrderSuccess?: (signature: string) => void;
+  onSignOrderError?: (error: string) => void;
+  onApproveRequest?: () => void;
+  onApproveSuccess?: (props: OnApproveSuccessCallback) => void;
+  onWrapRequest?: () => void;
+  onWrapSuccess?: (props: OnWrapSuccessCallback) => void;
   onOrderFilled?: (order: Order) => void;
   onCopy?: () => void;
+  onSubmitOrderFailed?: (error: ParsedError) => void;
+  onSubmitOrderRejected?: () => void;
 };
 
 export type SubmitOrderSuccessViewProps = {
@@ -386,7 +407,8 @@ export enum Steps {
 }
 export type SwapExecution = {
   status?: SwapStatus;
-  error?: string;
+  errorMessage?: string;
+  error?: { message: string; code: number };
   step?: Steps;
   stepIndex?: number;
   approveTxHash?: string;
