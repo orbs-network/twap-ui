@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-sdk",
-  "version": "5.0.115",
+  "version": "5.0.116",
   "description": "TWAP UI SDK",
   "license": "MIT",
   "author": "Orbs",
@@ -27,5 +27,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "99cbf3909bfb27b271755de13e4b50f4ac84fe4e"
+  "gitHead": "43b05bdde1bd916f8d7d8f2af22b6fb73f13e418"
 }
