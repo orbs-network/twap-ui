@@ -308,7 +308,7 @@ export type SubmitOrderSuccessViewProps = {
 export type SubmitOrderErrorViewProps = {
   wrapTxHash?: string;
   children: ReactNode;
-  error?: string;
+  error?: ParsedError;
 };
 
 export type MarketReferencePrice = {
@@ -407,7 +407,6 @@ export enum Steps {
 }
 export type SwapExecution = {
   status?: SwapStatus;
-  errorMessage?: string;
   error?: { message: string; code: number };
   step?: Steps;
   stepIndex?: number;

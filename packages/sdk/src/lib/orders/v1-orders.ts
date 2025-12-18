@@ -182,6 +182,7 @@ const buildV1Order = (order: OrderV1, chainId: number, fills: TwapFill[], status
     dollarValueInFilled: !fills ? "" : filledDollarValueIn,
     dollarValueOutFilled: !fills ? "" : filledDollarValueOut,
     feesFilled: !fills ? "" : dexFee,
+    dstMinAmountTotal: BN(order.ask_dstMinAmount).multipliedBy(chunks).toString(),
     fills: fills || ([] as TwapFill[]),
     fillDelay: order.ask_fillDelay,
     deadline: order.ask_deadline * 1000,

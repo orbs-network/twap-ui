@@ -32,9 +32,7 @@ export const useCancelOrderMutation = () => {
         ),
       );
 
-      const receipts = await Promise.all(hashes.map((hash) => getTransactionReceipt(hash)));
-
-      return receipts.filter((receipt) => receipt !== undefined);
+      return hashes[0];
     } catch (error) {
       analytics.onCancelOrderError(error);
       throw error;
@@ -63,7 +61,7 @@ export const useCancelOrderMutation = () => {
       analytics.onCancelOrderSuccess(hash);
       callbacks?.onCancelOrderSuccess?.({ orders, txHash: hash, explorerUrl: getExplorerUrl(hash, chainId) });
 
-      return receipt;
+      return receipt.transactionHash;
     } catch (error) {
       analytics.onCancelOrderError(error);
       throw error;
@@ -88,8 +86,8 @@ export const useCancelOrderMutation = () => {
       const ordersV2 = orders.filter((o) => o.version === 2);
 
       const [v1Results, v2Result] = await Promise.all([
-        ordersV1.length ? cancelOrdersV1(ordersV1) : Promise.resolve([]),
-        ordersV2.length ? cancelOrdersV2(ordersV2) : Promise.resolve(undefined),
+        ordersV1.length ? cancelOrdersV1(ordersV1) : Promise.resolve(""),
+        ordersV2.length ? cancelOrdersV2(ordersV2) : Promise.resolve(""),
       ]);
       updateState({ cancelOrderStatus: SwapStatus.SUCCESS, orderIdsToCancel: [] });
       optimisticCancelOrder(orders.map((o) => o.id));

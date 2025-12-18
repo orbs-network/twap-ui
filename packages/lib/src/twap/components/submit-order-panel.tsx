@@ -2,7 +2,7 @@ import { Step, SwapFlow, SwapStatus } from "@orbs-network/swap-ui";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useTwapContext } from "../../context/twap-context";
 import { isNativeAddress, Module, ORBS_TWAP_FAQ_URL } from "@orbs-network/twap-sdk";
-import { Steps, SubmitOrderPanelProps } from "../../types";
+import { ParsedError, Steps, SubmitOrderPanelProps } from "../../types";
 import { useTwapStore } from "../../useTwapStore";
 import { useExplorerLink, useFormatNumber, useNetwork } from "../../hooks/helper-hooks";
 import { useTrades } from "../../hooks/use-trades";
@@ -35,7 +35,7 @@ const WrapMsg = () => {
     return null;
   }
 
-  return <p className="twap-wrap-msg">{t("wrapMsg", { symbol: srcToken?.symbol || "", wSymbol: wSymbol || "" })}</p>;
+  return <p className="twap-error-wrap-msg">{t("wrapMsg", { symbol: srcToken?.symbol || "", wSymbol: wSymbol || "" })}</p>;
 };
 
 const useOrderName = (isMarketOrder = false, chunks = 1) => {
@@ -119,14 +119,15 @@ const useStep = () => {
 
 const TxError = ({ error }: { error?: any }) => {
   return (
-    <div className="twap-failed-unwrap">
-      <h2 className="twap-failed-unwrap-title">{error ? error : `Transaction failed`}</h2>
+    <div className="twap-error">
+      <h2 className="twap-error-title">Transaction failed</h2>
+      <p className="twap-error-code">Error code: {error?.code}</p>
       <WrapMsg />
     </div>
   );
 };
 
-function Failed({ error }: { error?: any }) {
+function Failed({ error }: { error?: ParsedError }) {
   const { components } = useTwapContext();
   const t = useTranslations();
   const wrapTxHash = useTwapStore((s) => s.state.swapExecution?.wrapTxHash);
@@ -219,7 +220,7 @@ const Main = () => {
 };
 
 const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
-  const { status, stepIndex, totalSteps } = useTwapStore((s) => s.state.swapExecution);
+  const { status, stepIndex, totalSteps, error } = useTwapStore((s) => s.state.swapExecution);
 
   const { components } = useTwapContext();
   const Spinner = components.Spinner;
@@ -260,7 +261,7 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
         components={{
           SrcTokenLogo: TokenLogo && <TokenLogo token={srcToken} />,
           DstTokenLogo: TokenLogo && <TokenLogo token={dstToken} />,
-          Failed: <Failed />,
+          Failed: <Failed error={error} />,
           Success: <SuccessContent />,
           Main: <Main />,
           Loader: Spinner,

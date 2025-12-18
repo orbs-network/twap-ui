@@ -193,6 +193,8 @@ export const useOrders = () => {
   const { data: orders, isLoading, error, refetch, isRefetching } = useOrdersQuery();
   const { mutateAsync: cancelOrder } = useCancelOrderMutation();
 
+  console.log({ orders });
+
   return useMemo(() => {
     return {
       orders: {
@@ -285,11 +287,17 @@ export const useOrderHistoryPanel = () => {
   const selectedOrder = useHistoryOrder(selectedOrderID);
   const ordersToCancel = useMemo(() => orders.all.filter((order) => orderIdsToCancel?.includes(order.id)), [orders, orderIdsToCancel]);
   const onSelectAllOrdersToCancel = useCallback(() => updateState({ orderIdsToCancel: orders.open.map((order) => order.id) }), [updateState, orders]);
-
+  const onCancelOrder = useCallback(
+    (order: Order) => {
+      return cancelOrder({ orders: [order] }).then((it) => it?.[0] || "");
+    },
+    [cancelOrder],
+  );
   return {
     refetch,
     onHideSelectedOrder,
     onCancelOrders,
+    onCancelOrder,
     onSelectStatus,
     onToggleCancelOrdersMode,
     onSelectOrder,

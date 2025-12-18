@@ -161,6 +161,9 @@ const useHasAllowanceCallback = () => {
           args: [account as `0x${string}`, config.repermit],
         })
         .then((res) => res.toString());
+      console.log("allowance", allowance);
+      console.log("srcAmount", srcAmount);
+
       const approvalRequired = BN(allowance || "0").lt(BN(srcAmount).toString());
 
       return { allowance, approvalRequired };
@@ -177,6 +180,7 @@ const useApproveToken = () => {
       if (!account || !walletClient || !publicClient || !chainId || !config) {
         throw new Error("missing required parameters");
       }
+
       analytics.onApproveRequest();
       let hash: `0x${string}` | undefined;
       if (overrides?.approveOrder) {
@@ -193,7 +197,6 @@ const useApproveToken = () => {
       }
       onHash(hash);
       const receipt = await getTransactionReceipt(hash);
-
       if (!receipt) {
         throw new Error("failed to get transaction receipt");
       }

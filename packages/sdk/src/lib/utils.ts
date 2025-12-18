@@ -1,6 +1,6 @@
-import { LEGACY_EXCHANGES_MAP, getPartnerIdentifier, maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
+import { LEGACY_EXCHANGES_MAP, getPartnerIdentifier, maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API, PartnerChains } from "./consts";
 import BN from "bignumber.js";
-import { Config, Order, OrderType, TimeDuration, TimeUnit } from "./types";
+import { Config, Order, OrderType, Partners, TimeDuration, TimeUnit } from "./types";
 import { networks } from "./networks";
 import { Configs, getEstimatedDelayBetweenChunksMillis } from "..";
 
@@ -208,4 +208,8 @@ export const getOrderFillDelayMillis = (order: Order, config: Config) => {
 export const getQueryParam = (name: string) => {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get(name);
+};
+
+export const getPartnerChains = (partner: Partners) => {
+  return PartnerChains[partner as keyof typeof PartnerChains];
 };

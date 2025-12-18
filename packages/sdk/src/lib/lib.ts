@@ -6,7 +6,6 @@ import Configs from "@orbs-network/twap/configs.json";
 import { DEFAULT_FILL_DELAY, MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS, MIN_ORDER_DURATION_MILLIS } from "./consts";
 import { Config, Module, Partners, SpotConfig, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
-import { networks } from "./networks";
 
 // values calculations
 
@@ -198,12 +197,4 @@ export const getConfig = (chainId?: number, _dex?: Partners): SpotConfig | undef
   } catch (error) {
     return undefined;
   }
-};
-
-export const PartnerChains = {
-  [Partners.LYNEX]: [networks.linea.id],
-  [Partners.QUICKSWAP]: [networks.poly.id, networks.base.id],
-  [Partners.NAMI]: [networks.sei.id],
-  [Partners.THENA]: [networks.bsc.id],
-  [Partners.SPOOKYSWAP]: [networks.sonic.id],
 };

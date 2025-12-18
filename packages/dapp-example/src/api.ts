@@ -17,6 +17,7 @@ const coingekoChainToName = {
   [networks.cronosZkEvm.id]: "cronos-zkevm",
   [networks.katana.id]: "katana",
   [networks.sei.id]: "sei-v2",
+  [networks.monad.id]: "monad",
 };
 
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {

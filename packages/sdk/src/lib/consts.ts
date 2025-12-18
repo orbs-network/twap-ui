@@ -1,6 +1,6 @@
 import Configs from "@orbs-network/twap/configs.json";
 import { networks } from "./networks";
-import { Config, TimeDuration, TimeUnit } from "./types";
+import { Config, Partners, TimeDuration, TimeUnit } from "./types";
 import { getQueryParam } from "./utils";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -242,3 +242,11 @@ export const DEFAULT_TAKE_PROFIT_PERCENTAGE = "10";
 
 export const DEFAULT_STOP_LOSS_LIMIT_PERCENTAGE = "-10";
 export const DEFAULT_TAKE_PROFIT_LIMIT_PERCENTAGE = "5";
+
+export const PartnerChains = {
+  [Partners.LYNEX]: [networks.linea.id],
+  [Partners.QUICKSWAP]: [networks.poly.id, networks.base.id],
+  [Partners.NAMI]: [networks.sei.id],
+  [Partners.THENA]: [networks.bsc.id],
+  [Partners.SPOOKYSWAP]: [networks.sonic.id],
+};

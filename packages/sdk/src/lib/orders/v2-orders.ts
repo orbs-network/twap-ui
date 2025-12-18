@@ -54,6 +54,9 @@ const getStatus = (order: OrderV2, progress: number) => {
 
 export const buildV2Order = (order: OrderV2): Order => {
   const progress = getProgress(order);
+
+  const dstMinAmountPerTrade = Number(order.order.witness.output.limit) === 1 ? "" : order.order.witness.output.limit;
+  const totalTradesAmount = order.metadata.expectedChunks || 1;
   return {
     id: order.hash,
     hash: order.hash,
@@ -74,11 +77,12 @@ export const buildV2Order = (order: OrderV2): Order => {
     deadline: Number(order.order.deadline) * 1000,
     createdAt: new Date(order.timestamp).getTime(),
     srcAmount: order.order.witness.input.maxAmount,
-    dstMinAmountPerTrade: Number(order.order.witness.output.limit) === 1 ? "" : order.order.witness.output.limit,
+    dstMinAmountPerTrade,
     triggerPricePerTrade: BN(order.order.witness.output.stop || 0).isZero() ? "" : order.order.witness.output.stop,
+    dstMinAmountTotal: BN(dstMinAmountPerTrade).multipliedBy(totalTradesAmount).toString(),
     srcAmountPerTrade: order.order.witness.input.amount,
     txHash: "",
-    totalTradesAmount: order.metadata.expectedChunks || 1,
+    totalTradesAmount,
     isMarketPrice: false,
     chainId: order.order.witness.chainid,
     filledOrderTimestamp: 0,

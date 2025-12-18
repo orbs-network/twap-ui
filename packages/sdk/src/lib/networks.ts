@@ -422,4 +422,25 @@ export const networks = {
     explorer: "https://berascan.com", // placeholder — replace with actual if known
     eip1559: true,
   },
+  monad:{
+    id: 143,
+    name: "Monad",
+    shortname: "monad",
+    native: {
+      address: zeroAddress,
+      symbol: "MONAD",
+      decimals: 18,
+      logoUrl: "https://s2.coinmarketcap.com/static/img/coins/128x128/30495.png",
+    },
+    wToken: {
+      symbol: "WMON",
+      address: "0x3bd359c1119da7da1d913d1c4d2b7c461115433a",
+      decimals: 18,
+      logoUrl: "https://assets.coingecko.com/coins/images/70784/standard/wmon.png?1766028904",
+    },
+    publicRpcUrl: "https://monad-mainnet.drpc.org",
+    logoUrl: "https://s2.coinmarketcap.com/static/img/coins/128x128/30495.png",
+    explorer: "https://monad.network",
+    eip1559: true,
+  }
 };

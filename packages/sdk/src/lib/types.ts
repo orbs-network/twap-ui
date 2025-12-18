@@ -86,6 +86,7 @@ export type Order = {
   srcAmount: string;
   dstMinAmountPerTrade: string;
   triggerPricePerTrade: string;
+  dstMinAmountTotal: string;
   srcAmountPerTrade: string;
   txHash: string;
   totalTradesAmount: number;
