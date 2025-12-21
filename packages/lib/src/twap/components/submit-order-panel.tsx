@@ -28,10 +28,10 @@ export const useSubmitOrderPanelContext = () => {
 
 const WrapMsg = () => {
   const t = useTranslations();
-  const { srcToken } = useTwapStore((s) => s.state.swapExecution);
+  const { wrapTxHash, srcToken } = useTwapStore((s) => s.state.swapExecution);
   const wSymbol = useNetwork()?.wToken?.symbol;
 
-  if (!isNativeAddress(srcToken?.address || "")) {
+  if (!wrapTxHash) {
     return null;
   }
 
@@ -121,7 +121,7 @@ const TxError = ({ error }: { error?: any }) => {
   return (
     <div className="twap-error">
       <h2 className="twap-error-title">Transaction failed</h2>
-      <p className="twap-error-code">Error code: {error?.code}</p>
+      {error?.code && <p className="twap-error-code">Error code: {error?.code}</p>}
       <WrapMsg />
     </div>
   );

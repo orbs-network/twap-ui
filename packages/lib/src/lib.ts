@@ -1,32 +1,12 @@
-import { createPublicClient, createWalletClient, custom, defineChain, http } from "viem";
+import { Chain, createPublicClient, createWalletClient, custom, http } from "viem";
 import { Provider, PublicClient, WalletClient } from "./types";
-import * as chains from "viem/chains";
+import { chains } from "./chains";
 
 export const REFETCH_ORDER_HISTORY = 40_000;
-const katana: chains.Chain = defineChain({
-  id: 747474,
-  name: "Katana",
-  network: "katana",
-  nativeCurrency: {
-    decimals: 18,
-    name: "Ether",
-    symbol: "ETH",
-  },
-  rpcUrls: {
-    default: {
-      http: ["https://rpc.katana.network"],
-    },
-  },
-  contracts: {
-    multicall3: {
-      address: "0xca11bde05977b3631167028862be2a173976ca11",
-      blockCreated: 7654707,
-    },
-  },
-});
 
 export const initiateWallet = (chainId?: number, provider?: Provider) => {
-  const chain = [katana, ...Object.values(chains)].find((it: any) => it.id === chainId);
+  const chain = Object.values(chains).find((it: Chain) => it.id === chainId);
+
   if (!chain) {
     return {
       walletClient: undefined,

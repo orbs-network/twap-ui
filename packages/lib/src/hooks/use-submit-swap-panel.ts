@@ -6,7 +6,6 @@ import { InputErrors, SwapExecution } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { useCurrentOrderDetails } from "./use-current-order";
 import { useInputErrors } from "./use-input-errors";
-import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { useSrcAmount } from "./use-src-amount";
 import { useSubmitOrderMutation } from "./use-submit-order";
 import { useTranslations } from "./use-translations";
@@ -22,8 +21,7 @@ export const useSubmitSwapPanel = () => {
   const swapExecution = useTwapStore((s) => s.state.swapExecution);
   const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const minChunkSizeUsd = useMinChunkSizeUsd();
-  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd || BN(marketPrice || "0").isZero();
+  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || BN(marketPrice || "0").isZero();
   const buttonLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
   const inputsError = useInputErrors();
 

@@ -1,16 +1,13 @@
-import { useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { useTwapContext } from "../context/twap-context";
-import { InputError, InputErrors } from "../types";
 import { useTwapStore } from "../useTwapStore";
 import { formatDecimals } from "../utils";
 import { useUsdAmount, useShouldWrapOrUnwrapOnly, useAmountBN, useAmountUi } from "./helper-hooks";
 import { useDstTokenAmount } from "./use-dst-amount";
-import { useTranslations } from "./use-translations";
 import { useBalanceError } from "./use-input-errors";
 
 const useTokenPanel = (isSrcToken: boolean, dstAmount?: string) => {
   const { marketPriceLoading, srcToken, dstToken, srcBalance, dstBalance } = useTwapContext();
-  const t = useTranslations();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const updateState = useTwapStore((s) => s.updateState);
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();

@@ -31,7 +31,7 @@ import {
   useInputErrors,
   makeElipsisAddress,
 } from "@orbs-network/twap-ui";
-import { Config, eqIgnoreCase, getNetwork, isNativeAddress, Order, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, getNetwork, isNativeAddress, Order, OrderStatus, TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { HiOutlineTrash } from "@react-icons/all-files/hi/HiOutlineTrash";
@@ -882,9 +882,7 @@ export const Dapp = () => {
         }}
         refetchBalances={refetchBalances}
         callbacks={{ onOrderFilled, onCopy }}
-        overrides={{
-          minChunkSizeUsd: 5,
-        }}
+        minChunkSizeUsd={5}
       >
         <div className="flex flex-col gap-4 justify-center items-center max-w-[450px] w-full">
           <PanelToggle />

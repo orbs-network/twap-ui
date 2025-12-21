@@ -193,8 +193,6 @@ export const useOrders = () => {
   const { data: orders, isLoading, error, refetch, isRefetching } = useOrdersQuery();
   const { mutateAsync: cancelOrder } = useCancelOrderMutation();
 
-  console.log({ orders });
-
   return useMemo(() => {
     return {
       orders: {

@@ -7,7 +7,6 @@ import _ from "lodash";
 import { useAccount, useChainId, usePublicClient, useReadContracts, useWalletClient, useWriteContract } from "wagmi";
 import { api } from "./api";
 import { erc20Abi } from "viem";
-import { useDappContext } from "./context";
 import { useDappStore } from "./dapp/store";
 import { toast } from "sonner";
 
@@ -275,6 +274,7 @@ const chainIdToName: { [key: number]: string } = {
   [networks.sonic.id]: "sonic",
   [networks.cronosZkEvm.id]: "cronos-zkevm",
   [networks.katana.id]: "katana",
+  [networks.monad.id]: "monad",
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {

@@ -62,6 +62,7 @@ const useWrapToken = () => {
     {
       onError: (error) => {
         analytics.onWrapError(error);
+        throw error;
       },
     },
   );
@@ -161,8 +162,6 @@ const useHasAllowanceCallback = () => {
           args: [account as `0x${string}`, config.repermit],
         })
         .then((res) => res.toString());
-      console.log("allowance", allowance);
-      console.log("srcAmount", srcAmount);
 
       const approvalRequired = BN(allowance || "0").lt(BN(srcAmount).toString());
 

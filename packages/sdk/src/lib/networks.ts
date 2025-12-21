@@ -422,7 +422,7 @@ export const networks = {
     explorer: "https://berascan.com", // placeholder — replace with actual if known
     eip1559: true,
   },
-  monad:{
+  monad: {
     id: 143,
     name: "Monad",
     shortname: "monad",
@@ -442,5 +442,5 @@ export const networks = {
     logoUrl: "https://s2.coinmarketcap.com/static/img/coins/128x128/30495.png",
     explorer: "https://monad.network",
     eip1559: true,
-  }
+  },
 };

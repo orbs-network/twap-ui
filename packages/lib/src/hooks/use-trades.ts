@@ -2,7 +2,6 @@ import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context/twap-context";
 import { InputError, InputErrors } from "../types";
 import { useTwapStore } from "../useTwapStore";
-import { useMinChunkSizeUsd } from "./use-min-chunk-size-usd";
 import { getChunks, getMaxChunksError, getMaxPossibleChunks, getSrcTokenChunkAmount, getMinTradeSizeError } from "@orbs-network/twap-sdk";
 import { useFillDelay } from "./use-fill-delay";
 import { useSrcAmount } from "./use-src-amount";
@@ -11,10 +10,9 @@ import BN from "bignumber.js";
 import { useTranslations } from "./use-translations";
 
 const useTradesError = (amount: number, maxAmount: number) => {
-  const { module, srcUsd1Token, marketPrice } = useTwapContext();
+  const { module, srcUsd1Token, marketPrice, minChunkSizeUsd } = useTwapContext();
   const t = useTranslations();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const minChunkSizeUsd = useMinChunkSizeUsd();
 
   return useMemo((): InputError | undefined => {
     if (BN(typedSrcAmount || "0").isZero() || !marketPrice) return;
@@ -46,10 +44,9 @@ const useTradesError = (amount: number, maxAmount: number) => {
 };
 
 export const useTrades = () => {
-  const { srcToken, srcUsd1Token, module } = useTwapContext();
+  const { srcToken, srcUsd1Token, module, minChunkSizeUsd } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
   const fillDelay = useFillDelay().fillDelay;
-  const minChunkSizeUsd = useMinChunkSizeUsd();
   const updateState = useTwapStore((s) => s.updateState);
   const { amountWei: srcAmountWei, amountUI: srcAmountUI } = useSrcAmount();
 

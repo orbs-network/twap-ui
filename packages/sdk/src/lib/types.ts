@@ -254,6 +254,7 @@ export enum Partners {
   OMNI = "omni",
   SUSHISWAP = "sushiswap",
   NAMI = "nami",
+  YOWIE = "yowie",
 }
 
 export type SpotConfig = {

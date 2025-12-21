@@ -1,11 +1,10 @@
 import { Modal, Typography } from "antd";
 import { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Module, Token, useFormatNumber } from "@orbs-network/twap-ui";
-import { Config, Configs, eqIgnoreCase, getNetwork, PartnerChains, Partners } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, getNetwork, PartnerChains, Partners } from "@orbs-network/twap-sdk";
 import { useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
 import { Virtuoso } from "react-virtuoso";
 import { useDappContext } from "./context";
-import { useSwitchChain } from "wagmi";
 import { NumericFormat } from "react-number-format";
 import BN from "bignumber.js";
 import { isAddress, maxUint256 } from "viem";
@@ -13,7 +12,7 @@ import { useAppParams } from "./dapp/hooks";
 import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
 import clsx from "clsx";
 import { SettingsIcon } from "lucide-react";
-import { configToPartner, getProductionLink } from "./utils";
+import { getProductionLink } from "./utils";
 
 export const NumberInput = (props: {
   onChange: (value: string) => void;
@@ -226,16 +225,7 @@ export const PartnerSelector = () => {
           ></path>
         </svg>
       </button>
-      <Popup
-        title={
-          <div className="flex items-center gap-2">
-            Partner select <small className="text-[14px] text-white/50">{`(${Object.values(Configs).length})`}</small>
-          </div>
-        }
-        isOpen={isOpen}
-        onClose={onClose}
-        className="config-select-popup"
-      >
+      <Popup title={<div className="flex items-center gap-2">Partner select</div>} isOpen={isOpen} onClose={onClose} className="config-select-popup">
         <div className="config-select-content">
           <input value={filter} onChange={(e) => setFilter(e.target.value)} className="token-select-input" placeholder="Search..." />
           <div className="config-select-list">

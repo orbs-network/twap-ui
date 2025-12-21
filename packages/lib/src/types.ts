@@ -252,7 +252,6 @@ export type Overrides = {
   createOrder?: (props: CreateOrderProps) => Promise<`0x${string}`>;
   getAllowance?: (props: GetAllowanceProps) => Promise<string>;
   state?: Partial<InitialState>;
-  minChunkSizeUsd?: number;
   numberFormat?: (value: number | string) => string;
   dateFormat?: (date: number) => string;
 };
@@ -340,6 +339,7 @@ export interface TwapProps {
   getTranslation?: (key: string, args?: Record<string, string>) => string | undefined;
   translations?: Partial<Translations> | undefined;
   useToken?: UseToken;
+  minChunkSizeUsd: number;
   components: {
     Button?: FC<ButtonProps>;
     Tooltip?: FC<TooltipProps>;

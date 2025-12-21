@@ -249,4 +249,5 @@ export const PartnerChains = {
   [Partners.NAMI]: [networks.sei.id],
   [Partners.THENA]: [networks.bsc.id],
   [Partners.SPOOKYSWAP]: [networks.sonic.id],
+  [Partners.YOWIE]: [networks.monad.id],
 };

@@ -1,6 +1,5 @@
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { Chain, defineChain, http } from "viem";
-import { polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM, berachain, avalanche } from "viem/chains";
+import { Chain, defineChain } from "viem";
+import * as viemChains from "viem/chains";
 
 const katana: Chain = defineChain({
   id: 747474,
@@ -59,24 +58,8 @@ const monad: Chain = defineChain({
   },
 });
 
-const chains = [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM, katana, berachain, avalanche, monad];
-
-const transports = chains
-  .map((chain) => {
-    return {
-      chainId: chain.id,
-      transport: http(`https://rpcman.orbs.network/rpc?chainId=${chain.id}&appId=twap-ui`),
-    };
-  })
-  .reduce((acc: any, { chainId, transport }) => {
-    acc[chainId] = transport;
-    return acc;
-  }, {});
-
-export const wagmiConfig = getDefaultConfig({
-  pollingInterval: 60_0000,
-  appName: "TWAP",
-  projectId: process.env.REACT_APP_CONNECT_PROJECT_ID as string,
-  chains: chains as any,
-  transports,
-});
+export const chains: Record<number, Chain> = {
+  ...viemChains,
+  [katana.name]: katana,
+  [monad.name]: monad,
+};

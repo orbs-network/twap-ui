@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics, getConfig, Module, getQueryParam, QUERY_PARAMS, amountBN } from "@orbs-network/twap-sdk";
-import { TwapProps, TwapContextType, Overrides, MarketReferencePrice } from "../types";
+import { TwapProps, TwapContextType, MarketReferencePrice } from "../types";
 import { initiateWallet } from "../lib";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTwapStore } from "../useTwapStore";
@@ -104,17 +104,18 @@ const useParsedMarketPrice = ({ marketReferencePrice, srcToken, dstToken, chainI
   }, [marketReferencePrice, typedSrcAmount, srcToken, dstToken, chainId]);
 };
 
-const getMinChunkSizeUsd = (overrides?: Overrides) => {
+const getMinChunkSizeUsd = (minChunkSizeUsd: number) => {
   const minChunkSizeUsdFromQuery = getQueryParam(QUERY_PARAMS.MIN_CHUNK_SIZE_USD);
-  return minChunkSizeUsdFromQuery ? parseInt(minChunkSizeUsdFromQuery) : overrides?.minChunkSizeUsd;
+  if (minChunkSizeUsdFromQuery) {
+    return parseInt(minChunkSizeUsdFromQuery);
+  }
+  return minChunkSizeUsd;
 };
 
 const Content = (props: TwapProps) => {
   const acceptedMarketPrice = useTwapStore((s) => s.state.acceptedMarketPrice);
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const config = useMemo(() => getConfig(props.chainId, props.partner), [props.chainId, props.partner]);
-  console.log(props.chainId, props.partner, config);
-
   const marketReferencePrice = useParsedMarketPrice(props);
 
   useEffect(() => {
@@ -128,9 +129,7 @@ const Content = (props: TwapProps) => {
     <TwapContext.Provider
       value={{
         ...props,
-        overrides: {
-          minChunkSizeUsd: getMinChunkSizeUsd(props.overrides),
-        },
+        minChunkSizeUsd: useMemo(() => getMinChunkSizeUsd(props.minChunkSizeUsd), [props.minChunkSizeUsd]),
         account: props.account as `0x${string}` | undefined,
         walletClient,
         publicClient,
