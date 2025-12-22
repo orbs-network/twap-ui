@@ -19,6 +19,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       fontSize: 17,
       fontWeight: 500,
     },
+    ".twap-error-wrap-msg": {
+      textAlign: "center",
+    },
     ".twap-order-details__detail-row-value-usd": {
       fontSize: 12,
       fontWeight: 500,

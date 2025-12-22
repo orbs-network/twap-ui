@@ -276,7 +276,7 @@ const SubmitOrderPanel = (props: SubmitOrderPanelProps) => {
 const SuccessContent = () => {
   const successTitle = useTitle();
   const { components } = useTwapContext();
-  const newOrderId = useTwapStore((s) => s.state.newOrderId);
+  const newOrderId = useTwapStore((s) => s.state.swapExecution.orderId);
   const SuccessView = components.SubmitOrderSuccessView;
 
   const content = (

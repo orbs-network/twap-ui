@@ -794,7 +794,7 @@ const useCallbacks = () => {
     (order: Order) => {
       const srcToken = getToken(order.srcTokenAddress);
       const dstToken = getToken(order.dstTokenAddress);
-      toast.success(`Order ${makeElipsisAddress(order.id)} filled ${srcToken?.symbol} -> ${dstToken?.symbol}`);
+      toast.success(`Order filled: ${srcToken?.symbol} -> ${dstToken?.symbol}`);
     },
     [getToken],
   );

@@ -1,10 +1,7 @@
-import { useMemo } from "react";
 import { useTwapContext } from "../context/twap-context";
 import { useTwapStore } from "../useTwapStore";
 import { useAmountBN } from "./helper-hooks";
 import BN from "bignumber.js";
-import { amountBN, isNativeAddress } from "@orbs-network/twap-sdk";
-import { getMinNativeBalance } from "../utils";
 import { useTranslations } from "./use-translations";
 
 export const useSrcAmount = () => {

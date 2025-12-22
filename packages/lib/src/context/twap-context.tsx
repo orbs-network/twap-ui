@@ -117,19 +117,20 @@ const Content = (props: TwapProps) => {
   const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
   const config = useMemo(() => getConfig(props.chainId, props.partner), [props.chainId, props.partner]);
   const marketReferencePrice = useParsedMarketPrice(props);
+  const minChunkSizeUsd = useMemo(() => getMinChunkSizeUsd(props.minChunkSizeUsd), [props.minChunkSizeUsd]);
 
   useEffect(() => {
     analytics.onLoad();
     if (config && props.chainId) {
-      analytics.init(config, props.chainId);
+      analytics.init(config, minChunkSizeUsd, props.chainId);
     }
-  }, [config, props.chainId]);
+  }, [config, props.chainId, minChunkSizeUsd]);
 
   return (
     <TwapContext.Provider
       value={{
         ...props,
-        minChunkSizeUsd: useMemo(() => getMinChunkSizeUsd(props.minChunkSizeUsd), [props.minChunkSizeUsd]),
+        minChunkSizeUsd,
         account: props.account as `0x${string}` | undefined,
         walletClient,
         publicClient,

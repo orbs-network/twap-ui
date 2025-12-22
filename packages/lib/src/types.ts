@@ -415,10 +415,11 @@ export type SwapExecution = {
   totalSteps?: number;
   srcToken?: Token;
   dstToken?: Token;
+  orderId?: string;
+  allowanceLoading?: boolean;
 };
 
 export interface State {
-  fetchingAllowance?: boolean;
   unwrapTxHash?: string;
   typedSrcAmount?: string;
   typedChunks?: number;
@@ -446,8 +447,6 @@ export interface State {
   swapExecution: SwapExecution;
   acceptedMarketPrice?: string;
   acceptedSrcAmount?: string;
-
-  newOrderId?: string;
 }
 
 export { SwapStatus, Partners };

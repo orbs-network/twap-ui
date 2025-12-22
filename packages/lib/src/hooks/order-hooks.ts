@@ -72,7 +72,7 @@ export const usePersistedOrdersStore = () => {
   };
 };
 
-export const useOptimisticAddOrder = () => {
+export const useAddNewOrder = () => {
   const queryClient = useQueryClient();
   const { account } = useTwapContext();
   const queryKey = useOrdersQueryKey();
@@ -182,6 +182,7 @@ export const useOrdersQuery = () => {
       staleTime: Infinity,
     },
   );
+
 
   return {
     ...query,

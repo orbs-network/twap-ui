@@ -19,7 +19,6 @@ export const useSubmitSwapPanel = () => {
   const { amountUI: srcAmountUI, amountWei: srcAmountWei } = useSrcAmount();
   const resetSwap = useTwapStore((s) => s.resetState);
   const swapExecution = useTwapStore((s) => s.state.swapExecution);
-  const fetchingAllowance = useTwapStore((s) => s.state.fetchingAllowance);
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || BN(marketPrice || "0").isZero();
   const buttonLoading = Boolean(srcToken && dstToken && typedSrcAmount && isPropsLoading);
@@ -69,7 +68,7 @@ export const useSubmitSwapPanel = () => {
       onOpenModal,
       onSubmitOrder,
       ...swapExecution,
-      swapLoading: swapExecution?.status === SwapStatus.LOADING || fetchingAllowance,
+      swapLoading: swapExecution?.status === SwapStatus.LOADING || swapExecution?.allowanceLoading,
       swapSubmitted: Boolean(swapExecution?.status),
       order,
       srcAmountWei,
@@ -80,20 +79,5 @@ export const useSubmitSwapPanel = () => {
         loading: buttonLoading,
       },
     };
-  }, [
-    swapExecution,
-    fetchingAllowance,
-    srcToken,
-    dstToken,
-    order,
-    resetSwap,
-    onCloseModal,
-    onOpenModal,
-    onSubmitOrder,
-    buttonText,
-    buttonLoading,
-    inputsError,
-    noLiquidity,
-    typedSrcAmount,
-  ]);
+  }, [swapExecution, srcToken, dstToken, order, resetSwap, onCloseModal, onOpenModal, onSubmitOrder, buttonText, buttonLoading, inputsError, noLiquidity, typedSrcAmount]);
 };

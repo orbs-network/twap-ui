@@ -75,6 +75,8 @@ export const getPartnerDemoLink = (partner?: Partners) => {
       return "https://nami-dex.vercel.app/swap";
     case Partners.QUICKSWAP:
       return "http://198.20.104.22:4000/swap/twap/ETH/0xc2132D05D31c914a87C6611C10748AEb04B58e8F?chainId=137";
+    case Partners.YOWIE:
+      return "https://yowie-spot.netlify.app/twap";
   }
 };
 

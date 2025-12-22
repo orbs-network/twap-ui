@@ -19,7 +19,7 @@ interface Token {
   decimals: number;
 }
 
-const getConfigDetails = (config: SpotConfig, chainId?: number) => {
+const getConfigDetails = (config: SpotConfig, minChunkSizeUsd: number, chainId?: number) => {
   return {
     spotVersion: SPOT_VERSION,
     partner: config.partner,
@@ -39,7 +39,7 @@ const getConfigDetails = (config: SpotConfig, chainId?: number) => {
     twapAddress: config.twapConfig?.twapAddress || "",
     lensAddress: config.twapConfig?.lensAddress || "",
     bidDelaySeconds: config.twapConfig?.bidDelaySeconds || 0,
-    minChunkSizeUsd: config.twapConfig?.minChunkSizeUsd || 0,
+    minChunkSizeUsd,
     name: config.twapConfig?.name || "",
     exchangeAddress: config.twapConfig?.exchangeAddress || "",
     exchangeType: config.twapConfig?.exchangeType || "",
@@ -278,14 +278,14 @@ class Analytics {
     });
   }
 
-  init(config: SpotConfig, chainId?: number) {
+  init(config: SpotConfig, minChunkSizeUsd: number, chainId?: number) {
     this.config = config;
     if (chainId !== this.data?.chainId) {
       this.data = {
         _id: generateId(),
         action: "module-import",
         uiVersion: pkgUI.version,
-        ...getConfigDetails(config, chainId),
+        ...getConfigDetails(config, minChunkSizeUsd, chainId),
         origin: window.location.origin,
       };
       this.updateAndSend(this.data);
@@ -315,7 +315,29 @@ class Analytics {
           action: "reset",
           uiVersion: pkgUI.version,
           origin: this.data.origin,
-          ...getConfigDetails(this.config!, this.data.chainId),
+          spotVersion: SPOT_VERSION,
+          partner: this.data.partner,
+          adapter: this.data.adapter,
+          cosigner: this.data.cosigner,
+          executor: this.data.executor,
+          fee: this.data.fee,
+          reactor: this.data.reactor,
+          refinery: this.data.refinery,
+          repermit: this.data.repermit,
+          router: this.data.router,
+          type: this.data.type,
+          wm: this.data.wm,
+          chainName: this.data.chainName || "",
+          chainId: this.data.chainId || 0,
+          twapVersion: this.data.twapVersion || 0,
+          twapAddress: this.data.twapAddress || "",
+          lensAddress: this.data.lensAddress || "",
+          bidDelaySeconds: this.data.bidDelaySeconds || 0,
+          minChunkSizeUsd: this.data.minChunkSizeUsd || 0,
+          name: this.data.name || "",
+          exchangeAddress: this.data.exchangeAddress || "",
+          exchangeType: this.data.exchangeType || "",
+          pathfinderKey: this.data.pathfinderKey || "",
         };
       },
     );
