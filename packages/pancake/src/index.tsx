@@ -80,9 +80,13 @@ const uiPreferences: TwapContextUIPreferences = {
   },
 };
 
-export const useConfig = (connectedChainId?: number) => {
+export const useConfig = (connectedChainId?: number, minChunkSizeUsd?: number) => {
   return useMemo(() => {
-    return Object.values(configs).find((config: any) => config.chainId === connectedChainId) || configs.PancakeSwap;
+    const result = Object.values(configs).find((config: any) => config.chainId === connectedChainId) || configs.PancakeSwap;
+    return {
+      ...result,
+      minChunkSizeUsd: minChunkSizeUsd || result.minChunkSizeUsd,
+    };
   }, [connectedChainId]);
 };
 
@@ -323,7 +327,7 @@ const TwapPanel = memo(() => {
   const context = useAdapterContext();
   const parseToken = useParseToken();
   const theme = useTheme();
-  const config = useConfig(context.connectedChainId);
+  const config = useConfig(context.connectedChainId, context.minChunkSizeUsd);
   const { srcToken, dstToken } = useParsedSelectedTokens();
   const onCancelOrderSuccess = useOnCancelOrderSuccess();
 

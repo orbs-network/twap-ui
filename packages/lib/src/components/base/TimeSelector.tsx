@@ -1,4 +1,4 @@
-import { Button, ClickAwayListener } from "@mui/material";
+import { ClickAwayListener } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
 import { useTwapContext } from "../../context";
@@ -23,8 +23,17 @@ const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   },
 ];
 
-const findSelectedResolutionText = (resolution: TimeResolution) => {
-  return `${timeArr.find((t) => t.value === resolution)!.text}-short`;
+const findSelectedResolutionTextShort = (resolution: TimeResolution) => {
+  switch (resolution) {
+    case TimeResolution.Days:
+      return "days";
+    case TimeResolution.Minutes:
+      return "mins";
+    case TimeResolution.Hours:
+      return "hrs";
+    default:
+      return "mins";
+  }
 };
 
 interface Props {
@@ -66,7 +75,7 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
 
       <StyledTimeSelect>
         <StyledSelected onClick={onOpenListClick} className="twap-time-selector-selected">
-          <StyledText> {translations[findSelectedResolutionText(value.resolution) as keyof typeof translations]}</StyledText>
+          <StyledText> {translations[findSelectedResolutionTextShort(value.resolution) as keyof typeof translations]}</StyledText>
           <IoIosArrowDown />
         </StyledSelected>
         {showList && (

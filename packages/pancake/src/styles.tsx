@@ -1487,6 +1487,7 @@ export const StyledTrades = styled(InputContainer)({
 
 const StyledDurationAndTradeInterval = styled(InputContainer)(() => {
   return {
+    flex: 1,
     ".twap-input-container-header": {
       marginBottom: 3,
     },

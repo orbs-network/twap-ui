@@ -385,6 +385,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       toast={toast}
       ReactMarkdown={ReactMarkdown}
       CurrencyLogo={CurrencyLogo}
+      minChunkSizeUsd={5}
     />
   );
 };

@@ -4,6 +4,7 @@ import { createContext, FC, JSXElementConstructor, ReactNode, useContext } from 
 
 export interface AdapterProps extends TWAPProps {
   dappTokens?: { [key: string]: any };
+  minChunkSizeUsd?: number;
   isDarkTheme?: boolean;
   ConnectButton: JSXElementConstructor<any>;
   useTokenModal?: any;

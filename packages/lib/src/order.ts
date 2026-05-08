@@ -321,7 +321,6 @@ export const getOrders = async ({
   const ids = orders.map((order: any) => order.Contract_id);
 
   const allFills = await getAllFills({ endpoint, signal, ids, chainId });
-  console.log({ allFills: allFills.filter((it: any) => it.TWAP_id === 10) });
 
   orders = orders.map((rawOrder: any) => {
     const orderFilleds = allFills?.filter((fill: any) => {
