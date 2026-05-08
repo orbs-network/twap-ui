@@ -36,7 +36,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0",
+  "gitHead": "b03e4c27c14fda1f25fef5180e8b38c85b61fd98",
   "devDependencies": {
     "@types/react-lottie": "^1.2.10"
   }
